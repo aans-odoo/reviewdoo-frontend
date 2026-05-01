@@ -92,7 +92,7 @@ export function SmtpConfigPage() {
     setTestSuccess(false);
     setError("");
     try {
-      await api.post("/smtp-config/test", { to: testEmail.trim() });
+      await api.post("/smtp-config/test", { recipientEmail: testEmail.trim() });
       setTestSuccess(true);
       setTimeout(() => setTestSuccess(false), 3000);
     } catch (err: unknown) {
