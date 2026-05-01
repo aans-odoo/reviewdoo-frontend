@@ -25,10 +25,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { to: "/checklist-items", label: "Checklist Items", icon: ClipboardCheck },
   { to: "/guidelines", label: "Guidelines", icon: BookOpen },
-  { to: "/authors", label: "Authors", icon: Users },
-  { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+  { to: "/checklist-items", label: "Checklist Items", icon: ClipboardCheck },
+  {
+    to: "/authors",
+    label: "Authors",
+    icon: Users,
+    children: [
+      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+    ],
+  },
   { to: "/ai-config", label: "AI Config", icon: Brain },
   { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
 ];
@@ -65,19 +71,26 @@ export function Sidebar() {
       </div>
 
       {/* Nav items */}
-      <nav className={`flex-1 space-y-0.5 overflow-y-auto p-3 ${isSticky ? "mt-6" : "mt-14"}`}>
+      <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
         {navItems.map((item) => (
-          <SidebarLink key={item.to} {...item} />
+          <div key={item.to}>
+            <SidebarLink to={item.to} label={item.label} icon={item.icon} />
+            {item.children?.map((child) => (
+              <SidebarLink key={child.to} to={child.to} label={child.label} icon={child.icon} indent />
+            ))}
+          </div>
         ))}
         {isAdmin && (
           <div className="pt-5">
             <div className="border-t border-border pt-5" />
-            <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-theme-text-dim">
+            <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-theme-text-dim">
               Admin
             </p>
-            {adminItems.map((item) => (
-              <SidebarLink key={item.to} {...item} />
-            ))}
+            <div className="space-y-1">
+              {adminItems.map((item) => (
+                <SidebarLink key={item.to} {...item} />
+              ))}
+            </div>
           </div>
         )}
       </nav>
@@ -128,24 +141,31 @@ function SidebarLink({
   to,
   label,
   icon: Icon,
+  indent = false,
 }: {
   to: string;
   label: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
+  indent?: boolean;
 }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-2.5 rounded-sm px-3 py-2 text-sm font-normal transition-all duration-150",
+          "flex items-center gap-2.5 relative rounded-md px-4 py-2.5 text-sm font-normal transition-all duration-150",
+          indent && "ml-6 my-1",
           isActive
             ? "bg-theme-primary-muted text-theme-primary-light font-medium"
             : "text-theme-text-muted hover:bg-theme-bg-hover hover:text-theme-text"
         )
       }
     >
-      <Icon size={18} />
+      {indent
+        &&
+        <span className="absolute -left-2.5 top-1 w-2 h-4 border-l border-b border-dotted border-theme-text-muted/50 rounded-bl-[4px]" />
+      }
+      <Icon size={indent ? 15 : 18} />
       {label}
     </NavLink>
   );
