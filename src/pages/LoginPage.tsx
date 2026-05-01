@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { Navigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -41,17 +41,17 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-theme-body px-4">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm py-5 px-2">
         <CardHeader className="text-center">
           <div className="mx-auto mb-3">
-            <Logo />
+            <Logo className="scale-110" />
+            <CardDescription className="mt-1">Sign in to your account</CardDescription>
           </div>
-          <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
+              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-center text-theme-danger">
                 {error}
               </div>
             )}
@@ -72,15 +72,18 @@ export function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "Signing in..." : "Sign in"}
-            </Button>
+            <div>
+              <Button type="submit" className="w-full mt-4" disabled={submitting}>
+                {submitting ? "Signing in..." : "Sign in"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
