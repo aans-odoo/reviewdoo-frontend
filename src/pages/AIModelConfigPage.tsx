@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -20,7 +19,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Plus, Pencil, Trash2, Zap, Power, CircleDot, Bot, Cpu } from "lucide-react";
+import { Plus, Pencil, Trash2, Zap, CircleDot, Bot, Cpu, Loader2, Activity } from "lucide-react";
 import api from "@/lib/api";
 
 interface AIModelConfig {
@@ -153,13 +152,13 @@ export function AIModelConfigPage() {
   const renderConfigCard = (config: AIModelConfig) => (
     <Card
       key={config.id}
-      className={config.isActive ? "border-theme-success/40 bg-theme-success/[0.03]" : ""}
+      className={config.isActive ? "border-theme-cyan/20 bg-theme-cyan/[0.03]" : ""}
     >
       <CardContent className="flex items-center justify-between py-4">
         <div className="flex items-center gap-3">
-          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${config.isActive ? "bg-theme-success/15" : "bg-theme-bg-elevated"}`}>
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${config.isActive ? "bg-theme-accent/15" : "bg-theme-bg-elevated"}`}>
             {config.isActive ? (
-              <Zap className="h-4 w-4 text-theme-success" />
+              <Zap className="h-4 w-4 text-theme-accent" />
             ) : (
               <CircleDot className="h-4 w-4 text-theme-text-muted" />
             )}
@@ -167,14 +166,11 @@ export function AIModelConfigPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-medium capitalize text-theme-text">{config.providerName}</span>
-              <span className="text-sm text-theme-text-muted">·</span>
-              <span className="text-sm text-theme-text-muted">{config.modelId}</span>
-              {config.isActive && (
-                <Badge variant="green">Active</Badge>
-              )}
+              <span className="text-theme-text-muted">|</span>
+              <span className="text-sm font-medium text-theme-text-muted">{config.modelId}</span>
             </div>
-            <p className="mt-0.5 text-xs text-theme-text-muted">
-              API Key: {config.keySet ? "Configured" : "Not set"} · Added {new Date(config.createdAt).toLocaleDateString()}
+            <p className="mt-1 text-xs text-theme-text-muted">
+              Updated {new Date(config.updatedAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -183,12 +179,12 @@ export function AIModelConfigPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 text-theme-success hover:text-theme-success hover:bg-theme-success/10"
+              className="h-8 gap-1.5 text-theme-accent hover:text-theme-accent hover:bg-theme-accent/10"
               onClick={() => handleActivate(config)}
               disabled={activating === config.id}
               aria-label="Set as active model"
             >
-              <Power className="h-3.5 w-3.5" />
+              <Activity className="h-3.5 w-3.5" />
               {activating === config.id ? "Activating..." : "Set Active"}
             </Button>
           )}
@@ -278,9 +274,11 @@ export function AIModelConfigPage() {
       )}
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-theme-text-muted">Loading configurations...</div>
+        <div className="py-40">
+          <Loader2 className="text-theme-accent mx-auto animate-spin" />
+        </div>
       ) : (
-        <div className="space-y-8">
+        <div className="py-6 space-y-12">
           {renderSection(
             "Embedding Models",
             "Used for generating vector embeddings for semantic search",
