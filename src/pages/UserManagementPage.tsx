@@ -17,9 +17,17 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Plus, RotateCw } from "lucide-react";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { Plus, MoreVertical, Pencil, Trash2, RotateCw, UserCheck, UserX } from "lucide-react";
 import api from "@/lib/api";
 
 interface User {
@@ -42,6 +50,18 @@ export function UserManagementPage() {
   const [newRole, setNewRole] = useState<"admin" | "member">("member");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editRole, setEditRole] = useState<"admin" | "member">("member");
+  const [editing, setEditing] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [reinviting, setReinviting] = useState<string | null>(null);
 
@@ -84,13 +104,65 @@ export function UserManagementPage() {
     }
   };
 
-  const handleRoleChange = async (userId: string, role: "admin" | "member") => {
+  const openEditDialog = (user: User) => {
+    setEditingUser(user);
+    setEditEmail(user.email);
+    setEditName(user.name);
+    setEditRole(user.role);
+    setEditError("");
+    setEditOpen(true);
+  };
+
+  const handleEdit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    setEditing(true);
+    setEditError("");
     try {
-      await api.put(`/users/${userId}`, { role });
+      // Only send role if it changed
+      const updates: { role?: "admin" | "member" } = {};
+      if (editRole !== editingUser.role) {
+        updates.role = editRole;
+      }
+      
+      if (Object.keys(updates).length > 0) {
+        await api.put(`/users/${editingUser.id}`, updates);
+      }
+      
+      setEditOpen(false);
+      setEditingUser(null);
       await fetchUsers();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to update role");
+      setEditError(axErr.response?.data?.error?.message ?? "Failed to update user");
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const openDeleteDialog = (user: User) => {
+    setDeletingUser(user);
+    setDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+    
+    setDeleting(true);
+    try {
+      await api.delete(`/users/${deletingUser.id}`);
+      setDeleteOpen(false);
+      setDeletingUser(null);
+      await fetchUsers();
+      setError("");
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to delete user");
+      setDeleteOpen(false);
+      setDeletingUser(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -123,59 +195,78 @@ export function UserManagementPage() {
     {
       key: "role",
       header: "Role",
-      render: (row) => {
-        const isLastAdmin = row.role === "admin" && row.isActive && activeAdminCount <= 1;
-        return (
-          <Select
-            value={row.role}
-            onValueChange={(v) => handleRoleChange(row.id, v as "admin" | "member")}
-            disabled={isLastAdmin}
-          >
-            <SelectTrigger className="w-28" title={isLastAdmin ? "Cannot change role — this is the only admin" : undefined}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-            </SelectContent>
-          </Select>
-        );
-      },
+      render: (row) => (
+        <span className="capitalize">{row.role}</span>
+      ),
     },
     {
       key: "isActive",
       header: "Status",
-      render: (row) => {
-        const isLastAdmin = row.role === "admin" && row.isActive && activeAdminCount <= 1;
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleStatusToggle(row)}
-            disabled={isLastAdmin && row.isActive}
-            title={isLastAdmin && row.isActive ? "Cannot deactivate the only admin" : undefined}
-            className="h-auto px-1 py-0"
-          >
-            <StatusBadge status={row.isActive ? "active" : "inactive"} />
-          </Button>
-        );
-      },
+      render: (row) => (
+        <StatusBadge status={row.isActive ? "active" : "inactive"} />
+      ),
     },
     {
       key: "actions",
       header: "Actions",
-      render: (row) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleReinvite(row.id)}
-          disabled={reinviting === row.id}
-          aria-label={`Reinvite ${row.email}`}
-        >
-          <RotateCw className={`mr-1 h-4 w-4 ${reinviting === row.id ? "animate-spin" : ""}`} />
-          {reinviting === row.id ? "Sending..." : "Reinvite"}
-        </Button>
-      ),
+      render: (row) => {
+        const isLastAdmin = row.role === "admin" && row.isActive && activeAdminCount <= 1;
+        
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => openEditDialog(row)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              
+              {!row.isActive && (
+                <DropdownMenuItem 
+                  onClick={() => handleReinvite(row.id)}
+                  disabled={reinviting === row.id}
+                >
+                  <RotateCw className={`mr-2 h-4 w-4 ${reinviting === row.id ? "animate-spin" : ""}`} />
+                  {reinviting === row.id ? "Sending..." : "Reinvite"}
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuItem 
+                onClick={() => handleStatusToggle(row)}
+                disabled={isLastAdmin && row.isActive}
+              >
+                {row.isActive ? (
+                  <>
+                    <UserX className="mr-2 h-4 w-4" />
+                    Deactivate
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Activate
+                  </>
+                )}
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem 
+                onClick={() => openDeleteDialog(row)}
+                disabled={isLastAdmin}
+                className="text-theme-danger focus:text-theme-danger"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
 
@@ -241,6 +332,55 @@ export function UserManagementPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) { setEditError(""); setEditingUser(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user information and role.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4 p-5">
+            {editError && (
+              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{editError}</div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input id="edit-email" type="email" value={editEmail} disabled className="opacity-60" />
+              <p className="text-xs text-theme-text-muted">Email cannot be changed</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input id="edit-name" value={editName} disabled className="opacity-60" />
+              <p className="text-xs text-theme-text-muted">Name cannot be changed</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={editRole} onValueChange={(v) => setEditRole(v as "admin" | "member")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={editing}>{editing ? "Updating..." : "Update User"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete User"
+        description={`Are you sure you want to delete ${deletingUser?.name} (${deletingUser?.email})? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+        isLoading={deleting}
+      />
     </div>
   );
 }
