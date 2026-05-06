@@ -10,7 +10,6 @@ export function Header() {
       {/* Notification */}
       <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
         <Bell size={20} />
-        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-theme-danger border-2 border-theme-bg-card" />
       </Button>
     </header>
   );

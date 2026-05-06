@@ -10,6 +10,7 @@ import {
   Mail,
   Settings,
   LogOut,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,17 +27,18 @@ import {
 
 const navItems = [
   { to: "/guidelines", label: "Guidelines", icon: BookOpen },
-  { to: "/checklist-items", label: "Checklist Items", icon: ClipboardCheck },
+  { to: "/checklist-items", label: "Checklist Items", icon: ClipboardCheck, wip: true },
   {
     to: "/authors",
     label: "Authors",
     icon: Users,
+    wip: true,
     children: [
-      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText, wip: true },
     ],
   },
+  { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles, wip: true },
   { to: "/ai-config", label: "AI Config", icon: Brain },
-  { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
 ];
 
 const adminItems = [
@@ -73,7 +75,11 @@ export function Sidebar() {
       {/* Nav items */}
       <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
         {navItems.map((item) => (
-          <div key={item.to}>
+          <div key={item.to} className="relative">
+            {item.wip
+              &&
+              <span className="absolute right-3 top-3 text-xs px-2 py-px rounded-full font-semibold z-10 bg-theme-accent text-theme-bg-card">wip</span>
+            }
             <SidebarLink to={item.to} label={item.label} icon={item.icon} />
             {item.children?.map((child) => (
               <SidebarLink key={child.to} to={child.to} label={child.label} icon={child.icon} indent />
