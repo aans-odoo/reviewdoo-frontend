@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Lock,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -99,6 +100,12 @@ export function Sidebar() {
             </div>
           </div>
         )}
+
+        {/* About link at the end */}
+        <div className="pt-5">
+          <div className="border-t border-border pt-5" />
+          <SidebarLink to="/about" label="About" icon={Info} />
+        </div>
       </nav>
 
       {/* User area with settings dropdown */}

@@ -14,6 +14,7 @@ import { PromptGeneratorPage } from "@/pages/PromptGeneratorPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
 import { DesignShowcasePage } from "@/pages/DesignShowcasePage";
+import { AboutPage } from "@/pages/AboutPage";
 
 export default function App() {
   return (
@@ -21,10 +22,11 @@ export default function App() {
       <Route path="/design/v2" element={<DesignShowcasePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/setup" element={<AccountSetupPage />} />
+      <Route path="/about" element={<AboutPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/checklist-items" replace />} />
+          <Route index element={<Navigate to="/guidelines" replace />} />
           <Route path="/checklist-items" element={<ChecklistItemsPage />} />
           <Route path="/checklist-items/:id" element={<ChecklistItemDetailPage />} />
           <Route path="/guidelines" element={<GuidelinesPage />} />

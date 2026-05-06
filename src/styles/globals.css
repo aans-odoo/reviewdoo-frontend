@@ -8,9 +8,9 @@
   :root {
     --body: 15 15 18;
     --bg: 17 17 22;
-    --bg-card: 24 24 32;
-    --bg-elevated: 30 30 40;
-    --bg-hover: 38 38 50;
+    --bg-card: 24 24 28;
+    --bg-elevated: 30 30 36;
+    --bg-hover: 38 38 46;
 
     --border: 255 255 255;
     --border-opacity: 0.07;

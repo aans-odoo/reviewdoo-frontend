@@ -85,6 +85,14 @@ export function LoginPage() {
               </Button>
             </div>
           </form>
+          <div className="mt-4 text-center">
+            <a
+              href="/about"
+              className="text-sm text-theme-text-muted hover:text-theme-text transition-colors"
+            >
+              Learn more about Reviewdoo
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>
