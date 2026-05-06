@@ -34,11 +34,11 @@ export function ConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="border-none space-y-3 pt-8">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="border-none">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isLoading}>
             {cancelLabel}
           </Button>

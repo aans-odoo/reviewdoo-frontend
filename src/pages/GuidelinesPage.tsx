@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Plus, Pencil, Trash2, Search, X, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, BookOpen } from "lucide-react";
 import api from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -71,6 +71,13 @@ export function GuidelinesPage() {
   const [searchResults, setSearchResults] = useState<Guideline[]>([]);
   const [searching, setSearching] = useState(false);
 
+  // Tag edit/delete
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [editTagName, setEditTagName] = useState("");
+  const [savingTag, setSavingTag] = useState(false);
+  const [deleteTagTarget, setDeleteTagTarget] = useState<Tag | null>(null);
+  const [deletingTag, setDeletingTag] = useState(false);
+
   const fetchGuidelines = async () => {
     try {
       setLoading(true);
@@ -113,7 +120,6 @@ export function GuidelinesPage() {
         severity: newSeverity,
         tagIds: newTagIds,
       });
-      setCreateOpen(false);
       setNewContent("");
       setNewSeverity("minor");
       setNewTagIds([]);
@@ -123,6 +129,7 @@ export function GuidelinesPage() {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
       setError(axErr.response?.data?.error?.message ?? "Failed to create guideline");
     } finally {
+      setCreateOpen(false);
       setCreating(false);
     }
   };
@@ -194,6 +201,47 @@ export function GuidelinesPage() {
     setSearchResults([]);
   };
 
+  const openEditTag = (tag: Tag) => {
+    setEditingTag(tag);
+    setEditTagName(tag.name);
+  };
+
+  const handleEditTag = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingTag || !editTagName.trim()) return;
+    setSavingTag(true);
+    try {
+      await api.put(`/tags/${editingTag.id}`, { name: editTagName.trim() });
+      setEditingTag(null);
+      await fetchTags();
+      await fetchGuidelines();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to update tag");
+    } finally {
+      setSavingTag(false);
+    }
+  };
+
+  const handleDeleteTag = async () => {
+    if (!deleteTagTarget) return;
+    setDeletingTag(true);
+    try {
+      await api.delete(`/tags/${deleteTagTarget.id}`);
+      setDeleteTagTarget(null);
+      if (filterTagId === deleteTagTarget.id) {
+        setFilterTagId(null);
+      }
+      await fetchTags();
+      await fetchGuidelines();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to delete tag");
+    } finally {
+      setDeletingTag(false);
+    }
+  };
+
   const displayedGuidelines = searchMode === "semantic" ? searchResults : guidelines;
 
   return (
@@ -214,17 +262,32 @@ export function GuidelinesPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-2">
-            <Input
-              placeholder="Semantic search guidelines..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSemanticSearch()}
-              className="flex-1"
-            />
-            <Button variant="outline" onClick={handleSemanticSearch} disabled={searching}>
-              <Search className="h-4 w-4" />
-              {searching ? "Searching..." : "Search"}
-            </Button>
+            <div className="relative w-full">
+              <Input
+                placeholder="Semantic search guidelines..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSemanticSearch()}
+                className="pr-20"
+              />
+              <div className="absolute top-[50%] right-1 translate-y-[-50%]">
+                <div className="relative">
+                  <Button
+                    className="rounded-sm"
+                    variant="ghost"
+                    onClick={handleSemanticSearch}
+                    disabled={searching}
+                    title="Semantic search"
+                  >
+                    {searching
+                      ? <LoaderCircle className="h-4 w-4 text-theme-accent animate-spin" />
+                      : <Search className="h-4 w-4" />
+                    }
+                  </Button>
+                  {!searching && <Sparkles className="absolute w-3 h-3 text-theme-accent top-1 right-3" />}
+                </div>
+              </div>
+            </div>
             {searchMode === "semantic" && (
               <Button variant="ghost" onClick={clearSearch}>
                 Clear
@@ -233,32 +296,51 @@ export function GuidelinesPage() {
           </div>
           {/* Tag filter chips */}
           {tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2 items-center transition-all">
               <button
                 onClick={() => setFilterTagId(null)}
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  filterTagId === null
-                    ? "bg-theme-primary text-white"
-                    : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
-                }`}
+                className={`inline-flex items-center rounded-full px-3 py-2 text-xs font-medium transition-colors ${filterTagId === null
+                  ? "bg-theme-primary text-white"
+                  : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
+                  }`}
               >
                 All
               </button>
               {tags.map((tag) => (
-                <button
+                <div
                   key={tag.id}
-                  onClick={() => setFilterTagId(tag.id === filterTagId ? null : tag.id)}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    filterTagId === tag.id
+                  className="group relative inline-flex items-center"
+                >
+                  <button
+                    onClick={() => setFilterTagId(tag.id === filterTagId ? null : tag.id)}
+                    className={`inline-flex items-center rounded-full px-3 py-2 group-hover:pr-16 text-xs font-medium transition-colors ${filterTagId === tag.id
                       ? "bg-theme-primary text-white"
                       : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
-                  }`}
-                >
-                  {tag.name}
-                  {tag._count && (
-                    <span className="ml-1 opacity-70">({tag._count.guidelines})</span>
-                  )}
-                </button>
+                      }`}
+                  >
+                    {tag.name}
+                    {tag._count && (
+                      <span className="ml-1 opacity-70">({tag._count.guidelines})</span>
+                    )}
+                  </button>
+                  {/* Hover actions */}
+                  <div className="absolute top-[50%] translate-y-[-50%] right-1 hidden group-hover:flex gap-0.5 bg-theme-bg-elevated border border-border rounded-md shadow-lg py-0.5 px-1">
+                    <button
+                      onClick={() => openEditTag(tag)}
+                      className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
+                      title="Edit tag"
+                    >
+                      <Pencil className="h-3 w-3 text-theme-text-muted" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteTagTarget(tag)}
+                      className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
+                      title="Delete tag"
+                    >
+                      <X className="h-3 w-3 text-theme-danger" />
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -273,10 +355,13 @@ export function GuidelinesPage() {
 
       {/* Guidelines list */}
       {loading && searchMode === "none" ? (
-        <div className="py-8 text-center text-sm text-theme-text-muted">Loading...</div>
+        <div className="py-40">
+          <LoaderCircle className="animate-spin text-theme-accent mx-auto" />
+        </div>
       ) : displayedGuidelines.length === 0 ? (
-        <div className="py-8 text-center text-sm text-theme-text-muted">
-          {searchMode === "semantic" ? "No results found." : "No guidelines yet."}
+        <div className="py-40 flex flex-col items-center gap-2 text-theme-text-muted">
+          <BookOpen />
+          <p className="text-sm">{searchMode === "semantic" ? "No results found." : "No guidelines yet."}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -447,6 +532,52 @@ export function GuidelinesPage() {
         variant="destructive"
         onConfirm={handleDeleteGuideline}
         isLoading={deleting}
+      />
+
+      {/* Edit Tag Dialog */}
+      <Dialog open={!!editingTag} onOpenChange={(open) => !open && setEditingTag(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Tag</DialogTitle>
+            <DialogDescription>Update the tag name.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditTag} className="space-y-4 p-5">
+            <div className="space-y-2">
+              <Label htmlFor="edit-tag-name">Tag Name</Label>
+              <Input
+                id="edit-tag-name"
+                value={editTagName}
+                onChange={(e) => setEditTagName(e.target.value)}
+                required
+                placeholder="Enter tag name..."
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setEditingTag(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={savingTag || !editTagName.trim()}>
+                {savingTag ? "Saving..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Tag Confirmation */}
+      <ConfirmDialog
+        open={!!deleteTagTarget}
+        onOpenChange={(open) => !open && setDeleteTagTarget(null)}
+        title="Delete Tag"
+        description={
+          deleteTagTarget?._count?.guidelines
+            ? `Delete "${deleteTagTarget.name}"? This will remove the tag from ${deleteTagTarget._count.guidelines} guideline${deleteTagTarget._count.guidelines !== 1 ? 's' : ''}. Are you sure?`
+            : `Delete "${deleteTagTarget?.name}"? This action cannot be undone.`
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDeleteTag}
+        isLoading={deletingTag}
       />
     </div>
   );
