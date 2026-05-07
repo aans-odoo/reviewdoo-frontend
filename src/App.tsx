@@ -4,6 +4,8 @@ import { AdminRoute } from "@/components/auth/AdminRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { AccountSetupPage } from "@/pages/AccountSetupPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { ChecklistItemsPage } from "@/pages/ChecklistItemsPage";
 import { ChecklistItemDetailPage } from "@/pages/ChecklistItemDetailPage";
 import { GuidelinesPage } from "@/pages/GuidelinesPage";
@@ -22,6 +24,8 @@ export default function App() {
       <Route path="/design/v2" element={<DesignShowcasePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/setup" element={<AccountSetupPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
 
       <Route element={<ProtectedRoute />}>

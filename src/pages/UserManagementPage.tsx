@@ -27,7 +27,7 @@ import {
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Plus, MoreVertical, Pencil, Trash2, RotateCw, UserCheck, UserX } from "lucide-react";
+import { Plus, MoreVertical, Pencil, Trash2, RotateCw, UserCheck, UserX, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 
 interface User {
@@ -116,20 +116,27 @@ export function UserManagementPage() {
   const handleEdit = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
-    
+
     setEditing(true);
     setEditError("");
     try {
-      // Only send role if it changed
-      const updates: { role?: "admin" | "member" } = {};
+      // Build updates object with changed fields
+      const updates: { email?: string; name?: string; role?: "admin" | "member" } = {};
+
+      if (editEmail !== editingUser.email) {
+        updates.email = editEmail;
+      }
+      if (editName !== editingUser.name) {
+        updates.name = editName;
+      }
       if (editRole !== editingUser.role) {
         updates.role = editRole;
       }
-      
+
       if (Object.keys(updates).length > 0) {
         await api.put(`/users/${editingUser.id}`, updates);
       }
-      
+
       setEditOpen(false);
       setEditingUser(null);
       await fetchUsers();
@@ -148,7 +155,7 @@ export function UserManagementPage() {
 
   const handleDelete = async () => {
     if (!deletingUser) return;
-    
+
     setDeleting(true);
     try {
       await api.delete(`/users/${deletingUser.id}`);
@@ -211,7 +218,7 @@ export function UserManagementPage() {
       header: "Actions",
       render: (row) => {
         const isLastAdmin = row.role === "admin" && row.isActive && activeAdminCount <= 1;
-        
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -225,18 +232,21 @@ export function UserManagementPage() {
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              
+
               {!row.isActive && (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => handleReinvite(row.id)}
                   disabled={reinviting === row.id}
                 >
-                  <RotateCw className={`mr-2 h-4 w-4 ${reinviting === row.id ? "animate-spin" : ""}`} />
+                  {reinviting === row.id
+                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-theme-accent" />
+                    : <RotateCw className="mr-2 h-4 w-4" />
+                  }
                   {reinviting === row.id ? "Sending..." : "Reinvite"}
                 </DropdownMenuItem>
               )}
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={() => handleStatusToggle(row)}
                 disabled={isLastAdmin && row.isActive}
               >
@@ -252,10 +262,10 @@ export function UserManagementPage() {
                   </>
                 )}
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={() => openDeleteDialog(row)}
                 disabled={isLastAdmin}
                 className="text-theme-danger focus:text-theme-danger"
@@ -345,13 +355,22 @@ export function UserManagementPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" type="email" value={editEmail} disabled className="opacity-60" />
-              <p className="text-xs text-theme-text-muted">Email cannot be changed</p>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
-              <Input id="edit-name" value={editName} disabled className="opacity-60" />
-              <p className="text-xs text-theme-text-muted">Name cannot be changed</p>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Role</Label>

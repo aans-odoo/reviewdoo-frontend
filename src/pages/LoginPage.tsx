@@ -84,6 +84,14 @@ export function LoginPage() {
                 {submitting ? "Signing in..." : "Sign in"}
               </Button>
             </div>
+            <div className="text-center">
+              <a
+                href="/forgot-password"
+                className="text-sm text-theme-text-muted hover:text-theme-text transition-colors"
+              >
+                Forgot your password?
+              </a>
+            </div>
           </form>
           <div className="mt-4 text-center">
             <a
