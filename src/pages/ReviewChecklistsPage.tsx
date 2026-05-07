@@ -26,7 +26,7 @@ import { Plus, Search } from "lucide-react";
 import api from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 
-interface ChecklistItem {
+interface ReviewChecklist {
   id: string;
   description: string;
   severity: string;
@@ -39,7 +39,7 @@ interface ChecklistItem {
 }
 
 interface PaginatedResponse {
-  items: ChecklistItem[];
+  items: ReviewChecklist[];
   total: number;
   page: number;
   pageSize: number;
@@ -53,9 +53,9 @@ const CATEGORIES = [
 ];
 const SOURCES = ["extracted", "manual"];
 
-export function ChecklistItemsPage() {
+export function ReviewChecklistsPage() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [items, setItems] = useState<ReviewChecklist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -91,14 +91,14 @@ export function ChecklistItemsPage() {
       if (sourceFilter) params.source = sourceFilter;
       if (searchQuery && searchMode === "text") params.search = searchQuery;
 
-      const res = await api.get("/checklist-items", { params });
+      const res = await api.get("/review-checklists", { params });
       const data: PaginatedResponse = res.data;
       setItems(data.items ?? []);
       setTotalPages(data.totalPages ?? 1);
       setTotalItems(data.total ?? 0);
       setError("");
     } catch {
-      setError("Failed to load checklist items");
+      setError("Failed to load review checklists");
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export function ChecklistItemsPage() {
     if (!searchQuery.trim()) return;
     try {
       setLoading(true);
-      const res = await api.post("/checklist-items/semantic-search", {
+      const res = await api.post("/review-checklists/semantic-search", {
         query: searchQuery,
         limit: pageSize,
       });
@@ -151,7 +151,7 @@ export function ChecklistItemsPage() {
       const filePatterns = newFilePatterns.split(",").map((p) => p.trim()).filter(Boolean);
       const references = newReferences.split("\n").map((r) => r.trim()).filter(Boolean).map((url) => ({ url }));
 
-      await api.post("/checklist-items", {
+      await api.post("/review-checklists", {
         description: newDescription,
         severity: newSeverity,
         category: newCategory,
@@ -190,7 +190,7 @@ export function ChecklistItemsPage() {
     setPage(1);
   };
 
-  const columns: Column<ChecklistItem & Record<string, unknown>>[] = [
+  const columns: Column<ReviewChecklist & Record<string, unknown>>[] = [
     {
       key: "description",
       header: "Description",
@@ -198,7 +198,7 @@ export function ChecklistItemsPage() {
       render: (row) => (
         <button
           className="text-left text-sm text-theme-text hover:text-theme-primary-light transition-colors"
-          onClick={() => navigate(`/checklist-items/${row.id}`)}
+          onClick={() => navigate(`/review-checklists/${row.id}`)}
         >
           {row.description.length > 100
             ? row.description.slice(0, 100) + "..."
@@ -252,14 +252,14 @@ export function ChecklistItemsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-theme-text">Checklist Items</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-theme-text">Review Checklists</h2>
           <p className="mt-1 text-sm text-theme-text-muted">
-            Manage your review checklist items.
+            Manage your review checklists extracted from PR comments.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
-          Create Item
+          Create Review Checklist
         </Button>
       </div>
 
@@ -364,13 +364,13 @@ export function ChecklistItemsPage() {
         <>
           <DataTable
             columns={columns}
-            data={items as (ChecklistItem & Record<string, unknown>)[]}
+            data={items as (ReviewChecklist & Record<string, unknown>)[]}
             keyExtractor={(row) => row.id}
             serverSide
             pageSize={pageSize}
             currentPage={page}
             totalItems={totalItems}
-            emptyMessage="No checklist items found"
+            emptyMessage="No review checklists found"
           />
           {totalPages > 1 && (
             <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
@@ -381,8 +381,8 @@ export function ChecklistItemsPage() {
       <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) resetCreateForm(); }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Checklist Item</DialogTitle>
-            <DialogDescription>Add a new review checklist item manually.</DialogDescription>
+            <DialogTitle>Create Review Checklist</DialogTitle>
+            <DialogDescription>Add a new review checklist manually.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4 p-5">
             {createError && (
@@ -397,7 +397,7 @@ export function ChecklistItemsPage() {
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 required
-                placeholder="Describe the review checklist item..."
+                placeholder="Describe the review checklist..."
               />
             </div>
             <div className="grid grid-cols-2 gap-4">

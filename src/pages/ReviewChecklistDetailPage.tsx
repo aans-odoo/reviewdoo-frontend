@@ -32,7 +32,7 @@ interface Reference {
   createdAt?: string;
 }
 
-interface ChecklistItemDetail {
+interface ReviewChecklistDetail {
   id: string;
   description: string;
   severity: string;
@@ -45,11 +45,11 @@ interface ChecklistItemDetail {
   updatedAt: string;
 }
 
-export function ChecklistItemDetailPage() {
+export function ReviewChecklistDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [item, setItem] = useState<ChecklistItemDetail | null>(null);
+  const [item, setItem] = useState<ReviewChecklistDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -73,12 +73,12 @@ export function ChecklistItemDetailPage() {
   const fetchItem = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/checklist-items/${id}`);
+      const res = await api.get(`/review-checklists/${id}`);
       const data = res.data.item ?? res.data;
       setItem(data);
       setError("");
     } catch {
-      setError("Failed to load checklist item");
+      setError("Failed to load review checklist");
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export function ChecklistItemDetailPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put(`/checklist-items/${id}`, {
+      await api.put(`/review-checklists/${id}`, {
         description: editDescription,
         severity: editSeverity,
         category: editCategory,
@@ -112,7 +112,7 @@ export function ChecklistItemDetailPage() {
       setEditing(false);
       await fetchItem();
     } catch {
-      setError("Failed to update item");
+      setError("Failed to update review checklist");
     } finally {
       setSaving(false);
     }
@@ -121,10 +121,10 @@ export function ChecklistItemDetailPage() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.delete(`/checklist-items/${id}`);
-      navigate("/checklist-items");
+      await api.delete(`/review-checklists/${id}`);
+      navigate("/review-checklists");
     } catch {
-      setError("Failed to delete item");
+      setError("Failed to delete review checklist");
     } finally {
       setDeleting(false);
     }
@@ -135,7 +135,7 @@ export function ChecklistItemDetailPage() {
     if (!newRefUrl.trim()) return;
     setAddingRef(true);
     try {
-      await api.post(`/checklist-items/${id}/references`, { url: newRefUrl.trim() });
+      await api.post(`/review-checklists/${id}/references`, { url: newRefUrl.trim() });
       setNewRefUrl("");
       await fetchItem();
     } catch {
@@ -149,7 +149,7 @@ export function ChecklistItemDetailPage() {
     if (!deleteRefTarget) return;
     setDeletingRef(true);
     try {
-      await api.delete(`/checklist-items/${id}/references/${deleteRefTarget.id}`);
+      await api.delete(`/review-checklists/${id}/references/${deleteRefTarget.id}`);
       setDeleteRefTarget(null);
       await fetchItem();
     } catch {
@@ -166,7 +166,7 @@ export function ChecklistItemDetailPage() {
   if (error && !item) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate("/checklist-items")}>
+        <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{error}</div>
@@ -179,8 +179,8 @@ export function ChecklistItemDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => navigate("/checklist-items")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Checklist Items
+        <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Review Checklists
         </Button>
         <div className="flex gap-2">
           {!editing && (
@@ -200,7 +200,7 @@ export function ChecklistItemDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Checklist Item Details</CardTitle>
+          <CardTitle>Review Checklist Details</CardTitle>
         </CardHeader>
         <CardContent>
           {editing ? (
@@ -363,8 +363,8 @@ export function ChecklistItemDetailPage() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete Checklist Item"
-        description="Are you sure you want to delete this checklist item? All references will also be removed."
+        title="Delete Review Checklist"
+        description="Are you sure you want to delete this review checklist? All references will also be removed."
         confirmLabel="Delete"
         variant="destructive"
         onConfirm={handleDelete}

@@ -23,7 +23,7 @@ export function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/checklist-items" replace />;
+    return <Navigate to="/review-checklists" replace />;
   }
 
   const handleSubmit = async (e: FormEvent) => {

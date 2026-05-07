@@ -6,8 +6,8 @@ import { LoginPage } from "@/pages/LoginPage";
 import { AccountSetupPage } from "@/pages/AccountSetupPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
-import { ChecklistItemsPage } from "@/pages/ChecklistItemsPage";
-import { ChecklistItemDetailPage } from "@/pages/ChecklistItemDetailPage";
+import { ReviewChecklistsPage } from "@/pages/ReviewChecklistsPage";
+import { ReviewChecklistDetailPage } from "@/pages/ReviewChecklistDetailPage";
 import { GuidelinesPage } from "@/pages/GuidelinesPage";
 import { AuthorsPage } from "@/pages/AuthorsPage";
 import { IngestionLogsPage } from "@/pages/IngestionLogsPage";
@@ -31,8 +31,8 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route index element={<Navigate to="/guidelines" replace />} />
-          <Route path="/checklist-items" element={<ChecklistItemsPage />} />
-          <Route path="/checklist-items/:id" element={<ChecklistItemDetailPage />} />
+          <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
+          <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
           <Route path="/guidelines" element={<GuidelinesPage />} />
           <Route path="/authors" element={<AuthorsPage />} />
           <Route path="/ingestion-logs" element={<IngestionLogsPage />} />

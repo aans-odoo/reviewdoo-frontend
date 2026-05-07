@@ -17,7 +17,7 @@ export function AdminRoute() {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/checklist-items" replace />;
+    return <Navigate to="/review-checklists" replace />;
   }
 
   return <Outlet />;

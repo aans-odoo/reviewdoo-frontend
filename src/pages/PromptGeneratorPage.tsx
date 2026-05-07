@@ -9,7 +9,7 @@ import api from "@/lib/api";
 interface PromptResult {
   prompt: string;
   metadata: {
-    checklistItemCount: number;
+    reviewChecklistCount: number;
     guidelineCount: number;
     tokenCount: number;
     truncated: boolean;
@@ -115,7 +115,7 @@ export function PromptGeneratorPage() {
               </Button>
             </div>
             <CardDescription>
-              {result.metadata.checklistItemCount} checklist items · {result.metadata.guidelineCount} guidelines · {result.metadata.tokenCount} tokens
+              {result.metadata.reviewChecklistCount} review checklists · {result.metadata.guidelineCount} guidelines · {result.metadata.tokenCount} tokens
               {result.metadata.truncated && " · Truncated to fit token budget"}
             </CardDescription>
           </CardHeader>

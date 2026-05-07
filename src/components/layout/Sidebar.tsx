@@ -28,7 +28,7 @@ import {
 
 const navItems = [
   { to: "/guidelines", label: "Guidelines", icon: BookOpen },
-  { to: "/checklist-items", label: "Checklist Items", icon: ClipboardCheck, wip: true },
+  { to: "/review-checklists", label: "Review Checklists", icon: ClipboardCheck, wip: true },
   {
     to: "/authors",
     label: "Authors",
