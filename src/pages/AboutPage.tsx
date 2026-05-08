@@ -106,20 +106,25 @@ export function AboutPage() {
 
           <div className="relative z-10 max-w-3xl">
             <Badge className="mb-4 bg-theme-primary-muted text-theme-primary-light border-theme-primary-light/20">
-              For Website@Odoo
+              For Website Team
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-theme-text mb-4 bg-gradient-to-r from-theme-primary-light via-theme-text to-theme-accent bg-clip-text text-transparent">
               Learn from Every Review, Stop Repeating Mistakes
             </h1>
             <p className="text-lg text-theme-text-muted leading-relaxed">
-              With Review<span className="text-theme-primary">doo</span>, we can capture feedback from past PR reviews and our team's coding guidelines, then use them to catch issues before submitting code—so we don't repeat mistakes our team has already learned from.
+              Review<span className="text-theme-primary">doo</span> is an internal tool built to help capture feedback from past PR reviews and our team's coding guidelines, then use them to catch issues before submitting code—so we don't repeat mistakes our team has already learned from.
             </p>
+            <div className="mt-6 flex items-center gap-2 text-sm text-theme-text-muted">
+              <span className="text-theme-text font-medium">— Arib Ansari (aans)</span>
+              <span className="text-theme-text-dim">•</span>
+              <span>Website@Odoo</span>
+            </div>
           </div>
         </div>
 
         {/* The Challenge Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">The Challenge We Face</h2>
+          <h2 className="text-2xl font-semibold text-theme-text">The Problem I Wanted to Solve</h2>
 
           <Card className="border-theme-danger/20 bg-theme-bg-card/50 py-3 px-4">
             <CardContent className="pt-6">
@@ -151,12 +156,12 @@ export function AboutPage() {
 
         {/* How Reviewdoo Helps Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">How Reviewdoo Helps Our Workflow</h2>
+          <h2 className="text-2xl font-semibold text-theme-text">How This Tool Helps Our Workflow</h2>
 
           <Card className="border-theme-success/20 bg-theme-bg-card/50 py-3 px-4">
             <CardContent className="pt-6">
               <p className="text-theme-text-muted mb-10">
-                With Reviewdoo, we can automatically capture review checklists and use them as a <span className="text-theme-accent font-semibold">quality check before submitting PRs</span>. This means fewer review cycles and faster merges.
+                Reviewdoo automatically captures review checklists and uses them as a <span className="text-theme-accent font-semibold">quality check before submitting PRs</span>. This means fewer review cycles and faster merges.
               </p>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -164,13 +169,13 @@ export function AboutPage() {
                   number="1"
                   icon={Database}
                   title="Capture"
-                  description="We automatically collect PR review comments from our team and store them in a searchable database"
+                  description="The system automatically collects PR review comments from our team and stores them in a searchable database"
                 />
                 <SolutionStep
                   number="2"
                   icon={Brain}
                   title="Learn"
-                  description="AI extracts patterns from feedback and groups similar comments together so we don't duplicate knowledge"
+                  description="AI extracts patterns from feedback and groups similar comments together to avoid duplicating knowledge"
                 />
                 <SolutionStep
                   number="3"
@@ -197,12 +202,12 @@ export function AboutPage() {
                 />
                 <WorkflowStep
                   title="We Generate a Review Prompt"
-                  description="Before submitting the PR, we generate a detailed prompt on Reviewdoo that includes instructions on how to best review the code, how the AI IDE can call Reviewdoo's MCPs to fetch our team's relevant coding guidelines, and comments that were made on others' PRs."
+                  description="Before submitting the PR, we generate a detailed prompt on Reviewdoo that includes instructions on how to best review the code, how the AI IDE can call Reviewdoo's MCPs to fetch relevant coding guidelines, and review checklists that were created from comments made on others' PRs."
                   icon={Sparkles}
                 />
                 <WorkflowStep
                   title="We Run AI Review in Our AI IDE"
-                  description="We paste the prompt into our AI IDE (Cursor, Kiro, etc.). The AI IDE follows the instructions, calls MCPs to fetch guidelines and review checklists, then analyzes our changes with full codebase context."
+                  description="We paste the prompt into our AI IDE (Antigravity, Codex, Kiro, etc.). The AI IDE follows the instructions, calls MCPs to fetch guidelines and review checklists, then analyzes our changes with full codebase context."
                   icon={Brain}
                 />
                 <WorkflowStep
@@ -217,7 +222,7 @@ export function AboutPage() {
                 />
                 <WorkflowStep
                   title="The System Learns"
-                  description="When we do get review comments, Reviewdoo captures them automatically. The knowledge base grows, helping everyone on the team."
+                  description="When we do get review comments, the system captures them automatically. The knowledge base grows over time, helping everyone on the team."
                   icon={TrendingUp}
                   isLast
                 />
@@ -323,7 +328,7 @@ export function AboutPage() {
                               <CheckCircle2 className="h-5 w-5 text-theme-success" />
                               <span className="text-sm font-medium text-theme-text">AI Reviews Code</span>
                             </div>
-                            <div className="text-xs text-theme-text-muted italic">Based on guidelines & history</div>
+                            <div className="text-xs text-theme-text-muted italic">Based on guidelines & checklist</div>
                           </div>
                         </div>
                       </div>
@@ -336,7 +341,7 @@ export function AboutPage() {
                       </div>
                       <div className="text-center">
                         <div className="text-sm font-bold text-theme-text">AI IDE</div>
-                        <div className="text-xs text-theme-text-muted">Cursor, Kiro, etc.</div>
+                        <div className="text-xs text-theme-text-muted">Antigravity, Codex, Kiro, etc.</div>
                       </div>
                     </div>
                   </div>
@@ -362,41 +367,7 @@ export function AboutPage() {
           </Card>
         </section>
 
-        {/* Why Use AI IDEs Section */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">Why We Use AI IDEs</h2>
 
-          <Card className="border-theme-info/20 bg-theme-bg-card/50 py-3 px-4">
-            <CardContent className="pt-6">
-              <p className="text-theme-text-muted mb-6">
-                We integrate Reviewdoo with AI IDEs (like Cursor or Kiro) because they give us better results than simple chat-based AI reviews:
-              </p>
-
-              <div className="grid gap-10 md:grid-cols-2">
-                <IDEBenefitCard
-                  icon={FileCode}
-                  title="Full Codebase Context"
-                  description="Our AI IDE can explore the entire codebase, not just the diff. It understands how our changes fit into the bigger picture and can check related files."
-                />
-                <IDEBenefitCard
-                  icon={Network}
-                  title="MCP Integration"
-                  description="With Model Context Protocol, our AI IDE can call Reviewdoo's APIs to fetch relevant guidelines and review checklists dynamically as we code."
-                />
-                <IDEBenefitCard
-                  icon={Zap}
-                  title="Real-Time Feedback"
-                  description="We get instant feedback while coding, not after submitting. We can fix issues immediately instead of waiting for review cycles."
-                />
-                <IDEBenefitCard
-                  icon={Layers}
-                  title="Project Awareness"
-                  description="Our AI IDE understands our project structure, dependencies, and patterns. This context helps it give us more relevant and actionable suggestions."
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </section>
 
         {/* What We Gain Section */}
         <section className="space-y-4">
@@ -451,7 +422,7 @@ export function AboutPage() {
                       The biggest challenge is determining if a PR comment is actually an insightful point worth saving, or if it's just "LGTM", very code-specific suggestions, or other niche points rather than general learnings.
                     </p>
                     <p>
-                      No level of sophisticated algorithm can perfectly solve this. We use <span className="text-theme-accent font-semibold">AI combined with algorithms</span> in our comment processing pipeline to:
+                      No level of sophisticated algorithm can perfectly solve this. The system uses <span className="text-theme-accent font-semibold">AI combined with algorithms</span> in the comment processing pipeline to:
                     </p>
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       <li>Register a comment as a new review checklist</li>
@@ -468,10 +439,10 @@ export function AboutPage() {
                   <h3 className="font-semibold text-theme-text">Challenge: Token Limitations</h3>
                   <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
                     <p>
-                      We can create and store very clean review checklists from all PR comments, but this number can reach <span className="text-theme-accent font-semibold">thousands</span>. When an IDE asks Reviewdoo for relevant checklists via MCP (based on diff, file changes, commit message, etc.), we can't return all matches—it would eat up the token context.
+                      The system can create and store very clean review checklists from all PR comments, but this number can reach <span className="text-theme-accent font-semibold">thousands</span>. When an IDE asks Reviewdoo for relevant checklists via MCP (based on diff, file changes, commit message, etc.), we can't return all matches—it would eat up the token context.
                     </p>
                     <p>
-                      <span className="text-theme-text font-semibold">Current approach:</span> We cap relevant checklists at <span className="text-theme-accent font-semibold">20 max</span>. If there are many high-similarity matches, we might miss the 21st point. This is a known limitation that we'll possibly improve.
+                      <span className="text-theme-text font-semibold">Current approach:</span> Relevant checklists are capped at <span className="text-theme-accent font-semibold">20 max</span>. If there are many high-similarity matches, we might miss the 21st point. This is a known limitation that may be improved in the future.
                     </p>
                   </div>
                 </div>
@@ -486,10 +457,10 @@ export function AboutPage() {
                       Guidelines are simpler than checklists. The AI IDE calls Reviewdoo's MCP to get relevant guidelines based on file changes (e.g., CSS, JS guidelines if changes are in those files).
                     </p>
                     <p>
-                      <span className="text-theme-text font-semibold">Current approach:</span> We return <span className="text-theme-accent font-semibold">all guidelines</span> related to the changed file types, as all guidelines must be followed. Similarity checks don't matter as much here.
+                      <span className="text-theme-text font-semibold">Current approach:</span> The system returns <span className="text-theme-accent font-semibold">all guidelines</span> related to the changed file types, as all guidelines must be followed. Similarity checks don't matter as much here.
                     </p>
                     <p>
-                      <span className="text-theme-text font-semibold">Future improvement:</span> We could check the diff and avoid sending guidelines that wouldn't apply to the specific changes. This isn't critical now since we don't have many guidelines yet, but it's something we can optimize as the guideline base grows.
+                      <span className="text-theme-text font-semibold">Future improvement:</span> The system could check the diff and avoid sending guidelines that wouldn't apply to the specific changes. This isn't critical now since we don't have many guidelines yet, but it's something that can be optimized as the guideline base grows.
                     </p>
                   </div>
                 </div>
@@ -501,7 +472,7 @@ export function AboutPage() {
                   <h3 className="font-semibold text-theme-text">Prompt Generation: Context-Aware Instructions</h3>
                   <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
                     <p>
-                      We may have to generate slightly different review prompt based on task we're reviewing:
+                      The system may generate slightly different review prompts based on the task being reviewed:
                     </p>
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       <li>Single commit vs. multiple commits</li>
@@ -516,6 +487,32 @@ export function AboutPage() {
 
                 <div className="border-t border-border" />
 
+                {/* Why AI IDEs */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-theme-text">Why This Document Talks About AI IDEs</h3>
+                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
+                    <p>
+                      Reviewdoo is fundamentally an <span className="text-theme-accent font-semibold">MCP server</span>—it exposes tools via the Model Context Protocol that any MCP-compatible client can call. You could technically use it with any tool that supports MCP.
+                    </p>
+                    <p>
+                      <span className="text-theme-text font-semibold">However, AI IDEs are strongly recommended</span> (like Antigravity, Codex, Kiro, etc.) for three key reasons:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>
+                        <span className="text-theme-text font-semibold">Full Codebase Context:</span> AI IDEs can explore your entire codebase, not just the diff. They understand how changes fit into the bigger picture and can check related files.
+                      </li>
+                      <li>
+                        <span className="text-theme-text font-semibold">Real-Time Feedback:</span> You get instant feedback while coding, not after submitting. You can fix issues immediately instead of waiting for review cycles.
+                      </li>
+                      <li>
+                        <span className="text-theme-text font-semibold">Project Awareness:</span> AI IDEs understand your project structure, dependencies, and patterns. This context helps them give more relevant and actionable suggestions based on the guidelines and review checklists fetched from Reviewdoo.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="border-t border-border" />
+
                 {/* MCP Setup */}
                 <div className="space-y-3">
                   <h3 className="font-semibold text-theme-text">MCP Setup: Manual Configuration Required</h3>
@@ -524,7 +521,7 @@ export function AboutPage() {
                       Developers need to manually configure their <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">mcp.json</code> file to allow their IDEs to make MCP calls to Reviewdoo.
                     </p>
                     <p>
-                      <span className="text-theme-text font-semibold">We're making this easy:</span> A dedicated page on Reviewdoo will provide the appropriate JSON configuration that you can simply copy and paste into your IDE's MCP settings.
+                      <span className="text-theme-text font-semibold">This has been simplified:</span> A dedicated page on Reviewdoo provides the appropriate JSON configuration that you can simply copy and paste into your IDE's MCP settings.
                     </p>
                     <p className="text-theme-info">
                       💡 This is a one-time setup per developer.
@@ -542,7 +539,7 @@ export function AboutPage() {
             <div className="text-center space-y-4">
               <h3 className="text-2xl font-semibold text-theme-text">Ready to Try It?</h3>
               <p className="text-theme-text-muted max-w-2xl mx-auto">
-                {!isAuthenticated ? "Log in to start using Reviewdoo." : ""} Generate your first review prompt and see how it helps catch issues before submitting your next PR.
+                {!isAuthenticated ? "Log in to start using the tool." : ""} Generate your first review prompt and see how it helps catch issues before submitting your next PR.
               </p>
               <div className="flex items-center justify-center gap-4 pt-4">
                 <a
@@ -617,26 +614,6 @@ function SolutionStep({
           <h3 className="font-semibold text-theme-text mb-1">{title}</h3>
           <p className="text-sm text-theme-text-muted">{description}</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function IDEBenefitCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex gap-3">
-      <IconBox icon={icon} variant="info" />
-      <div>
-        <h3 className="font-semibold text-theme-text mb-1">{title}</h3>
-        <p className="text-sm text-theme-text-muted">{description}</p>
       </div>
     </div>
   );
