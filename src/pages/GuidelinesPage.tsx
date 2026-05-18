@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, BookOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, BookOpen, Download, Upload } from "lucide-react";
 import api from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -77,6 +77,11 @@ export function GuidelinesPage() {
   const [savingTag, setSavingTag] = useState(false);
   const [deleteTagTarget, setDeleteTagTarget] = useState<Tag | null>(null);
   const [deletingTag, setDeletingTag] = useState(false);
+
+  // Import
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: Array<{ index: number; content: string; error: string }>; total: number } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchGuidelines = async () => {
     try {
@@ -247,6 +252,51 @@ export function GuidelinesPage() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const res = await api.get("/guidelines/export");
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `guidelines-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Failed to export guidelines");
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const guidelines = parsed.guidelines ?? parsed;
+
+      if (!Array.isArray(guidelines)) {
+        setError("Invalid import file: expected a JSON with a 'guidelines' array");
+        return;
+      }
+
+      const res = await api.post("/guidelines/import", { guidelines, skipDuplicates: true });
+      setImportResult(res.data);
+      await fetchGuidelines();
+      await fetchTags();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to import guidelines");
+    } finally {
+      setImporting(false);
+      // Reset file input so same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const filteredSearchResults = filterTagId
     ? searchResults.filter((g) => g.tags?.some((t) => t.id === filterTagId))
     : searchResults;
@@ -262,9 +312,29 @@ export function GuidelinesPage() {
             Manage guidelines and classify them with tags.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> New Guideline
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExport} disabled={importing}>
+            <Upload className="h-4 w-4" /> Export
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+          >
+            {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {importing ? "Importing..." : "Import"}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" /> New Guideline
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filter */}
@@ -359,6 +429,29 @@ export function GuidelinesPage() {
       {error && (
         <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
           {error}
+        </div>
+      )}
+
+      {importResult && (
+        <div className="rounded-sm bg-green-500/10 border border-green-500/25 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+          <p>
+            Import complete: {importResult.imported} imported, {importResult.skipped} skipped (duplicates)
+            {importResult.errors.length > 0 && `, ${importResult.errors.length} failed`}
+          </p>
+          {importResult.errors.length > 0 && (
+            <ul className="mt-1 list-disc list-inside text-xs">
+              {importResult.errors.slice(0, 5).map((e, i) => (
+                <li key={i}>#{e.index}: {e.content}... — {e.error}</li>
+              ))}
+              {importResult.errors.length > 5 && <li>...and {importResult.errors.length - 5} more</li>}
+            </ul>
+          )}
+          <button
+            className="mt-1 text-xs underline opacity-70 hover:opacity-100"
+            onClick={() => setImportResult(null)}
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
