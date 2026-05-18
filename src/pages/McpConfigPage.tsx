@@ -40,7 +40,7 @@ function parseMcpResponseBody(body: string): JsonRpcResponse {
 }
 
 export function McpConfigPage() {
-  const mcpUrl = `${window.location.origin}/mcp`;
+  const mcpUrl = `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
 
   const streamableHttpSnippet = JSON.stringify(
     {
