@@ -303,6 +303,30 @@ export function GuidelinesPage() {
 
   const displayedGuidelines = searchMode === "semantic" ? filteredSearchResults : guidelines;
 
+  // When semantic search is active, derive per-tag counts from the unfiltered
+  // search results so the chip counts always reflect what the user can actually
+  // see. Tags with zero matches in the current results are hidden.
+  const searchResultTagCounts = (() => {
+    if (searchMode !== "semantic") return null;
+    const counts = new Map<string, number>();
+    for (const g of searchResults) {
+      for (const t of g.tags ?? []) {
+        counts.set(t.id, (counts.get(t.id) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })();
+
+  const visibleTags = searchResultTagCounts
+    ? tags.filter(
+        (t) =>
+          (searchResultTagCounts.get(t.id) ?? 0) > 0 || t.id === filterTagId,
+      )
+    : tags;
+
+  // Disable mutating / conflicting actions while a long-running op is in flight.
+  const isBusy = searching || importing;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -313,13 +337,13 @@ export function GuidelinesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} disabled={importing}>
+          <Button variant="outline" onClick={handleExport} disabled={isBusy}>
             <Upload className="h-4 w-4" /> Export
           </Button>
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
+            disabled={isBusy}
           >
             {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             {importing ? "Importing..." : "Import"}
@@ -331,7 +355,7 @@ export function GuidelinesPage() {
             className="hidden"
             onChange={handleImportFile}
           />
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => setCreateOpen(true)} disabled={isBusy}>
             <Plus className="h-4 w-4" /> New Guideline
           </Button>
         </div>
@@ -368,59 +392,68 @@ export function GuidelinesPage() {
               </div>
             </div>
             {searchMode === "semantic" && (
-              <Button variant="ghost" onClick={clearSearch}>
+              <Button variant="ghost" onClick={clearSearch} disabled={isBusy}>
                 Clear
               </Button>
             )}
           </div>
           {/* Tag filter chips */}
-          {tags.length > 0 && (
+          {visibleTags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2 items-center transition-all">
               <button
                 onClick={() => setFilterTagId(null)}
-                className={`inline-flex items-center rounded-full px-3 py-2 text-xs font-medium transition-colors ${filterTagId === null
+                disabled={isBusy}
+                className={`inline-flex items-center rounded-full px-3 py-2 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${filterTagId === null
                   ? "bg-theme-primary text-white"
                   : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
                   }`}
               >
                 All
               </button>
-              {tags.map((tag) => (
+              {visibleTags.map((tag) => {
+                const count = searchResultTagCounts
+                  ? searchResultTagCounts.get(tag.id) ?? 0
+                  : tag._count?.guidelines;
+                return (
                 <div
                   key={tag.id}
                   className="group relative inline-flex items-center"
                 >
                   <button
                     onClick={() => setFilterTagId(tag.id === filterTagId ? null : tag.id)}
-                    className={`inline-flex items-center rounded-full px-3 py-2 group-hover:pr-16 text-xs font-medium transition-colors ${filterTagId === tag.id
+                    disabled={isBusy}
+                    className={`inline-flex items-center rounded-full px-3 py-2 group-hover:pr-16 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:group-hover:pr-3 ${filterTagId === tag.id
                       ? "bg-theme-primary text-white"
                       : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
                       }`}
                   >
                     {tag.name}
-                    {tag._count && (
-                      <span className="ml-1 opacity-70">({tag._count.guidelines})</span>
+                    {count !== undefined && (
+                      <span className="ml-1 opacity-70">({count})</span>
                     )}
                   </button>
                   {/* Hover actions */}
-                  <div className="absolute top-[50%] translate-y-[-50%] right-1 hidden group-hover:flex gap-0.5 bg-theme-bg-elevated border border-border rounded-md shadow-lg py-0.5 px-1">
-                    <button
-                      onClick={() => openEditTag(tag)}
-                      className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
-                      title="Edit tag"
-                    >
-                      <Pencil className="h-3 w-3 text-theme-text-muted" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteTagTarget(tag)}
-                      className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
-                      title="Delete tag"
-                    >
-                      <X className="h-3 w-3 text-theme-danger" />
-                    </button>
-                  </div>
+                  {!isBusy && (
+                    <div className="absolute top-[50%] translate-y-[-50%] right-1 hidden group-hover:flex gap-0.5 bg-theme-bg-elevated border border-border rounded-md shadow-lg py-0.5 px-1">
+                      <button
+                        onClick={() => openEditTag(tag)}
+                        className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
+                        title="Edit tag"
+                      >
+                        <Pencil className="h-3 w-3 text-theme-text-muted" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteTagTarget(tag)}
+                        className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
+                        title="Delete tag"
+                      >
+                        <X className="h-3 w-3 text-theme-danger" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -456,7 +489,7 @@ export function GuidelinesPage() {
       )}
 
       {/* Guidelines list */}
-      {loading && searchMode === "none" ? (
+      {(loading && searchMode === "none") || searching ? (
         <div className="py-40">
           <LoaderCircle className="animate-spin text-theme-accent mx-auto" />
         </div>
@@ -501,6 +534,7 @@ export function GuidelinesPage() {
                       className="h-8 w-8"
                       onClick={() => openEdit(g)}
                       aria-label="Edit guideline"
+                      disabled={isBusy}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -510,6 +544,7 @@ export function GuidelinesPage() {
                       className="h-8 w-8"
                       onClick={() => setDeleteTarget(g)}
                       aria-label="Delete guideline"
+                      disabled={isBusy}
                     >
                       <Trash2 className="h-4 w-4 text-theme-danger" />
                     </Button>
