@@ -807,13 +807,11 @@ Add a guideline to a set.
 
 ## Webhooks
 
-### POST /webhooks/:platform
+### POST /webhooks/github
 
-Receive PR comment events from source control platforms.
+Receive PR comment events from GitHub.
 
-**Auth:** Webhook signature verification (GitHub: `X-Hub-Signature-256`, GitLab: `X-Gitlab-Token`)
-
-**Supported platforms:** `github`, `gitlab`
+**Auth:** Webhook signature verification (GitHub: `X-Hub-Signature-256`)
 
 The endpoint acknowledges immediately with 200 and processes the comment asynchronously.
 

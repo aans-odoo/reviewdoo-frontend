@@ -147,13 +147,6 @@ EXPOSE 80
 4. Set Secret to the same value as `WEBHOOK_SECRET` in your `.env`
 5. Select "Issue comments" and "Pull request review comments" events
 
-### GitLab
-
-1. Go to your project → Settings → Webhooks
-2. Set URL to `https://your-domain.com/api/v1/webhooks/gitlab`
-3. Set Secret token to the same value as `WEBHOOK_SECRET` in your `.env`
-4. Select "Note events" trigger
-
 ## Post-Deployment Checklist
 
 1. Verify the database connection and migrations are applied

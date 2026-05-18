@@ -3,13 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Trash2 } from "lucide-react";
@@ -18,7 +11,6 @@ import api from "@/lib/api";
 interface Author {
   id: string;
   username: string;
-  platform: string;
   _count?: { comments?: number; ingestionLogs?: number };
   commentCount?: number;
   ingestionLogCount?: number;
@@ -30,7 +22,6 @@ export function AuthorsPage() {
   const [error, setError] = useState("");
 
   const [username, setUsername] = useState("");
-  const [platform, setPlatform] = useState("github");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -58,9 +49,8 @@ export function AuthorsPage() {
     setCreating(true);
     setCreateError("");
     try {
-      await api.post("/authors", { username: username.trim(), platform });
+      await api.post("/authors", { username: username.trim() });
       setUsername("");
-      setPlatform("github");
       await fetchAuthors();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
@@ -87,12 +77,6 @@ export function AuthorsPage() {
   const columns: Column<Author & Record<string, unknown>>[] = [
     { key: "username", header: "Username", sortable: true },
     {
-      key: "platform",
-      header: "Platform",
-      sortable: true,
-      render: (row) => <span className="capitalize text-theme-text-muted">{row.platform}</span>,
-    },
-    {
       key: "commentCount",
       header: "Comments",
       render: (row) => <span className="text-theme-text-dim">{row._count?.comments ?? row.commentCount ?? 0}</span>,
@@ -117,7 +101,7 @@ export function AuthorsPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-theme-text">Authors</h2>
-        <p className="mt-1 text-sm text-theme-text-muted">Manage tracked authors and their ingestion status.</p>
+        <p className="mt-1 text-sm text-theme-text-muted">Manage tracked GitHub authors and their ingestion status.</p>
       </div>
 
       <Card>
@@ -127,19 +111,8 @@ export function AuthorsPage() {
         <CardContent>
           <form onSubmit={handleCreate} className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="author-username">Username</Label>
+              <Label htmlFor="author-username">GitHub Username</Label>
               <Input id="author-username" placeholder="e.g. octocat" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            </div>
-            <div className="w-full space-y-2 sm:w-48">
-              <Label htmlFor="author-platform">Platform</Label>
-              <Select value={platform} onValueChange={setPlatform}>
-                <SelectTrigger id="author-platform"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="github">GitHub</SelectItem>
-                  <SelectItem value="gitlab">GitLab</SelectItem>
-                  <SelectItem value="bitbucket">Bitbucket</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <Button type="submit" disabled={creating}>{creating ? "Adding..." : "Add Author"}</Button>
           </form>

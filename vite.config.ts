@@ -19,7 +19,15 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_URL || "http://localhost:3000",
           changeOrigin: true,
         },
+        // Match only /mcp exactly (not /mcp-config or other frontend routes).
+        // Vite proxy uses prefix matching, so we use a regex key.
+        "^/mcp$": {
+          target: env.VITE_API_URL || "http://localhost:3000",
+          changeOrigin: true,
+          rewrite: () => "/mcp",
+        },
       },
+      allowedHosts: true,
     },
   };
 });

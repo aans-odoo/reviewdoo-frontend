@@ -13,6 +13,7 @@ import { AuthorsPage } from "@/pages/AuthorsPage";
 import { IngestionLogsPage } from "@/pages/IngestionLogsPage";
 import { AIModelConfigPage } from "@/pages/AIModelConfigPage";
 import { PromptGeneratorPage } from "@/pages/PromptGeneratorPage";
+import { McpConfigPage } from "@/pages/McpConfigPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
 import { DesignShowcasePage } from "@/pages/DesignShowcasePage";
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/ingestion-logs" element={<IngestionLogsPage />} />
           <Route path="/ai-config" element={<AIModelConfigPage />} />
           <Route path="/prompt-generator" element={<PromptGeneratorPage />} />
+          <Route path="/mcp-config" element={<McpConfigPage />} />
 
           <Route element={<AdminRoute />}>
             <Route path="/users" element={<UserManagementPage />} />

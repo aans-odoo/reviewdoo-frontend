@@ -136,7 +136,7 @@ Return ranked results with metadata
 
 - **Encryption at rest** — AI provider API keys and SMTP passwords are encrypted with AES-256-GCM before storage. Plaintext keys are never returned in API responses.
 - **Password hashing** — User passwords are hashed with bcrypt.
-- **Webhook signature verification** — GitHub (HMAC-SHA256) and GitLab (token comparison) signatures are verified using timing-safe comparison.
+- **Webhook signature verification** — GitHub webhook signatures (HMAC-SHA256) are verified using timing-safe comparison.
 - **CORS** — Configurable allowed origins via environment variable.
 - **Input validation** — All endpoints validate request bodies before processing.
 

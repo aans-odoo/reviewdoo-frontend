@@ -6,6 +6,7 @@ import {
   ScrollText,
   Brain,
   Sparkles,
+  Network,
   UserCog,
   Mail,
   Settings,
@@ -28,17 +29,18 @@ import {
 
 const navItems = [
   { to: "/guidelines", label: "Guidelines", icon: BookOpen },
-  { to: "/review-checklists", label: "Review Checklists", icon: ClipboardCheck, wip: true },
   {
-    to: "/authors",
-    label: "Authors",
-    icon: Users,
+    to: "/review-checklists",
+    label: "Review Checklists",
+    icon: ClipboardCheck,
     wip: true,
     children: [
-      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText, wip: true },
-    ],
+      { to: "/authors", label: "Authors", icon: Users },
+      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+    ]
   },
-  { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles, wip: true },
+  { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
+  { to: "/mcp-config", label: "MCP Config", icon: Network },
   { to: "/ai-config", label: "AI Config", icon: Brain },
 ];
 
@@ -76,10 +78,10 @@ export function Sidebar() {
       {/* Nav items */}
       <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
         {navItems.map((item) => (
-          <div key={item.to} className="relative">
+          <div key={item.to} className={`relative ${item.wip ? "opacity-50" : ""}`}>
             {item.wip
               &&
-              <span className="absolute right-3 top-3 text-xs px-2 py-px rounded-full font-semibold z-10 bg-theme-accent text-theme-bg-card">wip</span>
+              <span className="absolute right-3 top-3 opacity-100 text-xs px-2 py-px rounded-full font-semibold z-10 bg-theme-accent text-theme-bg-card">wip</span>
             }
             <SidebarLink to={item.to} label={item.label} icon={item.icon} />
             {item.children?.map((child) => (
@@ -167,7 +169,7 @@ function SidebarLink({
       className={({ isActive }) =>
         cn(
           "flex items-center gap-2.5 relative rounded-md px-4 py-2.5 text-sm font-normal transition-all duration-150",
-          indent && "ml-6 my-1",
+          indent && "ml-8 my-1",
           isActive
             ? "bg-theme-primary-muted text-theme-primary-light font-medium"
             : "text-theme-text-muted hover:bg-theme-bg-hover hover:text-theme-text"

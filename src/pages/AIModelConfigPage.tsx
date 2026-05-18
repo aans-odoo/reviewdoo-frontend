@@ -175,19 +175,30 @@ export function AIModelConfigPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {!config.isActive && (
-            <Button
+          {!config.isActive
+            ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 text-theme-text hover:text-theme-accent hover:bg-theme-accent/10"
+                onClick={() => handleActivate(config)}
+                disabled={activating === config.id}
+                aria-label="Set as active model"
+              >
+                {activating === config.id ? "Activating..." : "Set Active"}
+              </Button>
+            )
+            : <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 text-theme-accent hover:text-theme-accent hover:bg-theme-accent/10"
+              className="h-8 gap-1.5 text-theme-accent hover:text-theme-accent hover:bg-theme-accent/10 !opacity-100"
               onClick={() => handleActivate(config)}
-              disabled={activating === config.id}
-              aria-label="Set as active model"
+              disabled
+              aria-label="Currently active"
             >
-              <Activity className="h-3.5 w-3.5" />
-              {activating === config.id ? "Activating..." : "Set Active"}
+              <Activity className="h-3.5 w-3.5" /> Active
             </Button>
-          )}
+          }
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(config)} aria-label="Edit config">
             <Pencil className="h-4 w-4" />
           </Button>

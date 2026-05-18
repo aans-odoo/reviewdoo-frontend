@@ -19,7 +19,7 @@ interface IngestionLog {
   status: string;
   source: string;
   authorId: string;
-  author?: { username: string; platform: string };
+  author?: { username: string };
   commentsFetched: number;
   commentsTotal: number;
   startedAt: string;
@@ -30,7 +30,6 @@ interface IngestionLog {
 interface Author {
   id: string;
   username: string;
-  platform: string;
 }
 
 const STATUSES = ["pending", "running", "completed", "failed", "paused"];
@@ -99,7 +98,7 @@ export function IngestionLogsPage() {
     {
       key: "author",
       header: "Author",
-      render: (row) => row.author ? <span className="text-theme-text">{row.author.username} <span className="text-theme-text-dim">({row.author.platform})</span></span> : <span className="text-theme-text-dim">—</span>,
+      render: (row) => row.author ? <span className="text-theme-text">{row.author.username}</span> : <span className="text-theme-text-dim">—</span>,
     },
     {
       key: "commentsFetched",
@@ -144,7 +143,7 @@ export function IngestionLogsPage() {
                 <SelectTrigger className="w-52"><SelectValue placeholder="All" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
-                  {authors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.username} ({a.platform})</SelectItem>))}
+                  {authors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.username}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>

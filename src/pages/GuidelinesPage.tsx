@@ -109,6 +109,7 @@ export function GuidelinesPage() {
     if (searchMode === "none") {
       fetchGuidelines();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterTagId, searchMode]);
 
   const handleCreateGuideline = async (e: FormEvent) => {
@@ -176,16 +177,14 @@ export function GuidelinesPage() {
     }
   };
 
-  const handleSemanticSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const runSemanticSearch = async (query: string) => {
+    if (!query.trim()) return;
     setSearching(true);
     try {
       const res = await api.post("/guidelines/semantic-search", {
-        query: searchQuery,
-        tagId: filterTagId ?? undefined,
+        query,
       });
       setSearchResults(res.data.results ?? []);
-      setSearchMode("semantic");
       setError("");
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
@@ -193,6 +192,12 @@ export function GuidelinesPage() {
     } finally {
       setSearching(false);
     }
+  };
+
+  const handleSemanticSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setSearchMode("semantic");
+    await runSemanticSearch(searchQuery);
   };
 
   const clearSearch = () => {
@@ -242,7 +247,11 @@ export function GuidelinesPage() {
     }
   };
 
-  const displayedGuidelines = searchMode === "semantic" ? searchResults : guidelines;
+  const filteredSearchResults = filterTagId
+    ? searchResults.filter((g) => g.tags?.some((t) => t.id === filterTagId))
+    : searchResults;
+
+  const displayedGuidelines = searchMode === "semantic" ? filteredSearchResults : guidelines;
 
   return (
     <div className="space-y-6">
@@ -367,7 +376,10 @@ export function GuidelinesPage() {
         <div className="space-y-3">
           {searchMode === "semantic" && (
             <p className="text-sm text-theme-text-muted">
-              {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} found
+              {filteredSearchResults.length} result{filteredSearchResults.length !== 1 ? "s" : ""} found
+              {filterTagId && searchResults.length !== filteredSearchResults.length
+                ? ` (filtered from ${searchResults.length})`
+                : ""}
             </p>
           )}
           {displayedGuidelines.map((g) => (
