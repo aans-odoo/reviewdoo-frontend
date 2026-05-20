@@ -18,6 +18,7 @@ import { UserManagementPage } from "@/pages/UserManagementPage";
 import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
 import { DesignShowcasePage } from "@/pages/DesignShowcasePage";
 import { AboutPage } from "@/pages/AboutPage";
+import { ReviewChecklistPipelinePage } from "@/pages/ReviewChecklistPipelinePage";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/review-checklist-pipeline" element={<ReviewChecklistPipelinePage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
