@@ -270,7 +270,7 @@ export function ReviewChecklistsPage() {
             Manage your review checklists extracted from PR comments.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button disabled onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1 h-4 w-4" />
           Create Review Checklist
         </Button>
