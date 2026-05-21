@@ -11,8 +11,9 @@ import {
   Mail,
   Settings,
   LogOut,
-  Lock,
   Info,
+  MessageSquareX,
+  Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,28 +28,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { to: "/guidelines", label: "Guidelines", icon: BookOpen },
-  {
-    to: "/review-checklists",
-    label: "Review Checklists",
-    icon: ClipboardCheck,
-    wip: true,
-    children: [
-      { to: "/authors", label: "Authors", icon: Users },
-      { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
-    ]
-  },
-  { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
-  { to: "/mcp-config", label: "MCP Config", icon: Network },
-  { to: "/ai-config", label: "AI Config", icon: Brain },
-];
-
-const adminItems = [
-  { to: "/users", label: "User Management", icon: UserCog },
-  { to: "/smtp-config", label: "SMTP Config", icon: Mail },
-];
-
 export function Sidebar() {
   const { isAdmin, user, logout } = useAuth();
   const { stickyElRef, isSticky } = useIsSticky<HTMLElement>();
@@ -56,6 +35,30 @@ export function Sidebar() {
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  const navItems = [
+    { to: "/guidelines", label: "Guidelines", icon: BookOpen },
+    {
+      to: "/review-checklists",
+      label: "Review Checklists",
+      icon: ClipboardCheck,
+      children: [
+        { to: "/authors", label: "Authors", icon: Users },
+        { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+        { to: "/rejected-comments", label: "Rejected Comments", icon: MessageSquareX, hidden: !isAdmin },
+        { to: "/ingestion/github-config", label: "GitHub Config", icon: Github, hidden: !isAdmin },
+        { to: "/ingestion/ai-config", label: "AI Config", icon: Brain, hidden: !isAdmin },
+      ],
+    },
+    { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
+    { to: "/mcp-config", label: "MCP Config", icon: Network },
+    { to: "/ai-config", label: "AI Config", icon: Brain },
+  ];
+
+  const adminItems = [
+    { to: "/users", label: "User Management", icon: UserCog },
+    { to: "/smtp-config", label: "SMTP Config", icon: Mail },
+  ];
 
   return (
     <aside
@@ -78,15 +81,15 @@ export function Sidebar() {
       {/* Nav items */}
       <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
         {navItems.map((item) => (
-          <div key={item.to} className={`relative ${item.wip ? "opacity-50" : ""}`}>
-            {item.wip
-              &&
-              <span className="absolute right-3 top-3 opacity-100 text-xs px-2 py-px rounded-full font-semibold z-10 bg-theme-accent text-theme-bg-card">wip</span>
-            }
+          <div key={item.to}>
             <SidebarLink to={item.to} label={item.label} icon={item.icon} />
-            {item.children?.map((child) => (
-              <SidebarLink key={child.to} to={child.to} label={child.label} icon={child.icon} indent />
-            ))}
+            {"children" in item && item.children && (
+              <div className="space-y-0.5 mt-0.5">
+                {item.children.map((child) => (
+                  !child.hidden && <SidebarLink key={child.to} to={child.to} label={child.label} icon={child.icon} indent />
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {isAdmin && (

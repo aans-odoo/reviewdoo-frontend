@@ -239,7 +239,20 @@ export function ReviewChecklistsPage() {
       key: "source",
       header: "Source",
       sortable: true,
-      render: (row) => <span className="capitalize text-theme-text-muted">{row.source}</span>,
+      render: (row) => (
+        <Badge
+          variant={
+            row.source === "ingested"
+              ? "blue"
+              : row.source === "manual"
+                ? "outline"
+                : "default"
+          }
+          className="capitalize"
+        >
+          {row.source}
+        </Badge>
+      ),
     },
     {
       key: "referenceCount",

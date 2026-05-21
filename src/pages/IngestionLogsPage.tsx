@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,6 +12,7 @@ import {
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Pagination } from "@/components/shared/Pagination";
+import { PipelineConfigBanner } from "@/components/pipeline/PipelineConfigBanner";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 
@@ -35,6 +37,7 @@ interface Author {
 const STATUSES = ["pending", "running", "completed", "failed", "paused"];
 
 export function IngestionLogsPage() {
+  const navigate = useNavigate();
   const [logs, setLogs] = useState<IngestionLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -115,10 +118,24 @@ export function IngestionLogsPage() {
       header: "Completed",
       render: (row) => <span className="text-[13px] text-theme-text-dim">{formatDate(row.completedAt)}</span>,
     },
+    {
+      key: "actions",
+      header: "",
+      render: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/ingestion-logs/${row.id}`)}
+        >
+          View
+        </Button>
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6">
+      <PipelineConfigBanner />
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-theme-text">Ingestion Logs</h2>
         <p className="mt-1 text-sm text-theme-text-muted">Monitor data ingestion activity and status.</p>

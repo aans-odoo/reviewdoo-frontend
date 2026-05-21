@@ -11,6 +11,7 @@ import { ReviewChecklistDetailPage } from "@/pages/ReviewChecklistDetailPage";
 import { GuidelinesPage } from "@/pages/GuidelinesPage";
 import { AuthorsPage } from "@/pages/AuthorsPage";
 import { IngestionLogsPage } from "@/pages/IngestionLogsPage";
+import { IngestionLogDetailPage } from "@/pages/IngestionLogDetailPage";
 import { AIModelConfigPage } from "@/pages/AIModelConfigPage";
 import { PromptGeneratorPage } from "@/pages/PromptGeneratorPage";
 import { McpConfigPage } from "@/pages/McpConfigPage";
@@ -19,6 +20,9 @@ import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
 import { DesignShowcasePage } from "@/pages/DesignShowcasePage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ReviewChecklistPipelinePage } from "@/pages/ReviewChecklistPipelinePage";
+import { IngestionGitHubConfigPage } from "@/pages/IngestionGitHubConfigPage";
+import { IngestionAIConfigPage } from "@/pages/IngestionAIConfigPage";
+import { RejectedCommentsPage } from "@/pages/RejectedCommentsPage";
 
 export default function App() {
   return (
@@ -39,6 +43,7 @@ export default function App() {
           <Route path="/guidelines" element={<GuidelinesPage />} />
           <Route path="/authors" element={<AuthorsPage />} />
           <Route path="/ingestion-logs" element={<IngestionLogsPage />} />
+          <Route path="/ingestion-logs/:id" element={<IngestionLogDetailPage />} />
           <Route path="/ai-config" element={<AIModelConfigPage />} />
           <Route path="/prompt-generator" element={<PromptGeneratorPage />} />
           <Route path="/mcp-config" element={<McpConfigPage />} />
@@ -46,6 +51,9 @@ export default function App() {
           <Route element={<AdminRoute />}>
             <Route path="/users" element={<UserManagementPage />} />
             <Route path="/smtp-config" element={<SmtpConfigPage />} />
+            <Route path="/ingestion/github-config" element={<IngestionGitHubConfigPage />} />
+            <Route path="/ingestion/ai-config" element={<IngestionAIConfigPage />} />
+            <Route path="/rejected-comments" element={<RejectedCommentsPage />} />
           </Route>
         </Route>
       </Route>
