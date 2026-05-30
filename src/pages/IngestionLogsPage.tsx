@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Pagination } from "@/components/shared/Pagination";
 import { PipelineConfigBanner } from "@/components/pipeline/PipelineConfigBanner";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -185,11 +184,9 @@ export function IngestionLogsPage() {
             pageSize={pageSize}
             currentPage={page}
             totalItems={totalItems}
+            onPageChange={setPage}
             emptyMessage="No ingestion logs found"
           />
-          {totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-          )}
         </>
       )}
     </div>
