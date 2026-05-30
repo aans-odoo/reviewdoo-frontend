@@ -42,13 +42,12 @@ export function Sidebar() {
       to: "/review-checklists",
       label: "Review Checklists",
       icon: ClipboardCheck,
-      wip: true,
       children: [
-        // { to: "/authors", label: "Authors", icon: Users },
-        // { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
-        // { to: "/rejected-comments", label: "Rejected Comments", icon: MessageSquareX, hidden: !isAdmin },
-        // { to: "/ingestion/github-config", label: "GitHub Config", icon: Github, hidden: !isAdmin },
-        // { to: "/ingestion/ai-config", label: "AI Config", icon: Brain, hidden: !isAdmin },
+        { to: "/authors", label: "Authors", icon: Users },
+        { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+        { to: "/rejected-comments", label: "Rejected Comments", icon: MessageSquareX, hidden: !isAdmin },
+        { to: "/ingestion/github-config", label: "GitHub Config", icon: Github, hidden: !isAdmin },
+        { to: "/ingestion/ai-config", label: "AI Config", icon: Brain, hidden: !isAdmin },
       ],
     },
     { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
@@ -83,12 +82,12 @@ export function Sidebar() {
       <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
         {navItems.map((item) => (
           <div key={item.to}>
-            <SidebarLink to={item.to} label={item.label} icon={item.icon} wip={item.wip}/>
+            <SidebarLink to={item.to} label={item.label} icon={item.icon} />
             {"children" in item && item.children && (
               <div className="space-y-0.5 mt-0.5">
-                {/* {item.children.map((child) => (
+                {item.children.map((child) => (
                   !child.hidden && <SidebarLink key={child.to} to={child.to} label={child.label} icon={child.icon} indent />
-                ))} */}
+                ))}
               </div>
             )}
           </div>
@@ -161,13 +160,11 @@ function SidebarLink({
   label,
   icon: Icon,
   indent = false,
-  wip = false,
 }: {
   to: string;
   label: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   indent?: boolean;
-  wip?: boolean;
 }) {
   return (
     <NavLink
@@ -188,7 +185,6 @@ function SidebarLink({
       }
       <Icon size={indent ? 15 : 18} />
       {label}
-      {wip && <span className="bg-theme-accent text-theme-bg px-2 rounded-xl text-xs">wip</span>}
     </NavLink>
   );
 }
