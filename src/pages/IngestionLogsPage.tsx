@@ -76,8 +76,41 @@ export function IngestionLogsPage() {
     }
   }, [page, pageSize, statusFilter, authorFilter]);
 
+  // Silent background refresh used by the auto-refresh poller. Unlike
+  // `fetchLogs` it never toggles the loading spinner, so the table doesn't
+  // flicker every 5s.
+  const refreshLogs = useCallback(async () => {
+    try {
+      const params: Record<string, string | number> = { page, pageSize };
+      if (statusFilter) params.status = statusFilter;
+      if (authorFilter) params.authorId = authorFilter;
+
+      const res = await api.get("/ingestion-logs", { params });
+      const data = res.data;
+      setLogs(data.data ?? data.logs ?? data.items ?? []);
+      setTotalPages(data.pagination?.totalPages ?? data.totalPages ?? 1);
+      setTotalItems(data.pagination?.total ?? data.total ?? 0);
+      setError("");
+    } catch {
+      /* Keep the last good view on a transient poll failure. */
+    }
+  }, [page, pageSize, statusFilter, authorFilter]);
+
   useEffect(() => { fetchAuthors(); }, []);
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
+
+  // Auto-refresh the list every 5s so in-flight runs update without a manual
+  // reload. The poller pauses while the browser tab is hidden to avoid
+  // needless background traffic.
+  useEffect(() => {
+    const REFRESH_MS = 5000;
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshLogs();
+      }
+    }, REFRESH_MS);
+    return () => window.clearInterval(id);
+  }, [refreshLogs]);
 
   const clearFilters = () => { setStatusFilter(""); setAuthorFilter(""); setPage(1); };
 

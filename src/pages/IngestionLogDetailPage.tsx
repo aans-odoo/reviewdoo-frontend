@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pause, Play } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Pagination } from "@/components/shared/Pagination";
+import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/api";
 
 // Mirrors backend EventKind union
@@ -94,6 +95,7 @@ interface IngestionLogDetail {
   author?: { username: string };
   commentsFetched: number;
   commentsTotal: number;
+  pauseRequested?: boolean;
   startedAt: string;
   completedAt: string | null;
   error?: string | null;
@@ -165,6 +167,7 @@ function metaPreview(meta: Record<string, unknown> | null): string | null {
 export function IngestionLogDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const [log, setLog] = useState<IngestionLogDetail | null>(null);
   const [logError, setLogError] = useState("");
@@ -179,6 +182,9 @@ export function IngestionLogDetailPage() {
   const pageSize = 50;
 
   const [kindFilter, setKindFilter] = useState<string>("");
+
+  const [pauseActionPending, setPauseActionPending] = useState(false);
+  const [pauseActionError, setPauseActionError] = useState("");
 
   const fetchLog = useCallback(async () => {
     if (!id) return;
@@ -223,13 +229,134 @@ export function IngestionLogDetailPage() {
     fetchEvents();
   }, [fetchEvents]);
 
+  // Silent background refreshers used by the auto-refresh poller — they skip
+  // the loading spinners so the page doesn't flicker every 5s.
+  const refreshLog = useCallback(async () => {
+    if (!id) return;
+    try {
+      const res = await api.get(`/ingestion-logs/${id}`);
+      setLog(res.data.log ?? res.data);
+      setLogError("");
+    } catch {
+      /* Keep the last good view on a transient poll failure. */
+    }
+  }, [id]);
+
+  const refreshEvents = useCallback(async () => {
+    if (!id) return;
+    try {
+      const params: Record<string, string | number> = { page, pageSize };
+      if (kindFilter) params.kind = kindFilter;
+      const res = await api.get<EventsResponse>(
+        `/ingestion-logs/${id}/events`,
+        { params },
+      );
+      setEvents(res.data.data ?? []);
+      setTotalPages(res.data.pagination?.totalPages ?? 1);
+      setTotalItems(res.data.pagination?.total ?? 0);
+      setEventsError("");
+    } catch {
+      /* Keep the last good view on a transient poll failure. */
+    }
+  }, [id, page, pageSize, kindFilter]);
+
+  // Auto-refresh the log header + event timeline every 5s so a live run
+  // streams in without a manual reload. Pauses while the tab is hidden.
+  useEffect(() => {
+    const REFRESH_MS = 5000;
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshLog();
+        refreshEvents();
+      }
+    }, REFRESH_MS);
+    return () => window.clearInterval(intervalId);
+  }, [refreshLog, refreshEvents]);
+
+  const handlePause = useCallback(async () => {
+    if (!id) return;
+    setPauseActionPending(true);
+    setPauseActionError("");
+    try {
+      await api.post(`/ingestion-logs/${id}/pause`);
+      await fetchLog();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setPauseActionError(
+        axErr.response?.data?.error?.message ?? "Failed to pause the fetch",
+      );
+    } finally {
+      setPauseActionPending(false);
+    }
+  }, [id, fetchLog]);
+
+  const handleResume = useCallback(async () => {
+    if (!id) return;
+    setPauseActionPending(true);
+    setPauseActionError("");
+    try {
+      await api.post(`/ingestion-logs/${id}/resume`);
+      await fetchLog();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setPauseActionError(
+        axErr.response?.data?.error?.message ?? "Failed to resume the fetch",
+      );
+    } finally {
+      setPauseActionPending(false);
+    }
+  }, [id, fetchLog]);
+
+  // Historical runs are the only pausable source. Show Pause while it's
+  // actively working (running/pending and not already pausing), Resume while
+  // paused. A `pauseRequested` flag with status still running means "pausing…".
+  const isHistorical = log?.source === "historical";
+  const isPausing = Boolean(log?.pauseRequested) && log?.status !== "paused";
+  const canPause =
+    isHistorical && (log?.status === "running" || log?.status === "pending") && !isPausing;
+  const canResume = isHistorical && log?.status === "paused";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => navigate("/ingestion-logs")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Ingestion Logs
         </Button>
+
+        {isAdmin && isHistorical && (canPause || canResume || isPausing) && (
+          <div className="flex items-center gap-2">
+            {isPausing && (
+              <span className="text-[13px] text-theme-text-muted">Pausing…</span>
+            )}
+            {canPause && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePause}
+                disabled={pauseActionPending}
+              >
+                <Pause className="mr-2 h-4 w-4" /> Pause fetch
+              </Button>
+            )}
+            {canResume && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResume}
+                disabled={pauseActionPending}
+              >
+                <Play className="mr-2 h-4 w-4" /> Resume fetch
+              </Button>
+            )}
+          </div>
+        )}
       </div>
+
+      {pauseActionError && (
+        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
+          {pauseActionError}
+        </div>
+      )}
 
       {logError && (
         <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">

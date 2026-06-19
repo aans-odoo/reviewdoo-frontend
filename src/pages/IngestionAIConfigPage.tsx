@@ -16,7 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bot, Cpu, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
+import {
+  Bot,
+  Cpu,
+  Loader2,
+  ShieldCheck,
+  ShieldAlert,
+  ArrowUp,
+  ArrowDown,
+  X,
+  Plus,
+  AlertTriangle,
+} from "lucide-react";
 import api from "@/lib/api";
 import { PipelineConfigBanner } from "@/components/pipeline/PipelineConfigBanner";
 
@@ -27,9 +38,17 @@ interface IngestionAIConfigHealth {
   missing: UsageType[];
 }
 
+interface IngestionAIPoolMember {
+  configId: string;
+  providerName: string;
+  modelId: string;
+  ownerEmail: string;
+  usable: boolean;
+}
+
 interface IngestionAIConfig {
-  processingConfigId: string | null;
-  embeddingConfigId: string | null;
+  processing: IngestionAIPoolMember[];
+  embedding: IngestionAIPoolMember[];
   health: IngestionAIConfigHealth;
 }
 
@@ -48,7 +67,7 @@ function getApiErrorMessage(err: unknown, fallback: string): string {
 }
 
 function describeOption(option: IngestionAIConfigOption): string {
-  return `${option.ownerEmail} — ${option.providerName} / ${option.modelId}`;
+  return `${option.providerName} / ${option.modelId} — ${option.ownerEmail}`;
 }
 
 export function IngestionAIConfigPage() {
@@ -58,8 +77,10 @@ export function IngestionAIConfigPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const [processingConfigId, setProcessingConfigId] = useState<string>("");
-  const [embeddingConfigId, setEmbeddingConfigId] = useState<string>("");
+  // Ordered pools the admin is editing. Each holds AIModelConfig ids in
+  // failover order (index 0 = primary).
+  const [processingPool, setProcessingPool] = useState<string[]>([]);
+  const [embeddingPool, setEmbeddingPool] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const fetchAll = async () => {
@@ -77,8 +98,8 @@ export function IngestionAIConfigPage() {
       };
       setConfig(cfg);
       setOptions(optionsRes.data.options ?? []);
-      setProcessingConfigId(cfg.processingConfigId ?? "");
-      setEmbeddingConfigId(cfg.embeddingConfigId ?? "");
+      setProcessingPool(cfg.processing.map((m) => m.configId));
+      setEmbeddingPool(cfg.embedding.map((m) => m.configId));
       setError("");
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Failed to load ingestion AI configuration"));
@@ -90,6 +111,12 @@ export function IngestionAIConfigPage() {
   useEffect(() => {
     fetchAll();
   }, []);
+
+  const optionsById = useMemo(() => {
+    const map = new Map<string, IngestionAIConfigOption>();
+    for (const o of options) map.set(o.id, o);
+    return map;
+  }, [options]);
 
   const processingOptions = useMemo(
     () => options.filter((o) => o.usageType === "processing"),
@@ -106,23 +133,23 @@ export function IngestionAIConfigPage() {
     setError("");
     setSuccess("");
 
-    if (!processingConfigId) {
-      setError("Select a processing model");
+    if (processingPool.length === 0) {
+      setError("Add at least one processing model to the pool");
       setSaving(false);
       return;
     }
-    if (!embeddingConfigId) {
-      setError("Select an embedding model");
+    if (embeddingPool.length === 0) {
+      setError("Add at least one embedding model to the pool");
       setSaving(false);
       return;
     }
 
     try {
       await api.put("/ingestion/ai-config", {
-        processingConfigId,
-        embeddingConfigId,
+        processing: processingPool,
+        embedding: embeddingPool,
       });
-      setSuccess("Ingestion AI configuration saved");
+      setSuccess("Ingestion AI pool saved");
       await fetchAll();
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Failed to save ingestion AI configuration"));
@@ -133,8 +160,8 @@ export function IngestionAIConfigPage() {
 
   const dirty =
     !!config &&
-    (processingConfigId !== (config.processingConfigId ?? "") ||
-      embeddingConfigId !== (config.embeddingConfigId ?? ""));
+    (processingPool.join(",") !== config.processing.map((m) => m.configId).join(",") ||
+      embeddingPool.join(",") !== config.embedding.map((m) => m.configId).join(","));
 
   const renderHealthBadge = () => {
     if (!config) return null;
@@ -153,44 +180,6 @@ export function IngestionAIConfigPage() {
     );
   };
 
-  const renderSelect = (
-    id: string,
-    value: string,
-    onChange: (v: string) => void,
-    list: IngestionAIConfigOption[],
-    placeholder: string
-  ) => {
-    if (list.length === 0) {
-      return (
-        <div className="rounded-sm border border-dashed border-border px-3 py-3 text-sm text-theme-text-muted">
-          No active {id.includes("processing") ? "processing" : "embedding"} configurations from
-          admin users yet. Have an admin add one on the AI Config page.
-        </div>
-      );
-    }
-    return (
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={id}>
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {list.map((opt) => (
-            <SelectItem key={opt.id} value={opt.id}>
-              <span className="flex items-center gap-2">
-                <span>{describeOption(opt)}</span>
-                {opt.id === value && (
-                  <Badge variant="purple" className="ml-1">
-                    Current
-                  </Badge>
-                )}
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  };
-
   return (
     <div className="space-y-6">
       <PipelineConfigBanner />
@@ -200,9 +189,10 @@ export function IngestionAIConfigPage() {
             Ingestion → AI Configuration
           </h2>
           <p className="mt-1 text-sm text-theme-text-muted">
-            Choose the processing and embedding AI models the ingestion pipeline uses for every
-            polling, historical, and webhook-sourced comment. Both must be active configurations
-            owned by an active admin user.
+            Build an ordered failover pool of processing and embedding models for the ingestion
+            pipeline. Models are tried top-to-bottom; when one hits a rate limit (429), the
+            pipeline automatically fails over to the next. Add keys from different providers or
+            projects for the best resilience.
           </p>
         </div>
         <div>{renderHealthBadge()}</div>
@@ -221,7 +211,7 @@ export function IngestionAIConfigPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pipeline Models</CardTitle>
+          <CardTitle>Failover Pools</CardTitle>
           <CardDescription>
             Selections take effect immediately for new ingestion work. Existing in-flight cycles
             finish on whatever they started with.
@@ -233,44 +223,26 @@ export function IngestionAIConfigPage() {
               <Loader2 className="h-4 w-4 animate-spin" /> Loading...
             </div>
           ) : (
-            <form onSubmit={handleSave} className="space-y-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="ingestion-processing-config"
-                  className="flex items-center gap-2"
-                >
-                  <Cpu className="h-4 w-4 text-theme-primary" /> Processing Model
-                </Label>
-                <p className="text-xs text-theme-text-muted">
-                  Used for insight extraction and qualification gate AI fallback.
-                </p>
-                {renderSelect(
-                  "ingestion-processing-config",
-                  processingConfigId,
-                  setProcessingConfigId,
-                  processingOptions,
-                  "Select processing model"
-                )}
-              </div>
+            <form onSubmit={handleSave} className="space-y-8">
+              <PoolEditor
+                title="Processing Models"
+                description="Used for insight extraction and the qualification gate's AI fallback."
+                icon={<Cpu className="h-4 w-4 text-theme-primary" />}
+                pool={processingPool}
+                setPool={setProcessingPool}
+                options={processingOptions}
+                optionsById={optionsById}
+              />
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="ingestion-embedding-config"
-                  className="flex items-center gap-2"
-                >
-                  <Bot className="h-4 w-4 text-theme-primary" /> Embedding Model
-                </Label>
-                <p className="text-xs text-theme-text-muted">
-                  Used for deduplication and semantic search over checklists.
-                </p>
-                {renderSelect(
-                  "ingestion-embedding-config",
-                  embeddingConfigId,
-                  setEmbeddingConfigId,
-                  embeddingOptions,
-                  "Select embedding model"
-                )}
-              </div>
+              <PoolEditor
+                title="Embedding Models"
+                description="Used for deduplication and semantic search over checklists."
+                icon={<Bot className="h-4 w-4 text-theme-primary" />}
+                pool={embeddingPool}
+                setPool={setEmbeddingPool}
+                options={embeddingOptions}
+                optionsById={optionsById}
+              />
 
               <div className="flex items-center gap-2 pt-2">
                 <Button
@@ -278,11 +250,11 @@ export function IngestionAIConfigPage() {
                   disabled={
                     saving ||
                     !dirty ||
-                    !processingConfigId ||
-                    !embeddingConfigId
+                    processingPool.length === 0 ||
+                    embeddingPool.length === 0
                   }
                 >
-                  {saving ? "Saving..." : "Save Configuration"}
+                  {saving ? "Saving..." : "Save Pool"}
                 </Button>
                 {dirty && !saving && (
                   <span className="text-xs text-theme-text-muted">Unsaved changes</span>
@@ -292,6 +264,152 @@ export function IngestionAIConfigPage() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+interface PoolEditorProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  pool: string[];
+  setPool: React.Dispatch<React.SetStateAction<string[]>>;
+  options: IngestionAIConfigOption[];
+  optionsById: Map<string, IngestionAIConfigOption>;
+}
+
+function PoolEditor({
+  title,
+  description,
+  icon,
+  pool,
+  setPool,
+  options,
+  optionsById,
+}: PoolEditorProps) {
+  const [toAdd, setToAdd] = useState<string>("");
+
+  // Only offer configs that aren't already in the pool.
+  const addable = useMemo(
+    () => options.filter((o) => !pool.includes(o.id)),
+    [options, pool]
+  );
+
+  const move = (index: number, delta: number) => {
+    setPool((prev) => {
+      const next = [...prev];
+      const target = index + delta;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  const remove = (id: string) => setPool((prev) => prev.filter((x) => x !== id));
+
+  const add = () => {
+    if (!toAdd) return;
+    setPool((prev) => (prev.includes(toAdd) ? prev : [...prev, toAdd]));
+    setToAdd("");
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <Label className="flex items-center gap-2">{icon} {title}</Label>
+        <p className="mt-1 text-xs text-theme-text-muted">{description}</p>
+      </div>
+
+      {pool.length === 0 ? (
+        <div className="rounded-sm border border-dashed border-border px-3 py-3 text-sm text-theme-text-muted">
+          No models in the pool. Add at least one below.
+        </div>
+      ) : (
+        <ol className="space-y-2">
+          {pool.map((id, index) => {
+            const opt = optionsById.get(id);
+            // An entry can be in the pool but no longer in `options` if its
+            // config was deactivated or its owner demoted — flag it.
+            const stale = !opt;
+            return (
+              <li
+                key={id}
+                className="flex items-center gap-3 rounded-sm border border-border bg-theme-bg-card px-3 py-2"
+              >
+                <Badge variant={index === 0 ? "purple" : "outline"} className="shrink-0">
+                  {index === 0 ? "Primary" : `#${index + 1}`}
+                </Badge>
+                <div className="min-w-0 flex-1">
+                  {opt ? (
+                    <span className="text-sm text-theme-text">{describeOption(opt)}</span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-sm text-theme-danger">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Unavailable config ({id.slice(0, 8)}…) — deactivated or owner demoted
+                    </span>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => move(index, -1)}
+                    disabled={index === 0}
+                    aria-label="Move up"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => move(index, 1)}
+                    disabled={index === pool.length - 1}
+                    aria-label="Move down"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(id)}
+                    aria-label="Remove from pool"
+                  >
+                    <X className="h-4 w-4 text-theme-danger" />
+                  </Button>
+                  {stale && <span className="sr-only">unavailable</span>}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
+      <div className="flex items-center gap-2">
+        <Select value={toAdd} onValueChange={setToAdd}>
+          <SelectTrigger className="flex-1">
+            <SelectValue
+              placeholder={
+                addable.length === 0
+                  ? "No more eligible models to add"
+                  : "Select a model to add"
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {addable.map((opt) => (
+              <SelectItem key={opt.id} value={opt.id}>
+                {describeOption(opt)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button type="button" variant="secondary" onClick={add} disabled={!toAdd}>
+          <Plus className="mr-1 h-4 w-4" /> Add
+        </Button>
+      </div>
     </div>
   );
 }
