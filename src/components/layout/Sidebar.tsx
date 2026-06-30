@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Info,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -91,6 +92,7 @@ export function Sidebar() {
         {/* About link at the end */}
         <div className="pt-5">
           <div className="border-t border-border pt-5" />
+          <SidebarLink to="/how-to-use" label="How to Use" icon={HelpCircle} />
           <SidebarLink to="/about" label="About" icon={Info} />
         </div>
       </nav>

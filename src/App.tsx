@@ -16,6 +16,7 @@ import { UserManagementPage } from "@/pages/UserManagementPage";
 import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
 import { DesignShowcasePage } from "@/pages/DesignShowcasePage";
 import { AboutPage } from "@/pages/AboutPage";
+import { HowToUsePage } from "@/pages/HowToUsePage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/how-to-use" element={<HowToUsePage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
