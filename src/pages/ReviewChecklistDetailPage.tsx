@@ -26,9 +26,7 @@ const CATEGORIES = [
 interface Reference {
   id: string;
   url: string;
-  commentBody?: string;
-  authorUsername?: string;
-  platform?: string;
+  description?: string;
   createdAt?: string;
 }
 
@@ -39,7 +37,6 @@ interface ReviewChecklistDetail {
   category: string;
   languages: string[];
   filePatterns: string[];
-  source: string;
   references: Reference[];
   createdAt: string;
   updatedAt: string;
@@ -269,21 +266,6 @@ export function ReviewChecklistDetailPage() {
                   <p className="mt-1 capitalize text-theme-text">{item.category}</p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-theme-text-muted">Source</p>
-                  <Badge
-                    variant={
-                      item.source === "ingested"
-                        ? "blue"
-                        : item.source === "manual"
-                          ? "outline"
-                          : "default"
-                    }
-                    className="mt-1 capitalize"
-                  >
-                    {item.source}
-                  </Badge>
-                </div>
-                <div>
                   <p className="text-[13px] font-medium text-theme-text-muted">Created</p>
                   <p className="mt-1 text-sm text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</p>
                 </div>
@@ -319,65 +301,6 @@ export function ReviewChecklistDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Why this exists</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {item.source === "manual" ? (
-            <p className="text-sm text-theme-text-muted">
-              Manually created on{" "}
-              <span className="text-theme-text">
-                {new Date(item.createdAt).toLocaleDateString()}
-              </span>
-              .
-            </p>
-          ) : (
-            <>
-              <p className="text-sm text-theme-text-muted">
-                This checklist was extracted from the following PR review
-                comments. Each reference points to the original discussion that
-                surfaced the rule.
-              </p>
-              {item.references && item.references.length > 0 ? (
-                <ul className="space-y-2">
-                  {item.references.map((ref) => (
-                    <li
-                      key={`why-${ref.id}`}
-                      className="rounded-sm border border-border px-3 py-2"
-                    >
-                      <a
-                        href={ref.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-theme-primary-light hover:text-theme-primary break-all"
-                      >
-                        {ref.url}
-                      </a>
-                      {ref.authorUsername && (
-                        <p className="mt-0.5 text-xs text-theme-text-dim">
-                          by {ref.authorUsername}
-                          {ref.platform ? ` on ${ref.platform}` : ""}
-                        </p>
-                      )}
-                      {ref.commentBody && (
-                        <p className="mt-1 text-xs text-theme-text-muted line-clamp-3 whitespace-pre-wrap">
-                          {ref.commentBody}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-theme-text-muted">
-                  No source references are recorded for this checklist.
-                </p>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>References ({item.references?.length ?? 0})</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -406,9 +329,9 @@ export function ReviewChecklistDetailPage() {
                     >
                       {ref.url}
                     </a>
-                    {ref.authorUsername && (
+                    {ref.description && (
                       <p className="mt-0.5 text-xs text-theme-text-dim">
-                        by {ref.authorUsername} on {ref.platform}
+                        {ref.description}
                       </p>
                     )}
                   </div>

@@ -24,7 +24,6 @@ import { DataTable, Column } from "@/components/shared/DataTable";
 import { Pagination } from "@/components/shared/Pagination";
 import { Plus, Search } from "lucide-react";
 import api from "@/lib/api";
-import { PIPELINE_ENABLED } from "@/lib/features";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ReviewChecklist {
@@ -34,7 +33,6 @@ interface ReviewChecklist {
   category: string;
   languages: string[];
   filePatterns: string[];
-  source: string;
   _count?: { references?: number };
   referenceCount?: number;
 }
@@ -52,7 +50,6 @@ const CATEGORIES = [
   "security", "performance", "readability", "architecture",
   "testing", "error-handling", "accessibility", "other",
 ];
-const SOURCES = ["extracted", "manual"];
 
 export function ReviewChecklistsPage() {
   const navigate = useNavigate();
@@ -67,7 +64,6 @@ export function ReviewChecklistsPage() {
   const [languageFilter, setLanguageFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"text" | "semantic">("text");
@@ -89,7 +85,6 @@ export function ReviewChecklistsPage() {
       if (languageFilter) params.language = languageFilter;
       if (categoryFilter) params.category = categoryFilter;
       if (severityFilter) params.severity = severityFilter;
-      if (sourceFilter) params.source = sourceFilter;
       if (searchQuery && searchMode === "text") params.search = searchQuery;
 
       const res = await api.get("/review-checklists", { params });
@@ -103,7 +98,7 @@ export function ReviewChecklistsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, languageFilter, categoryFilter, severityFilter, sourceFilter, searchQuery, searchMode]);
+  }, [page, pageSize, languageFilter, categoryFilter, severityFilter, searchQuery, searchMode]);
 
   const fetchSemantic = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -186,12 +181,11 @@ export function ReviewChecklistsPage() {
     setLanguageFilter("");
     setCategoryFilter("");
     setSeverityFilter("");
-    setSourceFilter("");
     setSearchQuery("");
     setPage(1);
   };
 
-  const allColumns: Column<ReviewChecklist & Record<string, unknown>>[] = [
+  const columns: Column<ReviewChecklist & Record<string, unknown>>[] = [
     {
       key: "description",
       header: "Description",
@@ -237,36 +231,11 @@ export function ReviewChecklistsPage() {
       ),
     },
     {
-      key: "source",
-      header: "Source",
-      sortable: true,
-      render: (row) => (
-        <Badge
-          variant={
-            row.source === "ingested"
-              ? "blue"
-              : row.source === "manual"
-                ? "outline"
-                : "default"
-          }
-          className="capitalize"
-        >
-          {row.source}
-        </Badge>
-      ),
-    },
-    {
       key: "referenceCount",
       header: "References",
       render: (row) => <span className="text-theme-text-dim">{row._count?.references ?? row.referenceCount ?? 0}</span>,
     },
   ];
-
-  // The "source" column distinguishes pipeline-ingested checklists from manual
-  // ones. While the pipeline is disabled, every checklist is manual, so hide it.
-  const columns = PIPELINE_ENABLED
-    ? allColumns
-    : allColumns.filter((c) => c.key !== "source");
 
   return (
     <div className="space-y-6">
@@ -351,22 +320,6 @@ export function ReviewChecklistsPage() {
                 </SelectContent>
               </Select>
             </div>
-            {PIPELINE_ENABLED && (
-              <div className="space-y-2">
-                <Label>Source</Label>
-                <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v === "all" ? "" : v); setPage(1); }}>
-                  <SelectTrigger className="w-36">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {SOURCES.map((s) => (
-                      <SelectItem key={s} value={s}><span className="capitalize">{s}</span></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
             <Button variant="ghost" onClick={clearFilters}>
               Clear Filters
             </Button>
