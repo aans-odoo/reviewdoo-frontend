@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { useAuth } from "@/hooks/useAuth";
+import { ReviewFlowDiagram } from "@/components/ReviewFlowDiagram";
 import { useState } from "react";
 import {
   Brain,
@@ -13,12 +14,10 @@ import {
   CheckCircle2,
   Code2,
   Database,
-  Network,
   Clock,
   TrendingUp,
   Users,
   ArrowRight,
-  FileCode,
   Search,
   Layers,
   MessageSquare,
@@ -201,18 +200,18 @@ export function AboutPage() {
                   icon={Code2}
                 />
                 <WorkflowStep
-                  title="We Generate a Review Prompt"
-                  description="Before submitting the PR, we generate a detailed prompt on Reviewdoo that includes instructions on how to best review the code, how the AI IDE can call Reviewdoo's MCPs to fetch relevant coding guidelines, and review checklists that were created from comments made on others' PRs."
+                  title="We Run @reviewdoo init"
+                  description="Before submitting the PR, we run @reviewdoo init in our AI IDE. Reviewdoo hands the IDE the full self-check workflow—how to pick what to review, and how to call Reviewdoo's MCP tools to fetch the coding guidelines and review checklists (created from comments made on others' PRs) relevant to our changes."
                   icon={Sparkles}
                 />
                 <WorkflowStep
-                  title="We Run AI Review in Our AI IDE"
-                  description="We paste the prompt into our AI IDE (Antigravity, Codex, Kiro, etc.). The AI IDE follows the instructions, calls MCPs to fetch guidelines and review checklists, then analyzes our changes with full codebase context."
+                  title="Our IDE Runs the Self-Check"
+                  description="The AI IDE (Antigravity, Codex, Kiro, etc.) follows the init instructions: it asks what we want to check, calls the MCP tools to fetch only the guidelines and checklists that match our diff, then checks our changes against them—flagging anything that doesn't follow a guideline or violates a checklist, with full codebase context."
                   icon={Brain}
                 />
                 <WorkflowStep
                   title="We Fix Issues Proactively"
-                  description="The AI IDE points out issues based on review checklists and team guidelines. We fix them immediately, before any human reviewer sees the code."
+                  description="The AI IDE flags every guideline or checklist item our changes don't follow. We fix them immediately, before any human reviewer sees the code."
                   icon={CheckCircle2}
                 />
                 <WorkflowStep
@@ -232,136 +231,7 @@ export function AboutPage() {
               <div className="mt-10 pt-8 border-t border-border">
                 <h3 className="text-lg font-semibold text-theme-text mb-6 text-center">Review Flow Diagram</h3>
 
-                <div className="max-w-5xl mx-auto">
-                  <div className="flex items-center gap-8">
-                    {/* Left Actor - Reviewdoo */}
-                    <div className="flex flex-col items-center justify-center self-stretch gap-3 w-32 border-r border-theme-primary/30 pr-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-theme-primary/20 text-theme-primary-light border-2 border-theme-primary/40 shadow-lg">
-                        <Database className="h-8 w-8" />
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm font-bold text-theme-text">Reviewdoo</div>
-                        <div className="text-xs text-theme-text-muted">Knowledge Base</div>
-                      </div>
-                    </div>
-
-                    {/* Middle - Flow Diagram */}
-                    <div className="flex-1 py-10 px-4">
-                      <div className="space-y-10">
-                        {/* Step 1: Reviewdoo → IDE */}
-                        <div className="relative">
-                          <div className="flex items-center">
-                            {/* Left label */}
-                            <div className="flex items-center gap-2 pr-4 pl-5 py-2 rounded-lg bg-theme-primary/10 border border-theme-primary/30 relative">
-                              <div className="absolute -left-4 flex h-6 w-6 items-center justify-center rounded-full bg-theme-accent border-2 border-theme-bg-card text-theme-bg-card text-xs font-bold">
-                                1
-                              </div>
-                              <span className="text-sm font-medium text-theme-text">Generate Prompt</span>
-                              <Sparkles className="h-4 w-4 text-theme-primary-light" />
-                            </div>
-                            {/* Arrow line */}
-                            <div className="flex-1 flex items-center px-4">
-                              <div className="flex-1 h-0.5 bg-gradient-to-r from-theme-primary/50 to-theme-info/50" />
-                              <ArrowRight className="h-5 w-5 text-theme-accent -ml-2" />
-                            </div>
-                            {/* Right muted text */}
-                            <div className="text-xs text-theme-text-muted italic">Paste in AI IDE</div>
-                          </div>
-                          {/* Connecting dotted line to next step */}
-                          <div className="absolute -right-6 top-[50%] h-20 w-3 border-r border-b border-t border-dashed border-theme-text-dim/30" />
-                        </div>
-
-                        {/* Step 2: IDE → Reviewdoo */}
-                        <div className="relative">
-                          <div className="flex items-center">
-                            {/* Left muted text */}
-                            <div className="text-xs text-theme-text-muted italic text-center">Request relevant <br />guideline and checklist</div>
-                            {/* Arrow line */}
-                            <div className="flex-1 flex items-center justify-end px-4">
-                              <ArrowRight className="h-5 w-5 text-theme-accent rotate-180 -mr-2" />
-                              <div className="flex-1 h-0.5 bg-gradient-to-l from-theme-primary/50 to-theme-info/50" />
-                            </div>
-                            {/* Right label */}
-                            <div className="flex items-center gap-2 pr-5 pl-4 py-2 rounded-lg bg-theme-info/10 border border-theme-info/30 relative">
-                              <div className="absolute -right-4 flex h-6 w-6 items-center justify-center rounded-full bg-theme-accent border-2 border-theme-bg-card text-theme-bg-card text-xs font-bold">
-                                2
-                              </div>
-                              <Network className="h-4 w-4 text-theme-info" />
-                              <span className="text-sm font-medium text-theme-text">Call MCP</span>
-                            </div>
-                          </div>
-                          {/* Connecting dotted line to next step */}
-                          <div className="absolute -left-6 top-[50%] h-20 w-3 border-l border-b border-t border-dashed border-theme-text-dim/30" />
-                        </div>
-
-                        {/* Step 3: Reviewdoo → IDE */}
-                        <div className="relative">
-                          <div className="flex items-center">
-                            {/* Left label */}
-                            <div className="flex items-center gap-2 pr-4 pl-5 py-2 rounded-lg bg-theme-primary/10 border border-theme-primary/30 relative">
-                              <div className="absolute -left-4 flex h-6 w-6 items-center justify-center rounded-full bg-theme-accent border-2 border-theme-bg-card text-theme-bg-card text-xs font-bold">
-                                3
-                              </div>
-                              <span className="text-sm font-medium text-theme-text">Return Data</span>
-                              <FileCode className="h-4 w-4 text-theme-primary-light" />
-                            </div>
-                            {/* Arrow line */}
-                            <div className="flex-1 flex items-center px-4">
-                              <div className="flex-1 h-0.5 bg-gradient-to-r from-theme-primary/50 to-theme-info/50" />
-                              <ArrowRight className="h-5 w-5 text-theme-accent -ml-2" />
-                            </div>
-                            {/* Right muted text */}
-                            <div className="text-xs text-theme-text-muted italic text-center">Receive relevant<br />guideline and checklist</div>
-                          </div>
-                          {/* Connecting dotted line to next step */}
-                          <div className="absolute -right-6 top-[50%] h-20 w-3 border-r border-b border-t border-dashed border-theme-text-dim/30" />
-                        </div>
-
-                        {/* Step 4: IDE processes */}
-                        <div className="relative">
-                          <div className="flex flex-col items-end gap-0.5">
-                            {/* Right label */}
-                            <div className="flex items-center gap-2 pr-5 pl-4 py-2 rounded-lg bg-theme-info/10 border border-theme-info/30 relative">
-                              <div className="absolute -right-4 flex h-6 w-6 items-center justify-center rounded-full bg-theme-accent border-2 border-theme-bg-card text-theme-bg-card text-xs font-bold">
-                                4
-                              </div>
-                              <CheckCircle2 className="h-5 w-5 text-theme-success" />
-                              <span className="text-sm font-medium text-theme-text">AI Reviews Code</span>
-                            </div>
-                            <div className="text-xs text-theme-text-muted italic">Based on guidelines & checklist</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Actor - AI IDE */}
-                    <div className="flex flex-col items-center justify-center self-stretch gap-3 w-32 border-l border-theme-info/30 pl-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-theme-info/20 text-theme-info border-2 border-theme-info/40 shadow-lg">
-                        <Code2 className="h-8 w-8" />
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm font-bold text-theme-text">AI IDE</div>
-                        <div className="text-xs text-theme-text-muted">Antigravity, Codex, Kiro, etc.</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Legend */}
-                  <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-theme-text-muted mt-8 bg-theme-body px-6 py-2 rounded-sm w-fit mx-auto">
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded bg-theme-primary" />
-                      <span>Reviewdoo</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded bg-theme-info" />
-                      <span>IDE</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ArrowRight className="h-3 w-3 text-theme-accent" />
-                      <span>Flow</span>
-                    </div>
-                  </div>
-                </div>
+                <ReviewFlowDiagram />
               </div>
             </CardContent>
           </Card>
@@ -467,20 +337,20 @@ export function AboutPage() {
 
                 <div className="border-t border-border" />
 
-                {/* Prompt Generation */}
+                {/* The init workflow */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Prompt Generation: Context-Aware Instructions</h3>
+                  <h3 className="font-semibold text-theme-text">The init Workflow: Context-Aware Instructions</h3>
                   <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
                     <p>
-                      The system may generate slightly different review prompts based on the task being reviewed:
+                      Running <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">@reviewdoo init</code> returns a single workflow that adapts to what's being reviewed:
                     </p>
                     <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>Single commit vs. multiple commits</li>
-                      <li>Changes across multiple repositories</li>
+                      <li>Single commit vs. a range of commits</li>
+                      <li>Uncommitted changes or a diff against a base branch</li>
                       <li>Different file types or project areas</li>
                     </ul>
                     <p>
-                      However, the <span className="text-theme-accent font-semibold">core MCP instructions remain the same</span>—how to call MCPs to fetch guidelines and review checklists.
+                      The IDE asks which scope to check, then the <span className="text-theme-accent font-semibold">core MCP steps stay the same</span>—fetch the guidelines and review checklists relevant to the diff, then check the changes against them. No prompt to copy and paste.
                     </p>
                   </div>
                 </div>
@@ -539,7 +409,7 @@ export function AboutPage() {
             <div className="text-center space-y-4">
               <h3 className="text-2xl font-semibold text-theme-text">Ready to Try It?</h3>
               <p className="text-theme-text-muted max-w-2xl mx-auto">
-                {!isAuthenticated ? "Log in to start using the tool." : ""} Generate your first review prompt and see how it helps catch issues before submitting your next PR.
+                {!isAuthenticated ? "Log in to start using the tool." : ""} Run @reviewdoo init before your next PR and see how it helps catch issues before submitting.
               </p>
               <div className="flex items-center justify-center gap-4 pt-4">
                 <a

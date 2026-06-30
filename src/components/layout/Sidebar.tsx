@@ -3,7 +3,6 @@ import {
   ClipboardCheck,
   BookOpen,
   Brain,
-  Sparkles,
   Network,
   UserCog,
   Mail,
@@ -40,7 +39,6 @@ export function Sidebar() {
       label: "Review Checklists",
       icon: ClipboardCheck,
     },
-    { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
     { to: "/mcp-config", label: "MCP Config", icon: Network },
     { to: "/ai-config", label: "AI Config", icon: Brain },
   ];

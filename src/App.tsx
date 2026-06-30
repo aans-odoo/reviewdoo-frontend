@@ -10,7 +10,6 @@ import { ReviewChecklistsPage } from "@/pages/ReviewChecklistsPage";
 import { ReviewChecklistDetailPage } from "@/pages/ReviewChecklistDetailPage";
 import { GuidelinesPage } from "@/pages/GuidelinesPage";
 import { AIModelConfigPage } from "@/pages/AIModelConfigPage";
-import { PromptGeneratorPage } from "@/pages/PromptGeneratorPage";
 import { McpConfigPage } from "@/pages/McpConfigPage";
 import { UserManagementPage } from "@/pages/UserManagementPage";
 import { SmtpConfigPage } from "@/pages/SmtpConfigPage";
@@ -36,7 +35,6 @@ export default function App() {
           <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
           <Route path="/guidelines" element={<GuidelinesPage />} />
           <Route path="/ai-config" element={<AIModelConfigPage />} />
-          <Route path="/prompt-generator" element={<PromptGeneratorPage />} />
           <Route path="/mcp-config" element={<McpConfigPage />} />
 
           <Route element={<AdminRoute />}>
