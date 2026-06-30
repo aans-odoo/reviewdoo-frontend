@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { DataTable, Column } from "@/components/shared/DataTable";
-import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, Download, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, X, LoaderCircle, Sparkles, Download, Upload } from "lucide-react";
 import api from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
+import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
@@ -290,6 +291,18 @@ export function GuidelinesPage() {
   const openEditTag = (tag: Tag) => {
     setEditingTag(tag);
     setEditTagName(tag.name);
+  };
+
+  const handleCreateTagOption = async (name: string): Promise<MultiSelectOption | void> => {
+    try {
+      const res = await api.post("/tags", { name });
+      const newTag = res.data.tag;
+      await fetchTags();
+      return { value: newTag.id, label: newTag.name };
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to create tag");
+    }
   };
 
   const handleEditTag = async (e: FormEvent) => {
@@ -714,11 +727,12 @@ export function GuidelinesPage() {
             </div>
             <div className="space-y-2">
               <Label>Tags</Label>
-              <TagCombobox
-                tags={tags}
-                selectedIds={newTagIds}
+              <MultiSelect
+                options={tags.map((t) => ({ value: t.id, label: t.name }))}
+                selected={newTagIds}
                 onChange={setNewTagIds}
-                onTagCreated={fetchTags}
+                placeholder="Select or create tags..."
+                onCreate={handleCreateTagOption}
               />
             </div>
             <DialogFooter>
@@ -767,11 +781,12 @@ export function GuidelinesPage() {
             </div>
             <div className="space-y-2">
               <Label>Tags</Label>
-              <TagCombobox
-                tags={tags}
-                selectedIds={editTagIds}
+              <MultiSelect
+                options={tags.map((t) => ({ value: t.id, label: t.name }))}
+                selected={editTagIds}
                 onChange={setEditTagIds}
-                onTagCreated={fetchTags}
+                placeholder="Select or create tags..."
+                onCreate={handleCreateTagOption}
               />
             </div>
             <DialogFooter>
@@ -857,141 +872,4 @@ export function GuidelinesPage() {
   );
 }
 
-/* ─── Tag Combobox ─── */
 
-function TagCombobox({
-  tags,
-  selectedIds,
-  onChange,
-  onTagCreated,
-}: {
-  tags: Tag[];
-  selectedIds: string[];
-  onChange: (ids: string[]) => void;
-  onTagCreated: () => Promise<void>;
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [creatingTag, setCreatingTag] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const filtered = tags.filter(
-    (t) =>
-      t.name.toLowerCase().includes(query.toLowerCase()) &&
-      !selectedIds.includes(t.id)
-  );
-
-  const exactMatch = tags.some(
-    (t) => t.name.toLowerCase() === query.trim().toLowerCase()
-  );
-
-  const handleSelect = (tagId: string) => {
-    onChange([...selectedIds, tagId]);
-    setQuery("");
-  };
-
-  const handleRemove = (tagId: string) => {
-    onChange(selectedIds.filter((id) => id !== tagId));
-  };
-
-  const handleCreateTag = async () => {
-    if (!query.trim() || creatingTag) return;
-    setCreatingTag(true);
-    try {
-      const res = await api.post("/tags", { name: query.trim() });
-      const newTag = res.data.tag;
-      await onTagCreated();
-      onChange([...selectedIds, newTag.id]);
-      setQuery("");
-    } catch {
-      // silent
-    } finally {
-      setCreatingTag(false);
-    }
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectedTags = tags.filter((t) => selectedIds.includes(t.id));
-
-  return (
-    <div ref={containerRef} className="relative">
-      {/* Selected tags */}
-      <div className="flex flex-wrap gap-1.5 mb-2">
-        {selectedTags.map((tag) => (
-          <Badge key={tag.id} variant="outline" className="gap-1 pr-1">
-            {tag.name}
-            <button
-              type="button"
-              onClick={() => handleRemove(tag.id)}
-              className="ml-0.5 rounded-full p-0.5 hover:bg-theme-bg-hover"
-              aria-label={`Remove ${tag.name}`}
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
-      </div>
-
-      {/* Input */}
-      <Input
-        ref={inputRef}
-        placeholder="Search or create tags..."
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (!exactMatch && query.trim()) {
-              handleCreateTag();
-            } else if (filtered.length > 0) {
-              handleSelect(filtered[0].id);
-            }
-          }
-        }}
-      />
-
-      {/* Dropdown */}
-      {open && (query || filtered.length > 0) && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-theme-bg-card shadow-lg max-h-48 overflow-y-auto">
-          {filtered.map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-theme-text hover:bg-theme-bg-hover text-left"
-              onClick={() => handleSelect(tag.id)}
-            >
-              <Check className="h-3.5 w-3.5 opacity-0" />
-              {tag.name}
-            </button>
-          ))}
-          {query.trim() && !exactMatch && (
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-theme-primary hover:bg-theme-bg-hover text-left font-medium"
-              onClick={handleCreateTag}
-              disabled={creatingTag}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {creatingTag ? "Creating..." : `Create "${query.trim()}"`}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
