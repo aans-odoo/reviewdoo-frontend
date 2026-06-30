@@ -20,9 +20,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, BookOpen, Download, Upload } from "lucide-react";
+import { DataTable, Column } from "@/components/shared/DataTable";
+import { Plus, Pencil, Trash2, Search, X, Check, LoaderCircle, Sparkles, Download, Upload } from "lucide-react";
 import api from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
+import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
+import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
+import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
+import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
@@ -38,14 +43,21 @@ interface Guideline {
   severity: string;
   tags: Tag[];
   createdAt: string;
+  similarityScore?: number;
 }
 
 export function GuidelinesPage() {
+  const { hasEmbeddingModel } = useEmbeddingModel();
   const [guidelines, setGuidelines] = useState<Guideline[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filterTagId, setFilterTagId] = useState<string | null>(null);
+
+  // Similarity / duplicate warning
+  const [similar, setSimilar] = useState<SimilarItem[]>([]);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [pendingSave, setPendingSave] = useState<(() => Promise<void>) | null>(null);
 
   // Create guideline
   const [createOpen, setCreateOpen] = useState(false);
@@ -67,9 +79,14 @@ export function GuidelinesPage() {
 
   // Search
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchMode, setSearchMode] = useState<"none" | "semantic">("none");
+  const [searchType, setSearchType] = useState<"text" | "semantic">("text");
+  const [appliedQuery, setAppliedQuery] = useState("");
+  const [appliedType, setAppliedType] = useState<"text" | "semantic">("text");
   const [searchResults, setSearchResults] = useState<Guideline[]>([]);
   const [searching, setSearching] = useState(false);
+
+  const searchActive = appliedQuery.trim().length > 0;
+  const semanticActive = appliedType === "semantic" && searchActive;
 
   // Tag edit/delete
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
@@ -86,7 +103,9 @@ export function GuidelinesPage() {
   const fetchGuidelines = async () => {
     try {
       setLoading(true);
-      const params = filterTagId ? { tagId: filterTagId } : {};
+      const params: Record<string, string> = {};
+      if (filterTagId) params.tagId = filterTagId;
+      if (appliedType === "text" && appliedQuery.trim()) params.search = appliedQuery.trim();
       const res = await api.get("/guidelines", { params });
       setGuidelines(res.data.guidelines ?? []);
       setError("");
@@ -94,6 +113,15 @@ export function GuidelinesPage() {
       setError("Failed to load guidelines");
     } finally {
       setLoading(false);
+    }
+  };
+
+  /** Re-run whichever view is currently active (list/text search or semantic). */
+  const refresh = async () => {
+    if (semanticActive) {
+      await runSemanticSearch(appliedQuery);
+    } else {
+      await fetchGuidelines();
     }
   };
 
@@ -111,14 +139,13 @@ export function GuidelinesPage() {
   }, []);
 
   useEffect(() => {
-    if (searchMode === "none") {
+    if (!semanticActive) {
       fetchGuidelines();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterTagId, searchMode]);
+  }, [filterTagId, appliedType, appliedQuery]);
 
-  const handleCreateGuideline = async (e: FormEvent) => {
-    e.preventDefault();
+  const doCreateGuideline = async () => {
     setCreating(true);
     try {
       await api.post("/guidelines", {
@@ -129,13 +156,34 @@ export function GuidelinesPage() {
       setNewContent("");
       setNewSeverity("minor");
       setNewTagIds([]);
-      await fetchGuidelines();
+      setShowSimilar(false);
+      setCreateOpen(false);
+      await refresh();
       await fetchTags();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
       setError(axErr.response?.data?.error?.message ?? "Failed to create guideline");
     } finally {
-      setCreateOpen(false);
+      setCreating(false);
+    }
+  };
+
+  const handleCreateGuideline = async (e: FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      const matches = aboveThreshold(await findSimilarGuidelines(newContent));
+      if (matches.length > 0) {
+        setSimilar(matches.map((m) => ({ id: m.id, text: m.content, score: m.similarityScore })));
+        setPendingSave(() => doCreateGuideline);
+        setShowSimilar(true);
+        setCreating(false);
+        return;
+      }
+      await doCreateGuideline();
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axErr.response?.data?.error?.message ?? "Failed to create guideline");
       setCreating(false);
     }
   };
@@ -147,8 +195,7 @@ export function GuidelinesPage() {
     setEditTagIds(g.tags.map((t) => t.id));
   };
 
-  const handleEditGuideline = async (e: FormEvent) => {
-    e.preventDefault();
+  const doEditGuideline = async () => {
     if (!editTarget) return;
     setSaving(true);
     try {
@@ -157,12 +204,33 @@ export function GuidelinesPage() {
         severity: editSeverity,
         tagIds: editTagIds,
       });
+      setShowSimilar(false);
       setEditTarget(null);
-      await fetchGuidelines();
+      await refresh();
       await fetchTags();
     } catch {
       setError("Failed to update guideline");
     } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditGuideline = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editTarget) return;
+    setSaving(true);
+    try {
+      const matches = aboveThreshold(await findSimilarGuidelines(editContent, editTarget.id));
+      if (matches.length > 0) {
+        setSimilar(matches.map((m) => ({ id: m.id, text: m.content, score: m.similarityScore })));
+        setPendingSave(() => doEditGuideline);
+        setShowSimilar(true);
+        setSaving(false);
+        return;
+      }
+      await doEditGuideline();
+    } catch {
+      setError("Failed to update guideline");
       setSaving(false);
     }
   };
@@ -173,7 +241,7 @@ export function GuidelinesPage() {
     try {
       await api.delete(`/guidelines/${deleteTarget.id}`);
       setDeleteTarget(null);
-      await fetchGuidelines();
+      await refresh();
       await fetchTags();
     } catch {
       setError("Failed to delete guideline");
@@ -199,15 +267,23 @@ export function GuidelinesPage() {
     }
   };
 
-  const handleSemanticSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setSearchMode("semantic");
-    await runSemanticSearch(searchQuery);
+  const handleSearch = async () => {
+    const q = searchQuery.trim();
+    setAppliedType(searchType);
+    setAppliedQuery(searchQuery);
+    if (searchType === "semantic") {
+      if (q) {
+        await runSemanticSearch(q);
+      } else {
+        setSearchResults([]);
+      }
+    }
+    // Text search is handled by the list effect reacting to appliedQuery.
   };
 
   const clearSearch = () => {
     setSearchQuery("");
-    setSearchMode("none");
+    setAppliedQuery("");
     setSearchResults([]);
   };
 
@@ -224,7 +300,7 @@ export function GuidelinesPage() {
       await api.put(`/tags/${editingTag.id}`, { name: editTagName.trim() });
       setEditingTag(null);
       await fetchTags();
-      await fetchGuidelines();
+      await refresh();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
       setError(axErr.response?.data?.error?.message ?? "Failed to update tag");
@@ -243,7 +319,7 @@ export function GuidelinesPage() {
         setFilterTagId(null);
       }
       await fetchTags();
-      await fetchGuidelines();
+      await refresh();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
       setError(axErr.response?.data?.error?.message ?? "Failed to delete tag");
@@ -285,7 +361,7 @@ export function GuidelinesPage() {
 
       const res = await api.post("/guidelines/import", { guidelines, skipDuplicates: true });
       setImportResult(res.data);
-      await fetchGuidelines();
+      await refresh();
       await fetchTags();
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: { error?: { message?: string } } } };
@@ -301,13 +377,13 @@ export function GuidelinesPage() {
     ? searchResults.filter((g) => g.tags?.some((t) => t.id === filterTagId))
     : searchResults;
 
-  const displayedGuidelines = searchMode === "semantic" ? filteredSearchResults : guidelines;
+  const displayedGuidelines = semanticActive ? filteredSearchResults : guidelines;
 
   // When semantic search is active, derive per-tag counts from the unfiltered
   // search results so the chip counts always reflect what the user can actually
   // see. Tags with zero matches in the current results are hidden.
   const searchResultTagCounts = (() => {
-    if (searchMode !== "semantic") return null;
+    if (!semanticActive) return null;
     const counts = new Map<string, number>();
     for (const g of searchResults) {
       for (const t of g.tags ?? []) {
@@ -326,6 +402,84 @@ export function GuidelinesPage() {
 
   // Disable mutating / conflicting actions while a long-running op is in flight.
   const isBusy = searching || importing;
+
+  const guidelineColumns: Column<Guideline & Record<string, unknown>>[] = [
+    {
+      key: "content",
+      header: "Guideline",
+      className: "max-w-md",
+      render: (row) => (
+        <span className="text-sm text-theme-text">
+          {row.content.length > 140 ? row.content.slice(0, 140) + "…" : row.content}
+        </span>
+      ),
+    },
+    {
+      key: "severity",
+      header: "Severity",
+      sortable: true,
+      render: (row) => (
+        <Badge variant={row.severity === "critical" ? "red" : row.severity === "major" ? "orange" : "default"}>
+          {row.severity}
+        </Badge>
+      ),
+    },
+    {
+      key: "tags",
+      header: "Tags",
+      render: (row) => (
+        <div className="flex flex-wrap gap-1">
+          {row.tags?.map((tag) => (
+            <Badge key={tag.id} variant="outline" className="text-xs">
+              {tag.name}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  if (semanticActive) {
+    guidelineColumns.push({
+      key: "similarityScore",
+      header: "Match",
+      render: (row) =>
+        row.similarityScore != null ? (
+          <Badge variant="orange">{Math.round((row.similarityScore as number) * 100)}%</Badge>
+        ) : null,
+    });
+  }
+
+  guidelineColumns.push({
+    key: "actions",
+    header: "",
+    className: "w-24 text-right",
+    render: (row) => (
+      <div className="flex justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => openEdit(row as Guideline)}
+          disabled={isBusy || !hasEmbeddingModel}
+          title={hasEmbeddingModel ? "Edit" : "Configure an embedding model first"}
+          aria-label="Edit guideline"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setDeleteTarget(row as Guideline)}
+          disabled={isBusy}
+          aria-label="Delete guideline"
+        >
+          <Trash2 className="h-4 w-4 text-theme-danger" />
+        </Button>
+      </div>
+    ),
+  });
 
   return (
     <div className="space-y-6">
@@ -355,22 +509,33 @@ export function GuidelinesPage() {
             className="hidden"
             onChange={handleImportFile}
           />
-          <Button onClick={() => setCreateOpen(true)} disabled={isBusy}>
+          <Button onClick={() => setCreateOpen(true)} disabled={isBusy || !hasEmbeddingModel} title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}>
             <Plus className="h-4 w-4" /> New Guideline
           </Button>
         </div>
       </div>
 
+      {!hasEmbeddingModel && <EmbeddingModelBanner action="add or search guidelines" />}
+
       {/* Search & Filter */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-2">
+            <Select value={searchType} onValueChange={(v) => setSearchType(v as "text" | "semantic")}>
+              <SelectTrigger className="w-32 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Text</SelectItem>
+                <SelectItem value="semantic">Semantic</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-full">
               <Input
-                placeholder="Semantic search guidelines..."
+                placeholder={searchType === "semantic" ? "Semantic search guidelines..." : "Search guidelines by text..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSemanticSearch()}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 className="pr-20"
               />
               <div className="absolute top-[50%] right-1 translate-y-[-50%]">
@@ -378,20 +543,20 @@ export function GuidelinesPage() {
                   <Button
                     className="rounded-sm"
                     variant="ghost"
-                    onClick={handleSemanticSearch}
-                    disabled={searching}
-                    title="Semantic search"
+                    onClick={handleSearch}
+                    disabled={searching || (searchType === "semantic" && !hasEmbeddingModel)}
+                    title={searchType === "semantic" ? "Semantic search" : "Text search"}
                   >
                     {searching
                       ? <LoaderCircle className="h-4 w-4 text-theme-accent animate-spin" />
                       : <Search className="h-4 w-4" />
                     }
                   </Button>
-                  {!searching && <Sparkles className="absolute w-3 h-3 text-theme-accent top-1 right-3" />}
+                  {searchType === "semantic" && !searching && <Sparkles className="absolute w-3 h-3 text-theme-accent top-1 right-3" />}
                 </div>
               </div>
             </div>
-            {searchMode === "semantic" && (
+            {searchActive && (
               <Button variant="ghost" onClick={clearSearch} disabled={isBusy}>
                 Clear
               </Button>
@@ -489,70 +654,28 @@ export function GuidelinesPage() {
       )}
 
       {/* Guidelines list */}
-      {(loading && searchMode === "none") || searching ? (
+      {loading || searching ? (
         <div className="py-40">
           <LoaderCircle className="animate-spin text-theme-accent mx-auto" />
         </div>
-      ) : displayedGuidelines.length === 0 ? (
-        <div className="py-40 flex flex-col items-center gap-2 text-theme-text-muted">
-          <BookOpen />
-          <p className="text-sm">{searchMode === "semantic" ? "No results found." : "No guidelines yet."}</p>
-        </div>
       ) : (
         <div className="space-y-3">
-          {searchMode === "semantic" && (
+          {searchActive && (
             <p className="text-sm text-theme-text-muted">
-              {filteredSearchResults.length} result{filteredSearchResults.length !== 1 ? "s" : ""} found
-              {filterTagId && searchResults.length !== filteredSearchResults.length
+              {displayedGuidelines.length} result{displayedGuidelines.length !== 1 ? "s" : ""} found
+              {semanticActive && filterTagId && searchResults.length !== filteredSearchResults.length
                 ? ` (filtered from ${searchResults.length})`
                 : ""}
             </p>
           )}
-          {displayedGuidelines.map((g) => (
-            <Card key={g.id}>
-              <CardContent className="flex items-start justify-between gap-3 py-4">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <p className="text-sm text-theme-text">{g.content}</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant={g.severity === "critical" ? "red" : "default"}
-                    >
-                      {g.severity}
-                    </Badge>
-                    {g.tags?.map((tag) => (
-                      <Badge key={tag.id} variant="outline">
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                {searchMode === "none" && (
-                  <div className="flex gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEdit(g)}
-                      aria-label="Edit guideline"
-                      disabled={isBusy}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setDeleteTarget(g)}
-                      aria-label="Delete guideline"
-                      disabled={isBusy}
-                    >
-                      <Trash2 className="h-4 w-4 text-theme-danger" />
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          <DataTable
+            key={`${appliedType}-${appliedQuery}-${filterTagId ?? "all"}`}
+            columns={guidelineColumns}
+            data={displayedGuidelines as (Guideline & Record<string, unknown>)[]}
+            keyExtractor={(row) => row.id}
+            pageSize={10}
+            emptyMessage={searchActive ? "No results found." : "No guidelines yet."}
+          />
         </div>
       )}
 
@@ -718,6 +841,17 @@ export function GuidelinesPage() {
         variant="destructive"
         onConfirm={handleDeleteTag}
         isLoading={deletingTag}
+      />
+
+      <SimilarityWarningDialog
+        open={showSimilar}
+        onOpenChange={setShowSimilar}
+        items={similar}
+        heading="Similar guideline already exists"
+        description="One or more existing guidelines look very similar. Are you sure you want to save this one anyway?"
+        onConfirm={() => { if (pendingSave) pendingSave(); }}
+        confirmLabel="Save anyway"
+        busy={creating || saving}
       />
     </div>
   );
