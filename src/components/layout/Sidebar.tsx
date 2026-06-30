@@ -16,6 +16,7 @@ import {
   Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PIPELINE_ENABLED } from "@/lib/features";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsSticky } from "@/hooks/useIsSticky";
 import { Logo } from "../ui/logo";
@@ -42,13 +43,15 @@ export function Sidebar() {
       to: "/review-checklists",
       label: "Review Checklists",
       icon: ClipboardCheck,
-      children: [
-        { to: "/authors", label: "Authors", icon: Users },
-        { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
-        { to: "/rejected-comments", label: "Rejected Comments", icon: MessageSquareX, hidden: !isAdmin },
-        { to: "/ingestion/github-config", label: "GitHub Config", icon: Github, hidden: !isAdmin },
-        { to: "/ingestion/ai-config", label: "AI Config", icon: Brain, hidden: !isAdmin },
-      ],
+      children: PIPELINE_ENABLED
+        ? [
+            { to: "/authors", label: "Authors", icon: Users },
+            { to: "/ingestion-logs", label: "Ingestion Logs", icon: ScrollText },
+            { to: "/rejected-comments", label: "Rejected Comments", icon: MessageSquareX, hidden: !isAdmin },
+            { to: "/ingestion/github-config", label: "GitHub Config", icon: Github, hidden: !isAdmin },
+            { to: "/ingestion/ai-config", label: "AI Config", icon: Brain, hidden: !isAdmin },
+          ]
+        : [],
     },
     { to: "/prompt-generator", label: "Prompt Generator", icon: Sparkles },
     { to: "/mcp-config", label: "MCP Config", icon: Network },

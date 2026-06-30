@@ -24,6 +24,7 @@ import { DataTable, Column } from "@/components/shared/DataTable";
 import { Pagination } from "@/components/shared/Pagination";
 import { Plus, Search } from "lucide-react";
 import api from "@/lib/api";
+import { PIPELINE_ENABLED } from "@/lib/features";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ReviewChecklist {
@@ -190,7 +191,7 @@ export function ReviewChecklistsPage() {
     setPage(1);
   };
 
-  const columns: Column<ReviewChecklist & Record<string, unknown>>[] = [
+  const allColumns: Column<ReviewChecklist & Record<string, unknown>>[] = [
     {
       key: "description",
       header: "Description",
@@ -261,13 +262,19 @@ export function ReviewChecklistsPage() {
     },
   ];
 
+  // The "source" column distinguishes pipeline-ingested checklists from manual
+  // ones. While the pipeline is disabled, every checklist is manual, so hide it.
+  const columns = PIPELINE_ENABLED
+    ? allColumns
+    : allColumns.filter((c) => c.key !== "source");
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-theme-text">Review Checklists</h2>
           <p className="mt-1 text-sm text-theme-text-muted">
-            Manage your review checklists extracted from PR comments.
+            Manage your review checklists.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
@@ -344,20 +351,22 @@ export function ReviewChecklistsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Source</Label>
-              <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {SOURCES.map((s) => (
-                    <SelectItem key={s} value={s}><span className="capitalize">{s}</span></SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {PIPELINE_ENABLED && (
+              <div className="space-y-2">
+                <Label>Source</Label>
+                <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v === "all" ? "" : v); setPage(1); }}>
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {SOURCES.map((s) => (
+                      <SelectItem key={s} value={s}><span className="capitalize">{s}</span></SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Button variant="ghost" onClick={clearFilters}>
               Clear Filters
             </Button>

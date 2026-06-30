@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
+import { PIPELINE_ENABLED } from "@/lib/features";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { AccountSetupPage } from "@/pages/AccountSetupPage";
@@ -33,7 +34,9 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
-      <Route path="/review-checklist-pipeline" element={<ReviewChecklistPipelinePage />} />
+      {PIPELINE_ENABLED && (
+        <Route path="/review-checklist-pipeline" element={<ReviewChecklistPipelinePage />} />
+      )}
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
@@ -41,9 +44,13 @@ export default function App() {
           <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
           <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
           <Route path="/guidelines" element={<GuidelinesPage />} />
-          <Route path="/authors" element={<AuthorsPage />} />
-          <Route path="/ingestion-logs" element={<IngestionLogsPage />} />
-          <Route path="/ingestion-logs/:id" element={<IngestionLogDetailPage />} />
+          {PIPELINE_ENABLED && (
+            <>
+              <Route path="/authors" element={<AuthorsPage />} />
+              <Route path="/ingestion-logs" element={<IngestionLogsPage />} />
+              <Route path="/ingestion-logs/:id" element={<IngestionLogDetailPage />} />
+            </>
+          )}
           <Route path="/ai-config" element={<AIModelConfigPage />} />
           <Route path="/prompt-generator" element={<PromptGeneratorPage />} />
           <Route path="/mcp-config" element={<McpConfigPage />} />
@@ -51,9 +58,13 @@ export default function App() {
           <Route element={<AdminRoute />}>
             <Route path="/users" element={<UserManagementPage />} />
             <Route path="/smtp-config" element={<SmtpConfigPage />} />
-            <Route path="/ingestion/github-config" element={<IngestionGitHubConfigPage />} />
-            <Route path="/ingestion/ai-config" element={<IngestionAIConfigPage />} />
-            <Route path="/rejected-comments" element={<RejectedCommentsPage />} />
+            {PIPELINE_ENABLED && (
+              <>
+                <Route path="/ingestion/github-config" element={<IngestionGitHubConfigPage />} />
+                <Route path="/ingestion/ai-config" element={<IngestionAIConfigPage />} />
+                <Route path="/rejected-comments" element={<RejectedCommentsPage />} />
+              </>
+            )}
           </Route>
         </Route>
       </Route>
