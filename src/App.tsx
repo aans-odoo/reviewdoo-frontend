@@ -19,6 +19,7 @@ const GuidelinesPage = lazy(() => import("@/pages/GuidelinesPage").then((m) => (
 const AIModelConfigPage = lazy(() => import("@/pages/AIModelConfigPage").then((m) => ({ default: m.AIModelConfigPage })));
 const McpConfigPage = lazy(() => import("@/pages/McpConfigPage").then((m) => ({ default: m.McpConfigPage })));
 const UserManagementPage = lazy(() => import("@/pages/UserManagementPage").then((m) => ({ default: m.UserManagementPage })));
+const McpClientsPage = lazy(() => import("@/pages/McpClientsPage").then((m) => ({ default: m.McpClientsPage })));
 const SmtpConfigPage = lazy(() => import("@/pages/SmtpConfigPage").then((m) => ({ default: m.SmtpConfigPage })));
 const DesignShowcasePage = lazy(() => import("@/pages/DesignShowcasePage").then((m) => ({ default: m.DesignShowcasePage })));
 const AboutPage = lazy(() => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
@@ -47,6 +48,7 @@ export default function App() {
 
             <Route element={<AdminRoute />}>
               <Route path="/users" element={<UserManagementPage />} />
+              <Route path="/mcp-clients" element={<McpClientsPage />} />
               <Route path="/smtp-config" element={<SmtpConfigPage />} />
             </Route>
           </Route>

@@ -10,6 +10,7 @@ import {
   LogOut,
   Info,
   HelpCircle,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,6 +46,7 @@ export function Sidebar() {
 
   const adminItems = [
     { to: "/users", label: "User Management", icon: UserCog },
+    { to: "/mcp-clients", label: "MCP Clients", icon: Radio },
     { to: "/smtp-config", label: "SMTP Config", icon: Mail },
   ];
 
