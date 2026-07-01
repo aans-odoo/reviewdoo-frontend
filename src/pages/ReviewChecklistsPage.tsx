@@ -19,6 +19,9 @@ import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2 } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
+import { Alert } from "@/components/shared/Alert";
+import { Loading } from "@/components/shared/Loading";
 
 interface ReviewChecklist {
   id: string;
@@ -106,8 +109,7 @@ export function ReviewChecklistsPage() {
       setItems(Array.isArray(data) ? data : []);
       setError("");
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Semantic search failed");
+      setError(getApiErrorMessage(err, "Semantic search failed"));
     } finally {
       setLoading(false);
     }
@@ -402,13 +404,11 @@ export function ReviewChecklistsPage() {
       </Card>
 
       {error && (
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
-          {error}
-        </div>
+        <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
       )}
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-theme-text-muted">Loading...</div>
+        <Loading />
       ) : (
         <>
           {semanticActive && (

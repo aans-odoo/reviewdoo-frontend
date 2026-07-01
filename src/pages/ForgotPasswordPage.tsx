@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
 import { MailCheckIcon } from "lucide-react";
 
 export function ForgotPasswordPage() {
@@ -24,8 +25,7 @@ export function ForgotPasswordPage() {
       await api.post("/auth/forgot-password", { email });
       setSuccess(true);
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to send reset email");
+      setError(getApiErrorMessage(err, "Failed to send reset email"));
     } finally {
       setLoading(false);
     }

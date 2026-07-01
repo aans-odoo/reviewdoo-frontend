@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Logo } from "@/components/ui/logo";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -51,8 +52,7 @@ export function ResetPasswordPage() {
       setSession(jwt, user);
       navigate("/", { replace: true });
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to reset password");
+      setError(getApiErrorMessage(err, "Failed to reset password"));
     } finally {
       setLoading(false);
     }

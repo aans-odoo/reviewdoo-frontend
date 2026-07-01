@@ -20,6 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { Alert } from "@/components/shared/Alert";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { Plus, Pencil, Trash2, Search, X, LoaderCircle, Sparkles, Download, Upload } from "lucide-react";
 import api from "@/lib/api";
@@ -27,8 +28,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
+import { Loading } from "@/components/shared/Loading";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
+import { getApiErrorMessage } from "@/lib/errors";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
@@ -162,8 +165,7 @@ export function GuidelinesPage() {
       await refresh();
       await fetchTags();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to create guideline");
+      setError(getApiErrorMessage(err, "Failed to create guideline"));
     } finally {
       setCreating(false);
     }
@@ -183,8 +185,7 @@ export function GuidelinesPage() {
       }
       await doCreateGuideline();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to create guideline");
+      setError(getApiErrorMessage(err, "Failed to create guideline"));
       setCreating(false);
     }
   };
@@ -261,8 +262,7 @@ export function GuidelinesPage() {
       setSearchResults(res.data.results ?? []);
       setError("");
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Semantic search failed");
+      setError(getApiErrorMessage(err, "Semantic search failed"));
     } finally {
       setSearching(false);
     }
@@ -300,8 +300,7 @@ export function GuidelinesPage() {
       await fetchTags();
       return { value: newTag.id, label: newTag.name };
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to create tag");
+      setError(getApiErrorMessage(err, "Failed to create tag"));
     }
   };
 
@@ -315,8 +314,7 @@ export function GuidelinesPage() {
       await fetchTags();
       await refresh();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to update tag");
+      setError(getApiErrorMessage(err, "Failed to update tag"));
     } finally {
       setSavingTag(false);
     }
@@ -334,8 +332,7 @@ export function GuidelinesPage() {
       await fetchTags();
       await refresh();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to delete tag");
+      setError(getApiErrorMessage(err, "Failed to delete tag"));
     } finally {
       setDeletingTag(false);
     }
@@ -377,8 +374,7 @@ export function GuidelinesPage() {
       await refresh();
       await fetchTags();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to import guidelines");
+      setError(getApiErrorMessage(err, "Failed to import guidelines"));
     } finally {
       setImporting(false);
       // Reset file input so same file can be re-selected
@@ -505,14 +501,14 @@ export function GuidelinesPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport} disabled={isBusy}>
-            <Upload className="h-4 w-4" /> Export
+            <Download className="h-4 w-4" /> Export
           </Button>
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isBusy}
           >
-            {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             {importing ? "Importing..." : "Import"}
           </Button>
           <input
@@ -600,7 +596,7 @@ export function GuidelinesPage() {
                   <button
                     onClick={() => setFilterTagId(tag.id === filterTagId ? null : tag.id)}
                     disabled={isBusy}
-                    className={`inline-flex items-center rounded-full px-3 py-2 group-hover:pr-16 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:group-hover:pr-3 ${filterTagId === tag.id
+                    className={`inline-flex items-center rounded-full px-3 py-2 group-hover:pr-16 group-focus-within:pr-16 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:group-hover:pr-3 ${filterTagId === tag.id
                       ? "bg-theme-primary text-white"
                       : "bg-theme-bg-hover text-theme-text-muted hover:bg-theme-bg-hover/80"
                       }`}
@@ -610,20 +606,23 @@ export function GuidelinesPage() {
                       <span className="ml-1 opacity-70">({count})</span>
                     )}
                   </button>
-                  {/* Hover actions */}
+                  {/* Edit / delete actions — revealed on hover or keyboard focus
+                      so they're reachable without a mouse. */}
                   {!isBusy && (
-                    <div className="absolute top-[50%] translate-y-[-50%] right-1 hidden group-hover:flex gap-0.5 bg-theme-bg-elevated border border-border rounded-md shadow-lg py-0.5 px-1">
+                    <div className="absolute top-[50%] translate-y-[-50%] right-1 hidden group-hover:flex group-focus-within:flex gap-0.5 bg-theme-bg-elevated border border-border rounded-md shadow-lg py-0.5 px-1">
                       <button
                         onClick={() => openEditTag(tag)}
                         className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
-                        title="Edit tag"
+                        title={`Edit tag ${tag.name}`}
+                        aria-label={`Edit tag ${tag.name}`}
                       >
                         <Pencil className="h-3 w-3 text-theme-text-muted" />
                       </button>
                       <button
                         onClick={() => setDeleteTagTarget(tag)}
                         className="p-1 hover:bg-theme-bg-hover rounded transition-colors"
-                        title="Delete tag"
+                        title={`Delete tag ${tag.name}`}
+                        aria-label={`Delete tag ${tag.name}`}
                       >
                         <X className="h-3 w-3 text-theme-danger" />
                       </button>
@@ -638,13 +637,11 @@ export function GuidelinesPage() {
       </Card>
 
       {error && (
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
-          {error}
-        </div>
+        <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
       )}
 
       {importResult && (
-        <div className="rounded-sm bg-green-500/10 border border-green-500/25 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+        <Alert variant="success" onDismiss={() => setImportResult(null)}>
           <p>
             Import complete: {importResult.imported} imported, {importResult.skipped} skipped (duplicates)
             {importResult.errors.length > 0 && `, ${importResult.errors.length} failed`}
@@ -657,20 +654,12 @@ export function GuidelinesPage() {
               {importResult.errors.length > 5 && <li>...and {importResult.errors.length - 5} more</li>}
             </ul>
           )}
-          <button
-            className="mt-1 text-xs underline opacity-70 hover:opacity-100"
-            onClick={() => setImportResult(null)}
-          >
-            Dismiss
-          </button>
-        </div>
+        </Alert>
       )}
 
       {/* Guidelines list */}
       {loading || searching ? (
-        <div className="py-40">
-          <LoaderCircle className="animate-spin text-theme-accent mx-auto" />
-        </div>
+        <Loading />
       ) : (
         <div className="space-y-3">
           {searchActive && (

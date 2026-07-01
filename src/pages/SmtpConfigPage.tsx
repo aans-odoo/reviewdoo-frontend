@@ -5,6 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Mail, Send, Check } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/errors";
+import { Alert } from "@/components/shared/Alert";
+import { Loading } from "@/components/shared/Loading";
 
 interface SmtpConfig {
   id: string;
@@ -49,8 +52,7 @@ export function SmtpConfigPage() {
       }
       setError("");
     } catch (err: unknown) {
-      const axErr = err as { response?: { status?: number } };
-      if (axErr.response?.status !== 404) {
+      if (getApiErrorStatus(err) !== 404) {
         setError("Failed to load SMTP configuration");
       }
     } finally {
@@ -79,8 +81,7 @@ export function SmtpConfigPage() {
       setSuccess("SMTP configuration saved successfully");
       await fetchConfig();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to save SMTP configuration");
+      setError(getApiErrorMessage(err, "Failed to save SMTP configuration"));
     } finally {
       setSaving(false);
     }
@@ -96,15 +97,14 @@ export function SmtpConfigPage() {
       setTestSuccess(true);
       setTimeout(() => setTestSuccess(false), 3000);
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to send test email");
+      setError(getApiErrorMessage(err, "Failed to send test email"));
     } finally {
       setTesting(false);
     }
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-sm text-theme-text-muted">Loading...</div>;
+    return <Loading />;
   }
 
   return (
@@ -115,10 +115,10 @@ export function SmtpConfigPage() {
       </div>
 
       {error && (
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{error}</div>
+        <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
       )}
       {success && (
-        <div className="rounded-sm bg-theme-success/10 border border-theme-success/25 px-3 py-2 text-sm text-theme-success">{success}</div>
+        <Alert variant="success" onDismiss={() => setSuccess("")}>{success}</Alert>
       )}
 
       <Card>

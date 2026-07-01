@@ -19,8 +19,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { Alert } from "@/components/shared/Alert";
 import { Plus, Pencil, Trash2, Zap, CircleDot, Bot, Cpu, Loader2, Activity, FlaskConical, CheckCircle2, XCircle, Power, Coins } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
+import { Loading } from "@/components/shared/Loading";
 
 interface AIModelConfig {
   id: string;
@@ -42,11 +45,6 @@ interface TestResult {
 }
 
 const PROVIDERS = ["gemini", "openrouter"];
-
-function getApiErrorMessage(err: unknown, fallback: string): string {
-  const axErr = err as { response?: { data?: { error?: { message?: string } }; status?: number } };
-  return axErr.response?.data?.error?.message ?? fallback;
-}
 
 export function AIModelConfigPage() {
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
@@ -373,18 +371,11 @@ export function AIModelConfigPage() {
       </div>
 
       {error && (
-        <div className="flex items-center justify-between rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
-          <span>{error}</span>
-          <button className="ml-2 text-theme-danger hover:underline text-xs" onClick={() => setError("")}>
-            Dismiss
-          </button>
-        </div>
+        <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
       )}
 
       {loading ? (
-        <div className="py-40">
-          <Loader2 className="text-theme-accent mx-auto animate-spin" />
-        </div>
+        <Loading />
       ) : (
         <div className="py-6 space-y-12">
           {renderSection(

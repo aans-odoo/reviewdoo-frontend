@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/ui/logo";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
 
 type TokenState = "validating" | "valid" | "invalid" | "expired";
 
@@ -31,7 +32,7 @@ export function AccountSetupPage() {
     api.get(`/auth/setup/validate?token=${encodeURIComponent(token)}`)
       .then(() => setTokenState("valid"))
       .catch((err) => {
-        const message = err.response?.data?.error?.message ?? "";
+        const message = getApiErrorMessage(err, "");
         setTokenState(message.includes("expired") ? "expired" : "invalid");
       });
   }, [token]);
@@ -95,8 +96,7 @@ export function AccountSetupPage() {
       setSession(jwt, user);
       navigate("/", { replace: true });
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axiosErr.response?.data?.error?.message ?? "Setup failed. Please try again.");
+      setError(getApiErrorMessage(err, "Setup failed. Please try again."));
       setSubmitting(false);
     }
   };

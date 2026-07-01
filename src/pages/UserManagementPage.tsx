@@ -29,6 +29,9 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Plus, MoreVertical, Pencil, Trash2, RotateCw, UserCheck, UserX, Loader2 } from "lucide-react";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
+import { Alert } from "@/components/shared/Alert";
+import { Loading } from "@/components/shared/Loading";
 
 interface User {
   id: string;
@@ -97,8 +100,7 @@ export function UserManagementPage() {
       setNewRole("member");
       await fetchUsers();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setCreateError(axErr.response?.data?.error?.message ?? "Failed to create user");
+      setCreateError(getApiErrorMessage(err, "Failed to create user"));
     } finally {
       setCreating(false);
     }
@@ -141,8 +143,7 @@ export function UserManagementPage() {
       setEditingUser(null);
       await fetchUsers();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setEditError(axErr.response?.data?.error?.message ?? "Failed to update user");
+      setEditError(getApiErrorMessage(err, "Failed to update user"));
     } finally {
       setEditing(false);
     }
@@ -164,8 +165,7 @@ export function UserManagementPage() {
       await fetchUsers();
       setError("");
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to delete user");
+      setError(getApiErrorMessage(err, "Failed to delete user"));
       setDeleteOpen(false);
       setDeletingUser(null);
     } finally {
@@ -178,8 +178,7 @@ export function UserManagementPage() {
       await api.put(`/users/${user.id}`, { isActive: !user.isActive });
       await fetchUsers();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to update status");
+      setError(getApiErrorMessage(err, "Failed to update status"));
     }
   };
 
@@ -189,8 +188,7 @@ export function UserManagementPage() {
       await api.post(`/users/${userId}/reinvite`);
       setError("");
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to resend invitation");
+      setError(getApiErrorMessage(err, "Failed to resend invitation"));
     } finally {
       setReinviting(null);
     }
@@ -293,11 +291,11 @@ export function UserManagementPage() {
       </div>
 
       {error && (
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{error}</div>
+        <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
       )}
 
       {loading ? (
-        <div className="py-8 text-center text-sm text-theme-text-muted">Loading...</div>
+        <Loading />
       ) : (
         <DataTable
           columns={columns}
@@ -315,7 +313,7 @@ export function UserManagementPage() {
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4 p-5">
             {createError && (
-              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{createError}</div>
+              <Alert variant="error">{createError}</Alert>
             )}
             <div className="space-y-2">
               <Label htmlFor="user-email">Email</Label>
@@ -351,7 +349,7 @@ export function UserManagementPage() {
           </DialogHeader>
           <form onSubmit={handleEdit} className="space-y-4 p-5">
             {editError && (
-              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{editError}</div>
+              <Alert variant="error">{editError}</Alert>
             )}
             <div className="space-y-2">
               <Label htmlFor="edit-email">Email</Label>

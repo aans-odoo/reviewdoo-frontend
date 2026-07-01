@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ReviewChecklistFormDialog } from "@/components/checklists/ReviewChecklistFormDialog";
+import { Alert } from "@/components/shared/Alert";
+import { Loading } from "@/components/shared/Loading";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
 import api from "@/lib/api";
@@ -73,7 +75,7 @@ export function ReviewChecklistDetailPage() {
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-sm text-theme-text-muted">Loading...</div>;
+    return <Loading />;
   }
 
   if (error && !item) {
@@ -82,7 +84,7 @@ export function ReviewChecklistDetailPage() {
         <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{error}</div>
+        <Alert variant="error">{error}</Alert>
       </div>
     );
   }
@@ -111,7 +113,7 @@ export function ReviewChecklistDetailPage() {
       </div>
 
       {error && (
-        <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">{error}</div>
+        <Alert variant="error">{error}</Alert>
       )}
 
       <Card>

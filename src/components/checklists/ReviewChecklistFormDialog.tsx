@@ -24,6 +24,8 @@ import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { findSimilarChecklists, aboveThreshold } from "@/lib/similarity";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/errors";
+import { Alert } from "@/components/shared/Alert";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 const CATEGORIES = [
@@ -133,8 +135,7 @@ export function ReviewChecklistFormDialog({
       onOpenChange(false);
       onSaved();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to save review checklist");
+      setError(getApiErrorMessage(err, "Failed to save review checklist"));
       setShowSimilar(false);
     } finally {
       setSaving(false);
@@ -163,8 +164,7 @@ export function ReviewChecklistFormDialog({
       }
       await doSave();
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to save review checklist");
+      setError(getApiErrorMessage(err, "Failed to save review checklist"));
       setSaving(false);
     }
   };
@@ -187,8 +187,7 @@ export function ReviewChecklistFormDialog({
       onSaved();
       navigate(`/review-checklists/${item.id}`);
     } catch (err: unknown) {
-      const axErr = err as { response?: { data?: { error?: { message?: string } } } };
-      setError(axErr.response?.data?.error?.message ?? "Failed to attach references");
+      setError(getApiErrorMessage(err, "Failed to attach references"));
     } finally {
       setSaving(false);
     }
@@ -211,9 +210,7 @@ export function ReviewChecklistFormDialog({
           <form onSubmit={handleSubmit} className="space-y-4 p-5">
             {!hasEmbeddingModel && <EmbeddingModelBanner action="add review checklists" />}
             {error && (
-              <div className="rounded-sm bg-theme-danger/10 border border-theme-danger/25 px-3 py-2 text-sm text-theme-danger">
-                {error}
-              </div>
+              <Alert variant="error">{error}</Alert>
             )}
             <div className="space-y-2">
               <Label htmlFor="cf-description">Description</Label>
