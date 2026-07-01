@@ -29,6 +29,8 @@ import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect"
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { Loading } from "@/components/shared/Loading";
+import { Markdown } from "@/components/shared/Markdown";
+import { MarkdownHint } from "@/components/shared/MarkdownHint";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
 import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
@@ -418,12 +420,8 @@ export function GuidelinesPage() {
     {
       key: "content",
       header: "Guideline",
-      className: "max-w-md",
-      render: (row) => (
-        <span className="text-sm text-theme-text">
-          {row.content.length > 140 ? row.content.slice(0, 140) + "…" : row.content}
-        </span>
-      ),
+      className: "max-w-md align-top",
+      render: (row) => <Markdown className="max-w-md">{row.content}</Markdown>,
     },
     {
       key: "severity",
@@ -702,7 +700,10 @@ export function GuidelinesPage() {
           </DialogHeader>
           <form onSubmit={handleCreateGuideline} className="space-y-4 p-5">
             <div className="space-y-2">
-              <Label htmlFor="g-content">Guideline</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="g-content">Guideline</Label>
+                <MarkdownHint />
+              </div>
               <Textarea
                 id="g-content"
                 value={newContent}
@@ -757,7 +758,10 @@ export function GuidelinesPage() {
           </DialogHeader>
           <form onSubmit={handleEditGuideline} className="space-y-4 p-5">
             <div className="space-y-2">
-              <Label htmlFor="eg-content">Guideline</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="eg-content">Guideline</Label>
+                <MarkdownHint />
+              </div>
               <Textarea
                 id="eg-content"
                 value={editContent}

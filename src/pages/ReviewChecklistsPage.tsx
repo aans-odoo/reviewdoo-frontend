@@ -23,6 +23,7 @@ import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
+import { Markdown } from "@/components/shared/Markdown";
 
 interface ReviewChecklist {
   id: string;
@@ -261,16 +262,14 @@ export function ReviewChecklistsPage() {
     {
       key: "description",
       header: "Description",
-      className: "max-w-xs",
+      className: "max-w-xs align-top",
       render: (row) => (
-        <button
-          className="text-left text-sm text-theme-text hover:text-theme-primary-light transition-colors"
+        <div
+          className="cursor-pointer transition-colors hover:text-theme-primary-light"
           onClick={() => navigate(`/review-checklists/${row.id}`)}
         >
-          {row.description.length > 100
-            ? row.description.slice(0, 100) + "..."
-            : row.description}
-        </button>
+          <Markdown className="max-w-xs">{row.description}</Markdown>
+        </div>
       ),
     },
     {

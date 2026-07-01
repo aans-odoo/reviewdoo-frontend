@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MarkdownHint } from "@/components/shared/MarkdownHint";
 import { ChipInput } from "@/components/shared/ChipInput";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
@@ -213,7 +214,10 @@ export function ReviewChecklistFormDialog({
               <Alert variant="error">{error}</Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="cf-description">Description</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cf-description">Description</Label>
+                <MarkdownHint />
+              </div>
               <Textarea
                 id="cf-description"
                 value={description}

@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ReviewChecklistFormDialog } from "@/components/checklists/ReviewChecklistFormDialog";
 import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
+import { Markdown } from "@/components/shared/Markdown";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
 import api from "@/lib/api";
@@ -124,7 +125,7 @@ export function ReviewChecklistDetailPage() {
           <div className="space-y-4">
             <div>
               <p className="text-[13px] font-medium text-theme-text-muted">Description</p>
-              <p className="mt-1 text-theme-text">{item.description}</p>
+              <Markdown className="mt-1">{item.description}</Markdown>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div>
