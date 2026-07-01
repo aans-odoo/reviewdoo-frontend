@@ -7,8 +7,9 @@ import { Radio, Wifi, WifiOff, Globe, Monitor, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * A connected MCP client as reported by the backend's in-memory tracker.
- * Represents a client that sent an `initialize` handshake to the MCP endpoint.
+ * A tracked MCP client as reported by the backend. `connected` means it's had
+ * activity within the backend's active window; otherwise it's a
+ * previously-seen client kept across restarts until it's pruned.
  */
 interface McpClient {
   clientKey: string;
@@ -19,6 +20,7 @@ interface McpClient {
   userAgent: string | null;
   connectedAt: string;
   lastSeenAt: string;
+  connected: boolean;
 }
 
 const API_BASE = `${import.meta.env.VITE_API_URL || ""}/api/v1`;
@@ -30,7 +32,8 @@ function relativeTime(iso: string, now: number): string {
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  return `${hours}h ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 function formatTime(iso: string): string {
@@ -95,6 +98,8 @@ export function McpClientsPage() {
     return () => clearInterval(id);
   }, []);
 
+  const connectedCount = clients.filter((c) => c.connected).length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -103,8 +108,9 @@ export function McpClientsPage() {
             Connected MCP Clients
           </h2>
           <p className="mt-1 text-sm text-theme-text-muted">
-            Live view of IDEs connected to your MCP server. Clients appear when
-            they perform the MCP handshake and drop off after 5 minutes of inactivity.
+            Live view of IDEs connected to your MCP server, based on real-time
+            activity. The list resets on server restart and repopulates as
+            clients reconnect.
           </p>
         </div>
         <div
@@ -128,7 +134,7 @@ export function McpClientsPage() {
         <Card className="flex flex-col items-center justify-center gap-3 p-12 text-center">
           <Radio className="h-8 w-8 text-theme-text-dim" />
           <div>
-            <p className="text-sm font-medium text-theme-text">No clients connected</p>
+            <p className="text-sm font-medium text-theme-text">No clients yet</p>
             <p className="mt-1 text-sm text-theme-text-muted">
               When an IDE connects to your Reviewdoo MCP server, it'll appear here in real time.
             </p>
@@ -137,7 +143,9 @@ export function McpClientsPage() {
       ) : (
         <>
           <div className="text-sm text-theme-text-muted">
-            {clients.length} {clients.length === 1 ? "client" : "clients"} connected
+            {connectedCount} connected
+            {clients.length > connectedCount &&
+              ` · ${clients.length - connectedCount} previously seen`}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {clients.map((client) => (
@@ -151,14 +159,22 @@ export function McpClientsPage() {
 }
 
 function ClientCard({ client, now }: { client: McpClient; now: number }) {
+  const isConnected = client.connected;
+
   return (
-    <Card className="p-4">
+    <Card className={cn("p-4", !isConnected && "opacity-70")}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Steady pulsing green dot — the client is connected. */}
           <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme-success opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-theme-success" />
+            {isConnected && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-theme-success opacity-75" />
+            )}
+            <span
+              className={cn(
+                "relative inline-flex h-2.5 w-2.5 rounded-full",
+                isConnected ? "bg-theme-success" : "bg-theme-text-dim"
+              )}
+            />
           </span>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-theme-text">
@@ -169,7 +185,9 @@ function ClientCard({ client, now }: { client: McpClient; now: number }) {
             )}
           </div>
         </div>
-        <Badge variant="green">Connected</Badge>
+        <Badge variant={isConnected ? "green" : "outline"}>
+          {isConnected ? "Connected" : `Seen ${relativeTime(client.lastSeenAt, now)}`}
+        </Badge>
       </div>
 
       <div className="mt-4 space-y-2.5 text-xs text-theme-text-muted">
