@@ -30,6 +30,7 @@ import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/Simila
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { Loading } from "@/components/shared/Loading";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
+import { useAuth } from "@/hooks/useAuth";
 import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
 import { getApiErrorMessage } from "@/lib/errors";
 
@@ -52,6 +53,7 @@ interface Guideline {
 
 export function GuidelinesPage() {
   const { hasEmbeddingModel } = useEmbeddingModel();
+  const { isAdmin } = useAuth();
   const [guidelines, setGuidelines] = useState<Guideline[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -500,24 +502,28 @@ export function GuidelinesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} disabled={isBusy}>
-            <Download className="h-4 w-4" /> Export
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isBusy}
-          >
-            {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {importing ? "Importing..." : "Import"}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={handleImportFile}
-          />
+          {isAdmin && (
+            <>
+              <Button variant="outline" onClick={handleExport} disabled={isBusy}>
+                <Upload className="h-4 w-4" /> Export
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isBusy}
+              >
+                {importing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {importing ? "Importing..." : "Import"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+            </>
+          )}
           <Button onClick={() => setCreateOpen(true)} disabled={isBusy || !hasEmbeddingModel} title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}>
             <Plus className="h-4 w-4" /> New Guideline
           </Button>

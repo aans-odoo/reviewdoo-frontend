@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,8 @@ import { ReviewChecklistFormDialog, ChecklistInitial } from "@/components/checkl
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
-import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload } from "lucide-react";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -52,6 +53,7 @@ const CATEGORIES = [
 export function ReviewChecklistsPage() {
   const navigate = useNavigate();
   const { hasEmbeddingModel } = useEmbeddingModel();
+  const { isAdmin } = useAuth();
   const [items, setItems] = useState<ReviewChecklist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -73,6 +75,16 @@ export function ReviewChecklistsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ReviewChecklist | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Import / Export
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    imported: number;
+    skipped: number;
+    errors: Array<{ index: number; description: string; error: string }>;
+    total: number;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const semanticActive = appliedMode === "semantic" && appliedQuery.trim().length > 0;
 
@@ -171,6 +183,50 @@ export function ReviewChecklistsPage() {
       setError("Failed to delete review checklist");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await api.get("/review-checklists/export");
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `review-checklists-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Failed to export review checklists");
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const reviewChecklists = parsed.reviewChecklists ?? parsed;
+
+      if (!Array.isArray(reviewChecklists)) {
+        setError("Invalid import file: expected a JSON with a 'reviewChecklists' array");
+        return;
+      }
+
+      const res = await api.post("/review-checklists/import", { reviewChecklists, skipDuplicates: true });
+      setImportResult(res.data);
+      setPage(1);
+      refresh();
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Failed to import review checklists"));
+    } finally {
+      setImporting(false);
+      // Reset file input so same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -303,14 +359,38 @@ export function ReviewChecklistsPage() {
             Manage your review checklists.
           </p>
         </div>
-        <Button
-          onClick={() => setCreateOpen(true)}
-          disabled={!hasEmbeddingModel}
-          title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          Create Review Checklist
-        </Button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <>
+              <Button variant="outline" onClick={handleExport} disabled={importing}>
+                <Upload className="mr-1 h-4 w-4" /> Export
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+              >
+                {importing ? <LoaderCircle className="mr-1 h-4 w-4 animate-spin" /> : <Download className="mr-1 h-4 w-4" />}
+                {importing ? "Importing..." : "Import"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+            </>
+          )}
+          <Button
+            onClick={() => setCreateOpen(true)}
+            disabled={!hasEmbeddingModel}
+            title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Create Review Checklist
+          </Button>
+        </div>
       </div>
 
       {!hasEmbeddingModel && <EmbeddingModelBanner action="add or search review checklists" />}
@@ -405,6 +485,23 @@ export function ReviewChecklistsPage() {
 
       {error && (
         <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>
+      )}
+
+      {importResult && (
+        <Alert variant="success" onDismiss={() => setImportResult(null)}>
+          <p>
+            Import complete: {importResult.imported} imported, {importResult.skipped} skipped (duplicates)
+            {importResult.errors.length > 0 && `, ${importResult.errors.length} failed`}
+          </p>
+          {importResult.errors.length > 0 && (
+            <ul className="mt-1 list-disc list-inside text-xs">
+              {importResult.errors.slice(0, 5).map((e, i) => (
+                <li key={i}>#{e.index}: {e.description}... — {e.error}</li>
+              ))}
+              {importResult.errors.length > 5 && <li>...and {importResult.errors.length - 5} more</li>}
+            </ul>
+          )}
+        </Alert>
       )}
 
       {loading ? (
