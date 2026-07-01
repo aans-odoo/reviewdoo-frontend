@@ -80,7 +80,7 @@ export function ReferenceInput({ values, onChange, className }: ReferenceInputPr
           ))}
         </ul>
       )}
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Input
           placeholder="https://example.com/..."
           value={url}

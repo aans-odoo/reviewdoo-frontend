@@ -208,7 +208,7 @@ export function ReviewChecklistFormDialog({
                 : "Update this review checklist."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 p-5">
+          <form onSubmit={handleSubmit} className="min-w-0 space-y-4 p-5">
             {!hasEmbeddingModel && <EmbeddingModelBanner entity="review checklists" searchType="text" />}
             {error && (
               <Alert variant="error">{error}</Alert>
