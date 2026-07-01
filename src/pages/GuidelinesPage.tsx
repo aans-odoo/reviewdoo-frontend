@@ -530,7 +530,7 @@ export function GuidelinesPage() {
         </div>
       </div>
 
-      {!hasEmbeddingModel && <EmbeddingModelBanner action="add or search guidelines" />}
+      {!hasEmbeddingModel && <EmbeddingModelBanner entity="guidelines" searchType={searchType} />}
 
       {/* Search & Filter */}
       <Card>
@@ -560,7 +560,13 @@ export function GuidelinesPage() {
                     variant="ghost"
                     onClick={handleSearch}
                     disabled={searching || (searchType === "semantic" && !hasEmbeddingModel)}
-                    title={searchType === "semantic" ? "Semantic search" : "Text search"}
+                    title={
+                      searchType === "semantic" && !hasEmbeddingModel
+                        ? "An active embedding model is required for semantic search"
+                        : searchType === "semantic"
+                          ? "Semantic search"
+                          : "Text search"
+                    }
                   >
                     {searching
                       ? <LoaderCircle className="h-4 w-4 text-theme-accent animate-spin" />

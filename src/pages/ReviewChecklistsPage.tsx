@@ -393,7 +393,7 @@ export function ReviewChecklistsPage() {
         </div>
       </div>
 
-      {!hasEmbeddingModel && <EmbeddingModelBanner action="add or search review checklists" />}
+      {!hasEmbeddingModel && <EmbeddingModelBanner entity="review checklists" searchType={searchMode} />}
 
       <Card>
         <CardContent className="pt-6">
@@ -422,7 +422,13 @@ export function ReviewChecklistsPage() {
                     variant="ghost"
                     onClick={handleSearch}
                     disabled={loading || (searchMode === "semantic" && !hasEmbeddingModel)}
-                    title={searchMode === "semantic" ? "Semantic search" : "Text search"}
+                    title={
+                      searchMode === "semantic" && !hasEmbeddingModel
+                        ? "An active embedding model is required for semantic search"
+                        : searchMode === "semantic"
+                          ? "Semantic search"
+                          : "Text search"
+                    }
                   >
                     {loading
                       ? <LoaderCircle className="h-4 w-4 text-theme-accent animate-spin" />
