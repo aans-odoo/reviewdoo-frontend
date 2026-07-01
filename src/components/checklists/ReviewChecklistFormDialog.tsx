@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MarkdownHint } from "@/components/shared/MarkdownHint";
 import { ChipInput } from "@/components/shared/ChipInput";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
+import { CategorySelect } from "@/components/categories/CategorySelect";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { findSimilarChecklists, aboveThreshold } from "@/lib/similarity";
@@ -29,16 +30,12 @@ import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
-const CATEGORIES = [
-  "security", "performance", "readability", "architecture",
-  "testing", "error-handling", "accessibility", "other",
-];
 
 export interface ChecklistInitial {
   id: string;
   description: string;
   severity: string;
-  category: string;
+  category: string | null;
   languages: string[];
   filePatterns: string[];
   references: { id: string; url: string; description?: string }[];
@@ -81,7 +78,7 @@ export function ReviewChecklistFormDialog({
     if (!open) return;
     setDescription(initial?.description ?? "");
     setSeverity(initial?.severity ?? "minor");
-    setCategory(initial?.category ?? "other");
+    setCategory(initial?.category ?? (mode === "create" ? "other" : ""));
     setLanguages(initial?.languages ?? []);
     setFilePatterns(initial?.filePatterns ?? []);
     setReferences(initial?.references ?? []);
@@ -96,7 +93,7 @@ export function ReviewChecklistFormDialog({
       await api.post("/review-checklists", {
         description,
         severity,
-        category,
+        category: category || null,
         languages,
         filePatterns,
         references: references.length > 0
@@ -107,7 +104,7 @@ export function ReviewChecklistFormDialog({
       await api.put(`/review-checklists/${initial.id}`, {
         description,
         severity,
-        category,
+        category: category || null,
         languages,
         filePatterns,
       });
@@ -240,14 +237,7 @@ export function ReviewChecklistFormDialog({
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c}><span className="capitalize">{c}</span></SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelect value={category} onValueChange={setCategory} />
               </div>
             </div>
             <div className="space-y-2">

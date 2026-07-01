@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { ReviewChecklistFormDialog, ChecklistInitial } from "@/components/checklists/ReviewChecklistFormDialog";
+import { CategorySelect } from "@/components/categories/CategorySelect";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
@@ -29,7 +30,7 @@ interface ReviewChecklist {
   id: string;
   description: string;
   severity: string;
-  category: string;
+  category: string | null;
   languages: string[];
   filePatterns: string[];
   _count?: { references?: number };
@@ -46,10 +47,6 @@ interface PaginatedResponse {
 }
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
-const CATEGORIES = [
-  "security", "performance", "readability", "architecture",
-  "testing", "error-handling", "accessibility", "other",
-];
 
 export function ReviewChecklistsPage() {
   const navigate = useNavigate();
@@ -286,7 +283,12 @@ export function ReviewChecklistsPage() {
       key: "category",
       header: "Category",
       sortable: true,
-      render: (row) => <span className="capitalize text-theme-text-muted">{row.category}</span>,
+      render: (row) =>
+        row.category ? (
+          <span className="capitalize text-theme-text-muted">{row.category}</span>
+        ) : (
+          <span className="text-theme-text-dim">—</span>
+        ),
     },
     {
       key: "languages",
@@ -453,17 +455,14 @@ export function ReviewChecklistsPage() {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={categoryFilter || "all"} onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}><span className="capitalize">{c}</span></SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CategorySelect
+                value={categoryFilter || "all"}
+                onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); setPage(1); }}
+                includeAll
+                placeholder="All"
+                triggerClassName="w-40"
+                onCategoriesChanged={refresh}
+              />
             </div>
             <div className="space-y-2">
               <Label>Severity</Label>

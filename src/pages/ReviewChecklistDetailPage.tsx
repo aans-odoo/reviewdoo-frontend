@@ -23,7 +23,7 @@ interface ReviewChecklistDetail {
   id: string;
   description: string;
   severity: string;
-  category: string;
+  category: string | null;
   languages: string[];
   filePatterns: string[];
   references: Reference[];
@@ -136,7 +136,7 @@ export function ReviewChecklistDetailPage() {
               </div>
               <div>
                 <p className="text-[13px] font-medium text-theme-text-muted">Category</p>
-                <p className="mt-1 capitalize text-theme-text">{item.category}</p>
+                <p className="mt-1 capitalize text-theme-text">{item.category || "—"}</p>
               </div>
               <div>
                 <p className="text-[13px] font-medium text-theme-text-muted">Created</p>
