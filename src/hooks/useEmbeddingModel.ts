@@ -12,11 +12,18 @@ interface AIModelConfig {
  * An embedding model is required to generate embeddings and to run the
  * similarity / semantic search used when creating guidelines and checklists.
  */
-export function useEmbeddingModel() {
+export function useEmbeddingModel(enabled: boolean = true) {
   const [hasEmbeddingModel, setHasEmbeddingModel] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
+    // `/ai-model-configs` is an authenticated endpoint. When disabled (e.g. on a
+    // publicly shared page viewed by an anonymous user) we skip the call so it
+    // doesn't trigger a 401 → login redirect.
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const res = await api.get("/ai-model-configs");
@@ -30,7 +37,7 @@ export function useEmbeddingModel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
     refresh();

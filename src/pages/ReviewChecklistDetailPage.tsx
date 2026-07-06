@@ -9,6 +9,7 @@ import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
+import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
 import api from "@/lib/api";
 
@@ -34,7 +35,8 @@ interface ReviewChecklistDetail {
 export function ReviewChecklistDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hasEmbeddingModel } = useEmbeddingModel();
+  const { isAuthenticated } = useAuth();
+  const { hasEmbeddingModel } = useEmbeddingModel(isAuthenticated);
 
   const [item, setItem] = useState<ReviewChecklistDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,9 +84,11 @@ export function ReviewChecklistDetailPage() {
   if (error && !item) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
+        {isAuthenticated && (
+          <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+        )}
         <Alert variant="error">{error}</Alert>
       </div>
     );
@@ -94,24 +98,28 @@ export function ReviewChecklistDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Review Checklists
-        </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setEditOpen(true)}
-            disabled={!hasEmbeddingModel}
-            title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
-          >
-            <Pencil className="mr-2 h-4 w-4" /> Edit
+      {/* Management controls are only shown to authenticated users; anonymous
+          visitors on a shared link get a clean read-only view. */}
+      {isAuthenticated && (
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Review Checklists
           </Button>
-          <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="mr-2 h-4 w-4" /> Delete
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setEditOpen(true)}
+              disabled={!hasEmbeddingModel}
+              title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
+            >
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Button>
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <Alert variant="error">{error}</Alert>
@@ -199,39 +207,46 @@ export function ReviewChecklistDetailPage() {
             </ul>
           ) : (
             <p className="text-sm text-theme-text-muted">
-              No references yet. Use <span className="font-medium">Edit</span> to add some.
+              No references yet.
+              {isAuthenticated && (
+                <> Use <span className="font-medium">Edit</span> to add some.</>
+              )}
             </p>
           )}
         </CardContent>
       </Card>
 
-      <ReviewChecklistFormDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        mode="edit"
-        hasEmbeddingModel={hasEmbeddingModel}
-        initial={{
-          id: item.id,
-          description: item.description,
-          severity: item.severity,
-          category: item.category,
-          languages: item.languages,
-          filePatterns: item.filePatterns,
-          references: item.references ?? [],
-        }}
-        onSaved={fetchItem}
-      />
+      {isAuthenticated && (
+        <>
+          <ReviewChecklistFormDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            mode="edit"
+            hasEmbeddingModel={hasEmbeddingModel}
+            initial={{
+              id: item.id,
+              description: item.description,
+              severity: item.severity,
+              category: item.category,
+              languages: item.languages,
+              filePatterns: item.filePatterns,
+              references: item.references ?? [],
+            }}
+            onSaved={fetchItem}
+          />
 
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title="Delete Review Checklist"
-        description="Are you sure you want to delete this review checklist? All references will also be removed."
-        confirmLabel="Delete"
-        variant="destructive"
-        onConfirm={handleDelete}
-        isLoading={deleting}
-      />
+          <ConfirmDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title="Delete Review Checklist"
+            description="Are you sure you want to delete this review checklist? All references will also be removed."
+            confirmLabel="Delete"
+            variant="destructive"
+            onConfirm={handleDelete}
+            isLoading={deleting}
+          />
+        </>
+      )}
     </div>
   );
 }

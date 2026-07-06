@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,6 +55,7 @@ interface Guideline {
 }
 
 export function GuidelinesPage() {
+  const navigate = useNavigate();
   const { hasEmbeddingModel } = useEmbeddingModel();
   const { isAdmin } = useAuth();
   const [guidelines, setGuidelines] = useState<Guideline[]>([]);
@@ -421,7 +423,14 @@ export function GuidelinesPage() {
       key: "content",
       header: "Guideline",
       className: "max-w-md align-top",
-      render: (row) => <Markdown className="max-w-md">{row.content}</Markdown>,
+      render: (row) => (
+        <div
+          className="cursor-pointer transition-colors hover:text-theme-primary-light"
+          onClick={() => navigate(`/guidelines/${row.id}`)}
+        >
+          <Markdown className="max-w-md">{row.content}</Markdown>
+        </div>
+      ),
     },
     {
       key: "severity",

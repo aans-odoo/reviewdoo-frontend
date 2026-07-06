@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DetailViewLayout } from "@/components/layout/DetailViewLayout";
 import { Loading } from "@/components/shared/Loading";
 
 // Route-level code splitting: each page is loaded on demand so the initial
@@ -16,6 +17,7 @@ const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage").then((m
 const ReviewChecklistsPage = lazy(() => import("@/pages/ReviewChecklistsPage").then((m) => ({ default: m.ReviewChecklistsPage })));
 const ReviewChecklistDetailPage = lazy(() => import("@/pages/ReviewChecklistDetailPage").then((m) => ({ default: m.ReviewChecklistDetailPage })));
 const GuidelinesPage = lazy(() => import("@/pages/GuidelinesPage").then((m) => ({ default: m.GuidelinesPage })));
+const GuidelineDetailPage = lazy(() => import("@/pages/GuidelineDetailPage").then((m) => ({ default: m.GuidelineDetailPage })));
 const AIModelConfigPage = lazy(() => import("@/pages/AIModelConfigPage").then((m) => ({ default: m.AIModelConfigPage })));
 const McpConfigPage = lazy(() => import("@/pages/McpConfigPage").then((m) => ({ default: m.McpConfigPage })));
 const UserManagementPage = lazy(() => import("@/pages/UserManagementPage").then((m) => ({ default: m.UserManagementPage })));
@@ -37,11 +39,19 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/how-to-use" element={<HowToUsePage />} />
 
+        {/* Publicly shareable detail views. The layout adapts: authenticated
+            users see the full dashboard chrome, anonymous visitors get a
+            minimal read-only shell. Controls (back/edit/delete) are hidden for
+            anonymous users inside each page. */}
+        <Route element={<DetailViewLayout />}>
+          <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
+          <Route path="/guidelines/:id" element={<GuidelineDetailPage />} />
+        </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route index element={<Navigate to="/guidelines" replace />} />
             <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
-            <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
             <Route path="/guidelines" element={<GuidelinesPage />} />
             <Route path="/ai-config" element={<AIModelConfigPage />} />
             <Route path="/mcp-config" element={<McpConfigPage />} />
