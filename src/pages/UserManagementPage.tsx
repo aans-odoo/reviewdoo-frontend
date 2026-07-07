@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
@@ -39,6 +40,7 @@ interface User {
   name: string;
   role: "admin" | "member";
   isActive: boolean;
+  avatarUrl: string;
   createdAt: string;
 }
 
@@ -59,6 +61,7 @@ export function UserManagementPage() {
   const [editEmail, setEditEmail] = useState("");
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState<"admin" | "member">("member");
+  const [editAvatarUrl, setEditAvatarUrl] = useState("");
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -111,6 +114,7 @@ export function UserManagementPage() {
     setEditEmail(user.email);
     setEditName(user.name);
     setEditRole(user.role);
+    setEditAvatarUrl(user.avatarUrl ?? "");
     setEditError("");
     setEditOpen(true);
   };
@@ -123,7 +127,7 @@ export function UserManagementPage() {
     setEditError("");
     try {
       // Build updates object with changed fields
-      const updates: { email?: string; name?: string; role?: "admin" | "member" } = {};
+      const updates: { email?: string; name?: string; role?: "admin" | "member"; avatarUrl?: string } = {};
 
       if (editEmail !== editingUser.email) {
         updates.email = editEmail;
@@ -133,6 +137,9 @@ export function UserManagementPage() {
       }
       if (editRole !== editingUser.role) {
         updates.role = editRole;
+      }
+      if (editAvatarUrl !== (editingUser.avatarUrl ?? "")) {
+        updates.avatarUrl = editAvatarUrl;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -195,7 +202,18 @@ export function UserManagementPage() {
   };
 
   const columns: Column<User & Record<string, unknown>>[] = [
-    { key: "email", header: "Email", sortable: true },
+    { key: "email", header: "Email", sortable: true, render: (row) => (
+        <div className="flex items-center gap-2">
+          <Avatar className="h-7 w-7">
+            {row.avatarUrl && <AvatarImage src={row.avatarUrl} alt={row.name} />}
+            <AvatarFallback className="text-[10px]">
+              {row.name ? row.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : row.email[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span>{row.email}</span>
+        </div>
+      ),
+    },
     { key: "name", header: "Name", sortable: true },
     {
       key: "role",
@@ -379,6 +397,25 @@ export function UserManagementPage() {
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-avatar">Avatar URL</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="edit-avatar"
+                  value={editAvatarUrl}
+                  onChange={(e) => setEditAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.png"
+                />
+                {editAvatarUrl && (
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    <AvatarImage src={editAvatarUrl} alt="Avatar preview" />
+                    <AvatarFallback>
+                      {editName ? editName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>

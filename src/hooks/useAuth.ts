@@ -6,6 +6,7 @@ export interface User {
   email: string;
   name: string;
   role: "admin" | "member";
+  avatarUrl: string;
 }
 
 interface AuthContextValue {
@@ -16,6 +17,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setSession: (token: string, user: User) => void;
+  updateProfile: (updates: { name?: string; avatarUrl?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -81,6 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   }, []);
 
+  const updateProfile = useCallback(async (updates: { name?: string; avatarUrl?: string }) => {
+    const res = await api.patch("/auth/profile", updates);
+    const userData = res.data.user;
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  }, []);
+
   const value: AuthContextValue = {
     user,
     isAuthenticated: !!user,
@@ -89,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     setSession,
+    updateProfile,
   };
 
   return React.createElement(AuthContext.Provider, { value }, children);

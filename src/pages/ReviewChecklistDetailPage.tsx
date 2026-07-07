@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
@@ -98,8 +98,6 @@ export function ReviewChecklistDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Management controls are only shown to authenticated users; anonymous
-          visitors on a shared link get a clean read-only view. */}
       {isAuthenticated && (
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
@@ -125,54 +123,65 @@ export function ReviewChecklistDetailPage() {
         <Alert variant="error">{error}</Alert>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Review Checklist Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <p className="text-[13px] font-medium text-theme-text-muted">Description</p>
-              <Markdown className="mt-1">{item.description}</Markdown>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
-                <p className="text-[13px] font-medium text-theme-text-muted">Severity</p>
-                <Badge variant={item.severity === "critical" ? "red" : item.severity === "major" ? "orange" : "default"} className="mt-1">
+      <Card className="overflow-hidden">
+        <CardContent className="px-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted px-6 py-3 bg-theme-body/30">Review Checklist</p>
+
+          <div className="px-6 pt-4">
+            <Markdown className="text-base leading-relaxed text-theme-text px-4 py-8">
+              {item.description}
+            </Markdown>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-theme-border pt-6 pb-2 text-sm text-theme-text-muted">
+              <div className="flex items-center gap-2">
+                <span>Severity:</span>
+                <Badge variant={item.severity === "critical" ? "red" : item.severity === "major" ? "orange" : "default"}>
                   {item.severity}
                 </Badge>
               </div>
-              <div>
-                <p className="text-[13px] font-medium text-theme-text-muted">Category</p>
-                <p className="mt-1 capitalize text-theme-text">{item.category || "—"}</p>
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>Category:</span>
+                <span className="capitalize text-theme-text-dim">{item.category || "—"}</span>
               </div>
-              <div>
-                <p className="text-[13px] font-medium text-theme-text-muted">Created</p>
-                <p className="mt-1 text-sm text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</p>
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>Languages:</span>
+                <div className="flex flex-wrap gap-1">
+                  {item.languages.length > 0 ? (
+                    item.languages.map((lang) => (
+                      <Badge key={lang} variant="outline">{lang}</Badge>
+                    ))
+                  ) : (
+                    <span>None</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-[13px] font-medium text-theme-text-muted">Languages</p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {item.languages.length > 0 ? (
-                  item.languages.map((lang) => (
-                    <Badge key={lang} variant="outline">{lang}</Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-theme-text-muted">None</span>
-                )}
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>File Patterns:</span>
+                <div className="flex flex-wrap gap-1">
+                  {item.filePatterns.length > 0 ? (
+                    item.filePatterns.map((pat) => (
+                      <Badge key={pat} variant="outline">{pat}</Badge>
+                    ))
+                  ) : (
+                    <span>None</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-[13px] font-medium text-theme-text-muted">File Patterns</p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {item.filePatterns.length > 0 ? (
-                  item.filePatterns.map((pat) => (
-                    <Badge key={pat} variant="outline">{pat}</Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-theme-text-muted">None</span>
-                )}
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>Created:</span>
+                <span className="text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
@@ -180,10 +189,8 @@ export function ReviewChecklistDetailPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>References ({item.references?.length ?? 0})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="pt-6">
+          <p className="text-sm font-medium text-theme-text-muted mb-3">References ({item.references?.length ?? 0})</p>
           {item.references && item.references.length > 0 ? (
             <ul className="space-y-2">
               {item.references.map((ref) => (

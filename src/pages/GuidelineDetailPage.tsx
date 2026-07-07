@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -199,8 +199,6 @@ export function GuidelineDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Management controls are only shown to authenticated users; anonymous
-          visitors on a shared link get a clean read-only view. */}
       {isAuthenticated && (
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/guidelines")}>
@@ -224,41 +222,45 @@ export function GuidelineDetailPage() {
 
       {error && <Alert variant="error" onDismiss={() => setError("")}>{error}</Alert>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Guideline Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <p className="text-[13px] font-medium text-theme-text-muted">Guideline</p>
-              <Markdown className="mt-1">{item.content}</Markdown>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
-                <p className="text-[13px] font-medium text-theme-text-muted">Severity</p>
+      <Card className="overflow-hidden">
+        <CardContent className="px-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted px-6 py-3 bg-theme-body/30">Guideline</p>
+
+          <div className="px-6 pt-4">
+            <Markdown className="text-base leading-relaxed text-theme-text px-4 py-8">
+              {item.content}
+            </Markdown>
+
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-theme-border pt-6 pb-2 text-sm text-theme-text-muted">
+              <div className="flex items-center gap-2">
+                <span>Severity:</span>
                 <Badge
                   variant={item.severity === "critical" ? "red" : item.severity === "major" ? "orange" : "default"}
-                  className="mt-1"
                 >
                   {item.severity}
                 </Badge>
               </div>
-              <div>
-                <p className="text-[13px] font-medium text-theme-text-muted">Created</p>
-                <p className="mt-1 text-sm text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</p>
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>Tags:</span>
+                <div className="flex flex-wrap gap-1">
+                  {item.tags.length > 0 ? (
+                    item.tags.map((tag) => (
+                      <Badge key={tag.id} variant="outline">{tag.name}</Badge>
+                    ))
+                  ) : (
+                    <span>None</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-[13px] font-medium text-theme-text-muted">Tags</p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {item.tags.length > 0 ? (
-                  item.tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline">{tag.name}</Badge>
-                  ))
-                ) : (
-                  <span className="text-sm text-theme-text-muted">None</span>
-                )}
+
+              <span className="w-px h-6 bg-border" />
+
+              <div className="flex items-center gap-2">
+                <span>Created:</span>
+                <span className="text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>

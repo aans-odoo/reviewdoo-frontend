@@ -30,6 +30,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function IconBox({
   icon: Icon,
@@ -80,7 +81,9 @@ export function AboutPage() {
       {/* Header */}
       <header className="border-b border-border bg-theme-bg-card/80 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo />
+          <Link to="/">
+            <Logo />
+          </Link>
           {isAuthenticated ? (
             <a href="/">
               <Button variant="outline" size="sm" className="gap-2">

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Network } from "lucide-react";
+import { Copy, Check, Network, ChevronRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { McpConfigSnippet } from "@/components/shared/McpConfigSnippet";
 
 type ConnectionStatus =
   | { kind: "idle" }
@@ -39,19 +41,8 @@ function parseMcpResponseBody(body: string): JsonRpcResponse {
 }
 
 export function McpConfigPage() {
+  const { isAdmin } = useAuth();
   const mcpUrl = `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
-
-  const streamableHttpSnippet = JSON.stringify(
-    {
-      mcpServers: {
-        reviewdoo: {
-          url: mcpUrl,
-        },
-      },
-    },
-    null,
-    2,
-  );
 
   const stdioSnippet = JSON.stringify(
     {
@@ -68,6 +59,7 @@ export function McpConfigPage() {
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [connection, setConnection] = useState<ConnectionStatus>({ kind: "idle" });
+  const [showOther, setShowOther] = useState(false);
 
   const handleCopy = async (key: string, value: string) => {
     try {
@@ -134,72 +126,51 @@ export function McpConfigPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <CardTitle>Streamable HTTP (preferred)</CardTitle>
-              <CardDescription>
-                For IDEs that support remote MCP servers natively (Antigravity, Kiro, Codex, Claude Desktop with remote support).
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCopy("http", streamableHttpSnippet)}
-            >
-              {copiedKey === "http" ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" /> Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="mr-2 h-4 w-4" /> Copy
-                </>
-              )}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <pre className="overflow-auto whitespace-pre rounded-sm bg-theme-bg-elevated border border-border p-4 text-sm text-theme-text-muted font-mono">
-            {streamableHttpSnippet}
-          </pre>
-        </CardContent>
-      </Card>
+      <McpConfigSnippet />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <CardTitle>Stdio fallback (via mcp-remote)</CardTitle>
-              <CardDescription>
-                For IDEs that only accept stdio-launched MCP servers. Requires Node.js on your machine.
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCopy("stdio", stdioSnippet)}
-            >
-              {copiedKey === "stdio" ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" /> Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="mr-2 h-4 w-4" /> Copy
-                </>
-              )}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <pre className="overflow-auto whitespace-pre rounded-sm bg-theme-bg-elevated border border-border p-4 text-sm text-theme-text-muted font-mono">
-            {stdioSnippet}
-          </pre>
-        </CardContent>
-      </Card>
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowOther((v) => !v)}
+          className="flex items-center gap-1.5 text-sm font-medium text-theme-text-muted hover:text-theme-text transition-colors"
+        >
+          <ChevronRight
+            className={`h-4 w-4 transition-transform ${showOther ? "rotate-90" : ""}`}
+          />
+          See other connection options
+        </button>
 
+        {showOther && (
+          <div className="mt-3">
+            <div className="rounded-md border border-border bg-theme-bg-elevated">
+              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+                <span className="text-xs font-medium text-theme-text-muted">mcp.json — stdio fallback (via mcp-remote)</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-2"
+                  onClick={() => handleCopy("stdio", stdioSnippet)}
+                >
+                  {copiedKey === "stdio" ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" /> Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+              <pre className="overflow-auto whitespace-pre p-4 text-sm text-theme-text-muted font-mono">
+                {stdioSnippet}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isAdmin && (
       <Card>
         <CardHeader>
           <CardTitle>Test connection</CardTitle>
@@ -226,6 +197,7 @@ export function McpConfigPage() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

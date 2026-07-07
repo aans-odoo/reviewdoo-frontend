@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { ReviewFlowDiagram } from "@/components/ReviewFlowDiagram";
+import { McpConfigSnippet } from "@/components/shared/McpConfigSnippet";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -12,7 +13,6 @@ import {
   ListChecks,
   Wrench,
   ArrowRight,
-  Copy,
   Check,
   Clock,
   Network,
@@ -22,6 +22,7 @@ import {
   Sparkles,
   LucideIcon,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function IconBox({
   icon: Icon,
@@ -84,24 +85,8 @@ export function HowToUsePage() {
   // Same derivation used by the in-dashboard MCP Config page, so the snippet
   // here matches what developers paste into their IDE.
   const mcpUrl = `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
-  const configSnippet = JSON.stringify(
-    { mcpServers: { reviewdoo: { url: mcpUrl } } },
-    null,
-    2,
-  );
 
-  const [copied, setCopied] = useState(false);
   const [active, setActive] = useState(0);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(configSnippet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
 
   // Scroll-driven stepper: each step card is observed, and whichever card is
   // crossing the viewport center becomes the active step — so the progress bar
@@ -138,25 +123,7 @@ export function HowToUsePage() {
       case 0:
         return (
           <StepContent text="Paste this into your IDE's mcp.json — the same config you'll find on the MCP Config page once you log in — then restart the IDE. You only do this once.">
-            <div className="rounded-md border border-border bg-theme-bg-elevated">
-              <div className="flex items-center justify-between border-b border-border px-4 py-2">
-                <span className="text-xs font-medium text-theme-text-muted">mcp.json</span>
-                <Button variant="ghost" size="sm" className="h-7 gap-2" onClick={handleCopy}>
-                  {copied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" /> Copy
-                    </>
-                  )}
-                </Button>
-              </div>
-              <pre className="overflow-auto whitespace-pre p-4 text-sm text-theme-text-muted font-mono">
-                {configSnippet}
-              </pre>
-            </div>
+            <McpConfigSnippet />
           </StepContent>
         );
       case 1:
@@ -213,7 +180,9 @@ export function HowToUsePage() {
       {/* Header */}
       <header className="border-b border-border bg-theme-bg-card/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo />
+          <Link to="/">
+            <Logo />
+          </Link>
           <div className="flex items-center gap-2">
             <a href="/about">
               <Button variant="ghost" size="sm" className="gap-2">
@@ -289,30 +258,27 @@ export function HowToUsePage() {
                 return (
                   <button key={step.title} onClick={() => goTo(i)} className="group text-left">
                     <div
-                      className={`h-1.5 rounded-full transition-colors ${
-                        isActive
+                      className={`h-1.5 rounded-full transition-colors ${isActive
                           ? "bg-theme-accent"
                           : isDone
                             ? "bg-theme-success/60"
                             : "bg-theme-bg-elevated group-hover:bg-theme-primary/30"
-                      }`}
+                        }`}
                     />
                     <div className="mt-2 flex items-center gap-1.5">
                       <span
-                        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
-                          isActive
+                        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${isActive
                             ? "bg-theme-accent text-theme-bg-card"
                             : isDone
                               ? "bg-theme-success/20 text-theme-success"
                               : "bg-theme-bg-elevated text-theme-text-muted"
-                        }`}
+                          }`}
                       >
                         {isDone ? <Check className="h-3 w-3" /> : i + 1}
                       </span>
                       <span
-                        className={`hidden truncate text-xs font-medium sm:block ${
-                          isActive ? "text-theme-text" : "text-theme-text-muted group-hover:text-theme-text"
-                        }`}
+                        className={`hidden truncate text-xs font-medium sm:block ${isActive ? "text-theme-text" : "text-theme-text-muted group-hover:text-theme-text"
+                          }`}
                       >
                         {step.title}
                       </span>
@@ -334,11 +300,10 @@ export function HowToUsePage() {
                   ref={(el: HTMLDivElement | null) => {
                     markerRefs.current[i] = el;
                   }}
-                  className={`scroll-mt-32 transition-colors ${
-                    isActive
+                  className={`scroll-mt-32 transition-colors ${isActive
                       ? "border-theme-primary/40 bg-theme-bg-card"
                       : "border-border bg-theme-bg-card/50"
-                  }`}
+                    }`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3">
