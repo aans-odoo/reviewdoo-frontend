@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownHint } from "@/components/shared/MarkdownHint";
 import { ChipInput } from "@/components/shared/ChipInput";
+import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
 import { CategorySelect } from "@/components/categories/CategorySelect";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
@@ -30,6 +31,14 @@ import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
+
+const LANGUAGE_OPTIONS: MultiSelectOption[] = [
+  { value: "typescript", label: "TypeScript" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "python", label: "Python" },
+  { value: "xml", label: "XML" },
+  { value: "css", label: "CSS" },
+];
 
 export interface ChecklistInitial {
   id: string;
@@ -242,12 +251,11 @@ export function ReviewChecklistFormDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="cf-languages">Languages</Label>
-              <ChipInput
-                id="cf-languages"
-                values={languages}
+              <MultiSelect
+                options={LANGUAGE_OPTIONS}
+                selected={languages}
                 onChange={setLanguages}
-                lowercase
-                placeholder="e.g. typescript — press Enter to add"
+                placeholder="Select languages..."
               />
             </div>
             <div className="space-y-2">
