@@ -116,7 +116,7 @@ export function CategorySelect({
         onOpenChange={setOpen}
         disabled={disabled}
       >
-        <SelectTrigger className={triggerClassName}>
+        <SelectTrigger className={`capitalize ${triggerClassName ?? ""}`}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
