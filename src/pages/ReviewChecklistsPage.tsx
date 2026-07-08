@@ -25,6 +25,7 @@ import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
+import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 
 interface ReviewChecklist {
   id: string;
@@ -35,6 +36,10 @@ interface ReviewChecklist {
   filePatterns: string[];
   _count?: { references?: number };
   referenceCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: Contributor | null;
+  updatedBy?: Contributor | null;
   similarityScore?: number;
 }
 
@@ -307,6 +312,19 @@ export function ReviewChecklistsPage() {
       key: "referenceCount",
       header: "References",
       render: (row) => <span className="text-theme-text-dim">{row._count?.references ?? row.referenceCount ?? 0}</span>,
+    },
+    {
+      key: "contributors",
+      header: "Contributors",
+      render: (row) => (
+        <ContributionInfo
+          size="sm"
+          createdBy={row.createdBy}
+          updatedBy={row.updatedBy}
+          createdAt={row.createdAt}
+          updatedAt={row.updatedAt}
+        />
+      ),
     },
   ];
 

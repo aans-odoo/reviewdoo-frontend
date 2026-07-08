@@ -25,6 +25,7 @@ import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
 import { MarkdownHint } from "@/components/shared/MarkdownHint";
+import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
@@ -48,6 +49,8 @@ interface GuidelineDetail {
   tags: Tag[];
   createdAt: string;
   updatedAt: string;
+  createdBy?: Contributor | null;
+  updatedBy?: Contributor | null;
 }
 
 export function GuidelineDetailPage() {
@@ -224,7 +227,15 @@ export function GuidelineDetailPage() {
 
       <Card className="overflow-hidden">
         <CardContent className="px-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted px-6 py-3 bg-theme-body/30">Guideline</p>
+          <div className="flex items-center justify-between px-6 py-3 bg-theme-body/30">
+            <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted">Guideline</p>
+            <ContributionInfo
+              createdBy={item.createdBy}
+              updatedBy={item.updatedBy}
+              createdAt={item.createdAt}
+              updatedAt={item.updatedAt}
+            />
+          </div>
 
           <div className="px-6 pt-4">
             <Markdown className="text-base leading-relaxed text-theme-text px-4 py-8">
@@ -254,13 +265,6 @@ export function GuidelineDetailPage() {
                     <span>None</span>
                   )}
                 </div>
-              </div>
-
-              <span className="w-px h-6 bg-border" />
-
-              <div className="flex items-center gap-2">
-                <span>Created:</span>
-                <span className="text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>

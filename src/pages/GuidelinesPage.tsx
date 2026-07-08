@@ -36,6 +36,7 @@ import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
 import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
 import { getApiErrorMessage } from "@/lib/errors";
+import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
@@ -51,6 +52,9 @@ interface Guideline {
   severity: string;
   tags: Tag[];
   createdAt: string;
+  updatedAt?: string;
+  createdBy?: Contributor | null;
+  updatedBy?: Contributor | null;
   similarityScore?: number;
 }
 
@@ -453,6 +457,19 @@ export function GuidelinesPage() {
             </Badge>
           ))}
         </div>
+      ),
+    },
+    {
+      key: "contributors",
+      header: "Contributors",
+      render: (row) => (
+        <ContributionInfo
+          size="sm"
+          createdBy={row.createdBy}
+          updatedBy={row.updatedBy}
+          createdAt={row.createdAt}
+          updatedAt={row.updatedAt}
+        />
       ),
     },
   ];

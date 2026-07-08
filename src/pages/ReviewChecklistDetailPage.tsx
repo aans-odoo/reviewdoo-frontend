@@ -8,6 +8,7 @@ import { ReviewChecklistFormDialog } from "@/components/checklists/ReviewCheckli
 import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
+import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
@@ -30,6 +31,8 @@ interface ReviewChecklistDetail {
   references: Reference[];
   createdAt: string;
   updatedAt: string;
+  createdBy?: Contributor | null;
+  updatedBy?: Contributor | null;
 }
 
 export function ReviewChecklistDetailPage() {
@@ -125,7 +128,15 @@ export function ReviewChecklistDetailPage() {
 
       <Card className="overflow-hidden">
         <CardContent className="px-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted px-6 py-3 bg-theme-body/30">Review Checklist</p>
+          <div className="flex items-center justify-between px-6 py-3 bg-theme-body/30">
+            <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted">Review Checklist</p>
+            <ContributionInfo
+              createdBy={item.createdBy}
+              updatedBy={item.updatedBy}
+              createdAt={item.createdAt}
+              updatedAt={item.updatedAt}
+            />
+          </div>
 
           <div className="px-6 pt-4">
             <Markdown className="text-base leading-relaxed text-theme-text px-4 py-8">
@@ -175,13 +186,6 @@ export function ReviewChecklistDetailPage() {
                     <span>None</span>
                   )}
                 </div>
-              </div>
-
-              <span className="w-px h-6 bg-border" />
-
-              <div className="flex items-center gap-2">
-                <span>Created:</span>
-                <span className="text-theme-text-dim">{new Date(item.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>

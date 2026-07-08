@@ -5,6 +5,7 @@ import { AdminRoute } from "@/components/auth/AdminRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DetailViewLayout } from "@/components/layout/DetailViewLayout";
 import { Loading } from "@/components/shared/Loading";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Route-level code splitting: each page is loaded on demand so the initial
 // bundle stays small and heavy public pages (About, How to Use) don't ship
@@ -29,8 +30,9 @@ const HowToUsePage = lazy(() => import("@/pages/HowToUsePage").then((m) => ({ de
 
 export default function App() {
   return (
-    <Suspense fallback={<Loading className="min-h-screen" />}>
-      <Routes>
+    <TooltipProvider delayDuration={150}>
+      <Suspense fallback={<Loading className="min-h-screen" />}>
+        <Routes>
         <Route path="/design/v2" element={<DesignShowcasePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/setup" element={<AccountSetupPage />} />
@@ -66,6 +68,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </Suspense>
+      </Suspense>
+    </TooltipProvider>
   );
 }
