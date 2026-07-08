@@ -24,7 +24,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
-import { MarkdownHint } from "@/components/shared/MarkdownHint";
+import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
@@ -281,18 +281,14 @@ export function GuidelineDetailPage() {
                 <DialogDescription>Update the guideline.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleEditGuideline} className="space-y-4 p-5">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="eg-content">Guideline</Label>
-                    <MarkdownHint />
-                  </div>
+                <MarkdownField label="Guideline" htmlFor="eg-content" value={editContent}>
                   <Textarea
                     id="eg-content"
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     required
                   />
-                </div>
+                </MarkdownField>
                 <div className="space-y-2">
                   <Label>Severity</Label>
                   <Select value={editSeverity} onValueChange={setEditSeverity}>

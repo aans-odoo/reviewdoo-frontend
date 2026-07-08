@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MarkdownHint } from "@/components/shared/MarkdownHint";
+import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
 import { ChipInput } from "@/components/shared/ChipInput";
 import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
@@ -219,11 +219,7 @@ export function ReviewChecklistFormDialog({
             {error && (
               <Alert variant="error">{error}</Alert>
             )}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="cf-description">Description</Label>
-                <MarkdownHint />
-              </div>
+            <MarkdownField label="Description" htmlFor="cf-description" value={description}>
               <Textarea
                 id="cf-description"
                 value={description}
@@ -231,7 +227,7 @@ export function ReviewChecklistFormDialog({
                 required
                 placeholder="Describe the review checklist..."
               />
-            </div>
+            </MarkdownField>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Severity</Label>

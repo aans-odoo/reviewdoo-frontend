@@ -31,7 +31,7 @@ import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/Simila
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
-import { MarkdownHint } from "@/components/shared/MarkdownHint";
+import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
 import { findSimilarGuidelines, aboveThreshold } from "@/lib/similarity";
@@ -725,11 +725,7 @@ export function GuidelinesPage() {
             <DialogDescription>Add a new guideline with optional tags.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateGuideline} className="space-y-4 p-5">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="g-content">Guideline</Label>
-                <MarkdownHint />
-              </div>
+            <MarkdownField label="Guideline" htmlFor="g-content" value={newContent}>
               <Textarea
                 id="g-content"
                 value={newContent}
@@ -737,7 +733,7 @@ export function GuidelinesPage() {
                 required
                 placeholder="Enter the guideline..."
               />
-            </div>
+            </MarkdownField>
             <div className="space-y-2">
               <Label>Severity</Label>
               <Select value={newSeverity} onValueChange={setNewSeverity}>
@@ -783,18 +779,14 @@ export function GuidelinesPage() {
             <DialogDescription>Update the guideline.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditGuideline} className="space-y-4 p-5">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="eg-content">Guideline</Label>
-                <MarkdownHint />
-              </div>
+            <MarkdownField label="Guideline" htmlFor="eg-content" value={editContent}>
               <Textarea
                 id="eg-content"
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 required
               />
-            </div>
+            </MarkdownField>
             <div className="space-y-2">
               <Label>Severity</Label>
               <Select value={editSeverity} onValueChange={setEditSeverity}>
