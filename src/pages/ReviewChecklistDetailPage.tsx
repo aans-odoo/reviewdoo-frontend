@@ -138,6 +138,7 @@ export function ReviewChecklistDetailPage() {
               updatedBy={item.updatedBy}
               createdAt={item.createdAt}
               updatedAt={item.updatedAt}
+              tooltipSide="left"
             />
           </div>
 

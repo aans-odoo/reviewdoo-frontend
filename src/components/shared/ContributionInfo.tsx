@@ -55,6 +55,7 @@ interface ContributionInfoProps {
   updatedAt?: string;
   size?: keyof typeof SIZE;
   className?: string;
+  tooltipSide?: "right" | "top" | "bottom" | "left" | undefined;
 }
 
 /**
@@ -75,6 +76,7 @@ export function ContributionInfo({
   updatedAt,
   size = "md",
   className,
+  tooltipSide = "right"
 }: ContributionInfoProps) {
   // Only surface the editor when the record was genuinely changed after
   // creation *and* by a different person than the original author.
@@ -110,7 +112,7 @@ export function ContributionInfo({
             {wasEditedByOther && updatedBy && <Face person={updatedBy} size={size} />}
           </div>
         </TooltipTrigger>
-        <TooltipContent side="right">{tooltip}</TooltipContent>
+        <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
       </Tooltip>
     </div>
   );
