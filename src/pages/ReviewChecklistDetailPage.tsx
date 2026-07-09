@@ -48,6 +48,7 @@ export function ReviewChecklistDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchItem = async () => {
     try {
@@ -70,11 +71,15 @@ export function ReviewChecklistDetailPage() {
 
   const handleDelete = async () => {
     setDeleting(true);
+    setDeleteError(null);
     try {
       await api.delete(`/review-checklists/${id}`);
       navigate("/review-checklists");
-    } catch {
-      setError("Failed to delete review checklist");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ||
+        "Failed to delete review checklist";
+      setDeleteError(msg);
     } finally {
       setDeleting(false);
     }
@@ -111,8 +116,7 @@ export function ReviewChecklistDetailPage() {
               <Button
                 variant="outline"
                 onClick={() => setEditOpen(true)}
-                disabled={!hasEmbeddingModel}
-                title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
+                title="Configure an embedding model first"
               >
                 <Pencil className="mr-2 h-4 w-4" /> Edit
               </Button>
@@ -251,13 +255,17 @@ export function ReviewChecklistDetailPage() {
 
           <ConfirmDialog
             open={deleteOpen}
-            onOpenChange={setDeleteOpen}
+            onOpenChange={(open) => {
+              setDeleteOpen(open);
+              if (!open) setDeleteError(null);
+            }}
             title="Delete Review Checklist"
             description="Are you sure you want to delete this review checklist? All references will also be removed."
             confirmLabel="Delete"
             variant="destructive"
             onConfirm={handleDelete}
             isLoading={deleting}
+            error={deleteError}
           />
         </>
       )}
