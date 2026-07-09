@@ -350,8 +350,7 @@ export function ReviewChecklistsPage() {
           size="icon"
           className="h-8 w-8"
           onClick={() => openEdit(row.id)}
-          disabled={!hasEmbeddingModel}
-          title={hasEmbeddingModel ? "Edit" : "Configure an embedding model first"}
+          title="Edit"
           aria-label="Edit checklist"
         >
           <Pencil className="h-4 w-4" />
@@ -403,8 +402,6 @@ export function ReviewChecklistsPage() {
           )}
           <Button
             onClick={() => setCreateOpen(true)}
-            disabled={!hasEmbeddingModel}
-            title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
           >
             <Plus className="mr-1 h-4 w-4" />
             Create Review Checklist
@@ -412,7 +409,7 @@ export function ReviewChecklistsPage() {
         </div>
       </div>
 
-      {!hasEmbeddingModel && <EmbeddingModelBanner entity="review checklists" searchType={searchMode} />}
+      {!hasEmbeddingModel && searchMode === "semantic" && <EmbeddingModelBanner message="An active embedding model is required for semantic search." />}
 
       <Card>
         <CardContent className="pt-6">

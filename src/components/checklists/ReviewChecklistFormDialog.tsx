@@ -154,20 +154,24 @@ export function ReviewChecklistFormDialog({
     setSaving(true);
     setError("");
     try {
-      const matches = await findSimilarChecklists(description, mode === "edit" ? initial?.id : undefined);
-      const dupes = aboveThreshold(matches);
-      if (dupes.length > 0) {
-        setSimilar(
-          dupes.map((m) => ({
-            id: m.id,
-            text: m.description,
-            score: m.similarityScore,
-            href: `/review-checklists/${m.id}`,
-          }))
-        );
-        setShowSimilar(true);
-        setSaving(false);
-        return;
+      // Skip similarity check when no embedding model is configured — the
+      // feature degrades gracefully to a direct save without dedup warnings.
+      if (hasEmbeddingModel) {
+        const matches = await findSimilarChecklists(description, mode === "edit" ? initial?.id : undefined);
+        const dupes = aboveThreshold(matches);
+        if (dupes.length > 0) {
+          setSimilar(
+            dupes.map((m) => ({
+              id: m.id,
+              text: m.description,
+              score: m.similarityScore,
+              href: `/review-checklists/${m.id}`,
+            }))
+          );
+          setShowSimilar(true);
+          setSaving(false);
+          return;
+        }
       }
       await doSave();
     } catch (err: unknown) {
@@ -205,7 +209,7 @@ export function ReviewChecklistFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg gap-0">
           <DialogHeader>
             <DialogTitle>{mode === "create" ? "Create Review Checklist" : "Edit Review Checklist"}</DialogTitle>
             <DialogDescription>
@@ -214,8 +218,14 @@ export function ReviewChecklistFormDialog({
                 : "Update this review checklist."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="min-w-0 space-y-4 p-5">
-            {!hasEmbeddingModel && <EmbeddingModelBanner entity="review checklists" searchType="text" />}
+          <form onSubmit={handleSubmit} className="relative min-w-0 space-y-4 p-5 pt-10">
+            {!hasEmbeddingModel && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-card/40 via-card to-card/40 backdrop-blur-[1px]">
+                <div className="px-6 pb-14">
+                  <EmbeddingModelBanner message="An active embedding model is required for creating or editing a review checklist." />
+                </div>
+              </div>
+            )}
             {error && (
               <Alert variant="error">{error}</Alert>
             )}

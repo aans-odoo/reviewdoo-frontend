@@ -1,4 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ interface TestResult {
 const PROVIDERS = ["gemini", "openrouter"];
 
 export function AIModelConfigPage() {
+  const location = useLocation();
   const [configs, setConfigs] = useState<AIModelConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -81,6 +83,17 @@ export function AIModelConfigPage() {
   };
 
   useEffect(() => { fetchConfigs(); }, []);
+
+  // Auto-open the "Add Embedding Model" dialog when navigated with state.
+  useEffect(() => {
+    const state = location.state as { openAddEmbedding?: boolean } | null;
+    if (state?.openAddEmbedding && !loading) {
+      openCreate("embedding");
+      // Clear the state so refreshing the page doesn't re-trigger.
+      window.history.replaceState({}, "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, loading]);
 
   const openCreate = (type: "embedding" | "processing") => {
     setEditTarget(null);
