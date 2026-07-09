@@ -78,6 +78,7 @@ export function ReviewChecklistsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ReviewChecklist | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Import / Export
   const [importing, setImporting] = useState(false);
@@ -178,12 +179,16 @@ export function ReviewChecklistsPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await api.delete(`/review-checklists/${deleteTarget.id}`);
       setDeleteTarget(null);
       refresh();
-    } catch {
-      setError("Failed to delete review checklist");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ||
+        "Failed to delete review checklist";
+      setDeleteError(msg);
     } finally {
       setDeleting(false);
     }
@@ -567,13 +572,19 @@ export function ReviewChecklistsPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }
+        }}
         title="Delete Review Checklist"
         description="Are you sure you want to delete this review checklist? All references will also be removed."
         confirmLabel="Delete"
         variant="destructive"
         onConfirm={handleDelete}
         isLoading={deleting}
+        error={deleteError}
       />
     </div>
   );

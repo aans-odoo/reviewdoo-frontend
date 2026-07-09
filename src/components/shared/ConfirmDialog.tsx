@@ -18,6 +18,7 @@ interface ConfirmDialogProps {
   variant?: "default" | "destructive";
   onConfirm: () => void;
   isLoading?: boolean;
+  error?: string | null;
 }
 
 export function ConfirmDialog({
@@ -30,6 +31,7 @@ export function ConfirmDialog({
   variant = "default",
   onConfirm,
   isLoading = false,
+  error = null,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,6 +40,11 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {error && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/30 mx-4 px-4 py-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
         <DialogFooter className="border-none">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isLoading}>
             {cancelLabel}
