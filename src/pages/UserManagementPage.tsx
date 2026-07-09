@@ -53,6 +53,7 @@ export function UserManagementPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<"admin" | "member">("member");
+  const [newAvatarUrl, setNewAvatarUrl] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -96,11 +97,16 @@ export function UserManagementPage() {
     setCreating(true);
     setCreateError("");
     try {
-      await api.post("/users", { email: newEmail, name: newName, role: newRole });
+      const payload: { email: string; name: string; role: string; avatarUrl?: string } = { email: newEmail, name: newName, role: newRole };
+      if (newAvatarUrl.trim()) {
+        payload.avatarUrl = newAvatarUrl.trim();
+      }
+      await api.post("/users", payload);
       setCreateOpen(false);
       setNewEmail("");
       setNewName("");
       setNewRole("member");
+      setNewAvatarUrl("");
       await fetchUsers();
     } catch (err: unknown) {
       setCreateError(getApiErrorMessage(err, "Failed to create user"));
@@ -350,6 +356,25 @@ export function UserManagementPage() {
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="user-avatar">Avatar URL</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="user-avatar"
+                  value={newAvatarUrl}
+                  onChange={(e) => setNewAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.png"
+                />
+                {newAvatarUrl && (
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    <AvatarImage src={newAvatarUrl} alt="Avatar preview" />
+                    <AvatarFallback>
+                      {newName ? newName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
