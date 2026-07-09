@@ -26,6 +26,7 @@ import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ReviewChecklist {
   id: string;
@@ -271,12 +272,19 @@ export function ReviewChecklistsPage() {
       header: "Description",
       className: "max-w-xs align-top",
       render: (row) => (
-        <div
-          className="cursor-pointer transition-colors hover:text-theme-primary-light"
-          onClick={() => navigate(`/review-checklists/${row.id}`)}
-        >
-          <Markdown className="max-w-xs">{row.description}</Markdown>
-        </div>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="cursor-pointer transition-colors hover:opacity-80"
+                onClick={() => navigate(`/review-checklists/${row.id}`)}
+              >
+                <Markdown className="max-w-xs">{row.description}</Markdown>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="left">Open detailed view</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       ),
     },
     {
