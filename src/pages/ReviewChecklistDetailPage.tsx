@@ -101,26 +101,29 @@ export function ReviewChecklistDetailPage() {
 
   return (
     <div className="space-y-6">
-      {isAuthenticated && (
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Review Checklists
-          </Button>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setEditOpen(true)}
-              disabled={!hasEmbeddingModel}
-              title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
-            >
-              <Pencil className="mr-2 h-4 w-4" /> Edit
+      {isAuthenticated
+        ? (
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" onClick={() => navigate("/review-checklists")}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Review Checklists
             </Button>
-            <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditOpen(true)}
+                disabled={!hasEmbeddingModel}
+                title={hasEmbeddingModel ? undefined : "Configure an embedding model first"}
+              >
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </Button>
+              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+        : <br />
+      }
 
       {error && (
         <Alert variant="error">{error}</Alert>
@@ -144,49 +147,48 @@ export function ReviewChecklistDetailPage() {
             </Markdown>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-theme-border pt-6 pb-2 text-sm text-theme-text-muted">
-              <div className="flex items-center gap-2">
-                <span>Severity:</span>
-                <Badge variant={item.severity === "critical" ? "red" : item.severity === "major" ? "orange" : "default"}>
-                  {item.severity}
-                </Badge>
-              </div>
-
-              <span className="w-px h-6 bg-border" />
-
-              <div className="flex items-center gap-2">
-                <span>Category:</span>
-                <span className="capitalize text-theme-text-dim">{item.category || "—"}</span>
-              </div>
-
-              <span className="w-px h-6 bg-border" />
-
-              <div className="flex items-center gap-2">
-                <span>Languages:</span>
-                <div className="flex flex-wrap gap-1">
-                  {item.languages.length > 0 ? (
-                    item.languages.map((lang) => (
-                      <Badge key={lang} variant="outline">{lang}</Badge>
-                    ))
-                  ) : (
-                    <span>None</span>
-                  )}
-                </div>
-              </div>
-
-              <span className="w-px h-6 bg-border" />
-
-              <div className="flex items-center gap-2">
-                <span>File Patterns:</span>
-                <div className="flex flex-wrap gap-1">
-                  {item.filePatterns.length > 0 ? (
-                    item.filePatterns.map((pat) => (
-                      <Badge key={pat} variant="outline">{pat}</Badge>
-                    ))
-                  ) : (
-                    <span>None</span>
-                  )}
-                </div>
-              </div>
+              {[
+                item.severity && (
+                  <div key="severity" className="flex items-center gap-2">
+                    <span>Severity:</span>
+                    <Badge variant={item.severity === "critical" ? "red" : item.severity === "major" ? "orange" : "default"}>
+                      {item.severity}
+                    </Badge>
+                  </div>
+                ),
+                item.category && (
+                  <div key="category" className="flex items-center gap-2">
+                    <span>Category:</span>
+                    <span className="capitalize text-theme-text-dim">{item.category}</span>
+                  </div>
+                ),
+                item.languages.length > 0 && (
+                  <div key="languages" className="flex items-center gap-2">
+                    <span>Languages:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {item.languages.map((lang) => (
+                        <Badge key={lang} variant="outline">{lang}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ),
+                item.filePatterns.length > 0 && (
+                  <div key="filePatterns" className="flex items-center gap-2">
+                    <span>File Patterns:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {item.filePatterns.map((pat) => (
+                        <Badge key={pat} variant="outline">{pat}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              ]
+                .filter(Boolean)
+                .flatMap((el, i, arr) =>
+                  i < arr.length - 1
+                    ? [el, <span key={`sep-${i}`} className="w-px h-6 bg-border" />]
+                    : [el]
+                )}
             </div>
           </div>
         </CardContent>
