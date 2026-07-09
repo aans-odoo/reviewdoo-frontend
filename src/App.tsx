@@ -17,8 +17,6 @@ const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage").then(
 const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage })));
 const ReviewChecklistsPage = lazy(() => import("@/pages/ReviewChecklistsPage").then((m) => ({ default: m.ReviewChecklistsPage })));
 const ReviewChecklistDetailPage = lazy(() => import("@/pages/ReviewChecklistDetailPage").then((m) => ({ default: m.ReviewChecklistDetailPage })));
-const GuidelinesPage = lazy(() => import("@/pages/GuidelinesPage").then((m) => ({ default: m.GuidelinesPage })));
-const GuidelineDetailPage = lazy(() => import("@/pages/GuidelineDetailPage").then((m) => ({ default: m.GuidelineDetailPage })));
 const AIModelConfigPage = lazy(() => import("@/pages/AIModelConfigPage").then((m) => ({ default: m.AIModelConfigPage })));
 const McpConfigPage = lazy(() => import("@/pages/McpConfigPage").then((m) => ({ default: m.McpConfigPage })));
 const UserManagementPage = lazy(() => import("@/pages/UserManagementPage").then((m) => ({ default: m.UserManagementPage })));
@@ -47,14 +45,12 @@ export default function App() {
             anonymous users inside each page. */}
         <Route element={<DetailViewLayout />}>
           <Route path="/review-checklists/:id" element={<ReviewChecklistDetailPage />} />
-          <Route path="/guidelines/:id" element={<GuidelineDetailPage />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route index element={<Navigate to="/guidelines" replace />} />
+            <Route index element={<Navigate to="/review-checklists" replace />} />
             <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
-            <Route path="/guidelines" element={<GuidelinesPage />} />
             <Route path="/ai-config" element={<AIModelConfigPage />} />
             <Route path="/mcp-config" element={<McpConfigPage />} />
 

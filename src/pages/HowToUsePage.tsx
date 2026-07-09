@@ -161,7 +161,7 @@ export function HowToUsePage() {
         );
       case 3:
         return (
-          <StepContent text="The IDE pulls only the guidelines and checklist items relevant to your diff, checks your changes against them, and lists what to fix — grouped by severity. Clean it up, then open your PR with confidence.">
+          <StepContent text="The IDE pulls only the review checklist items relevant to your diff, checks your changes against them, and lists what to fix — grouped by severity. Clean it up, then open your PR with confidence.">
             <div className="flex flex-wrap gap-2">
               <SeverityPill label="Critical" className="bg-theme-danger/15 text-theme-danger" />
               <SeverityPill label="Major" className="bg-theme-accent/15 text-theme-accent" />
@@ -225,7 +225,7 @@ export function HowToUsePage() {
             <p className="text-lg text-theme-text-muted leading-relaxed">
               Connect Review<span className="text-theme-primary">doo</span> to your AI IDE one time. After that, a single command —{" "}
               <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-base">@reviewdoo init</code>{" "}
-              — walks you through checking your changes against the team's guidelines and review checklists before you open a PR.
+              — walks you through checking your changes against the team's review checklists before you open a PR.
             </p>
 
             {/* Quick facts */}
@@ -331,8 +331,8 @@ export function HowToUsePage() {
             <CardContent className="pt-6">
               <p className="text-theme-text-muted mb-8 max-w-3xl">
                 After <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">init</code>, your IDE
-                talks to Reviewdoo over MCP to gather just the guidelines and checklists that apply to your changes, then checks
-                your diff against them locally — flagging anything that doesn't follow a guideline or violates a checklist, with
+                talks to Reviewdoo over MCP to gather just the review checklists that apply to your changes, then checks
+                your diff against them locally — flagging anything that violates a checklist, with
                 full codebase context.
               </p>
 
@@ -345,7 +345,7 @@ export function HowToUsePage() {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-theme-text">What you'll be using</h2>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <InfoCard
               icon={Terminal}
               title="init"
@@ -353,14 +353,9 @@ export function HowToUsePage() {
               description="The one command you run. It hands your IDE the whole self-check workflow so you don't have to remember any steps."
             />
             <InfoCard
-              icon={BookOpen}
-              title="Team guidelines"
-              description="Coding standards mapped to the file types you touched — the rules everyone on the team is expected to follow."
-            />
-            <InfoCard
               icon={MessageSquareText}
               title="Review checklists"
-              description="Concrete checks distilled from past PR feedback. Only the ones relevant to your diff show up, so the list stays short."
+              description="Concrete checks distilled from past PR feedback, mapped to the file types and languages you touched. Only the ones relevant to your diff show up, so the list stays short."
             />
           </div>
         </section>

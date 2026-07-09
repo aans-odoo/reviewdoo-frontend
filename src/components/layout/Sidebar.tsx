@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   ClipboardCheck,
-  BookOpen,
   Brain,
   Network,
   UserCog,
@@ -66,7 +65,6 @@ export function Sidebar() {
   }
 
   const navItems = [
-    { to: "/guidelines", label: "Guidelines", icon: BookOpen },
     {
       to: "/review-checklists",
       label: "Review Checklists",

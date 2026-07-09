@@ -10,7 +10,7 @@ interface AIModelConfig {
 /**
  * Detects whether the current user has an active embedding model configured.
  * An embedding model is required to generate embeddings and to run the
- * similarity / semantic search used when creating guidelines and checklists.
+ * similarity / semantic search used when creating review checklists.
  */
 export function useEmbeddingModel(enabled: boolean = true) {
   const [hasEmbeddingModel, setHasEmbeddingModel] = useState(true);

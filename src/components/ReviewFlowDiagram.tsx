@@ -11,8 +11,8 @@ import {
 /**
  * The Reviewdoo review-flow diagram, shared between the About page and the
  * How-to-Use page so both render an identical picture of the init workflow:
- * the IDE runs `init`, calls Reviewdoo over MCP for the relevant guidelines
- * and checklists, gets them back, and reviews the code locally.
+ * the IDE runs `init`, calls Reviewdoo over MCP for the relevant review
+ * checklists, gets them back, and reviews the code locally.
  *
  * Self-contained (no props) so the two pages stay in sync by construction.
  */
@@ -61,7 +61,7 @@ export function ReviewFlowDiagram() {
             <div className="relative">
               <div className="flex items-center">
                 {/* Left muted text */}
-                <div className="text-xs text-theme-text-muted italic text-center">Request relevant <br />guideline and checklist</div>
+                <div className="text-xs text-theme-text-muted italic text-center">Request relevant <br />review checklists</div>
                 {/* Arrow line */}
                 <div className="flex-1 flex items-center justify-end px-4">
                   <ArrowRight className="h-5 w-5 text-theme-accent rotate-180 -mr-2" />
@@ -97,7 +97,7 @@ export function ReviewFlowDiagram() {
                   <ArrowRight className="h-5 w-5 text-theme-accent -ml-2" />
                 </div>
                 {/* Right muted text */}
-                <div className="text-xs text-theme-text-muted italic text-center">Receive relevant<br />guideline and checklist</div>
+                <div className="text-xs text-theme-text-muted italic text-center">Receive relevant<br />review checklists</div>
               </div>
               {/* Connecting dotted line to next step */}
               <div className="absolute -right-6 top-[50%] h-20 w-3 border-r border-b border-t border-dashed border-theme-text-dim/30" />
@@ -114,7 +114,7 @@ export function ReviewFlowDiagram() {
                   <CheckCircle2 className="h-5 w-5 text-theme-success" />
                   <span className="text-sm font-medium text-theme-text">Check for violations</span>
                 </div>
-                <div className="text-xs text-theme-text-muted italic">Flags anything that breaks a guideline or checklist</div>
+                <div className="text-xs text-theme-text-muted italic">Flags anything that breaks a review checklist</div>
               </div>
             </div>
           </div>

@@ -116,7 +116,7 @@ export function AboutPage() {
               Fix the common stuff before review.
             </h1>
             <p className="text-lg text-theme-text-muted leading-relaxed">
-              Review<span className="text-theme-primary">doo</span> is an internal knowledge base of our team's coding guidelines and the review checklists we've built from real PR feedback. You use this before submitting your PR for review, to ensure you're not breaking any guidline or missing any review checklist. It's a self-check against our own standards, <span className="text-theme-text font-medium">not an AI reviewer</span>, and not a replacement for human review.
+              Review<span className="text-theme-primary">doo</span> is an internal knowledge base of the review checklists we've built from real PR feedback. You use this before submitting your PR for review, to ensure you're not missing any review checklist. It's a self-check against our own standards, <span className="text-theme-text font-medium">not an AI reviewer</span>, and not a replacement for human review.
             </p>
             <div className="mt-6 flex items-center gap-2 text-sm text-theme-text-muted">
               <span className="text-theme-text font-medium">— Arib Ansari (aans)</span>
@@ -170,7 +170,7 @@ export function AboutPage() {
                   <h3 className="font-semibold text-theme-text">What it is</h3>
                 </div>
                 <ul className="space-y-2.5 text-sm text-theme-text-muted">
-                  <PointItem good>A curated knowledge base of our coding guidelines and review checklists.</PointItem>
+                  <PointItem good>A curated knowledge base of our review checklists.</PointItem>
                   <PointItem good>Searchable by keyword or meaning, with duplicate detection to keep it clean.</PointItem>
                   <PointItem good>Connected to your AI IDE over MCP so it can check a diff against the relevant items.</PointItem>
                   <PointItem good>Curated by the team, by hand—you add what's worth remembering.</PointItem>
@@ -208,19 +208,19 @@ export function AboutPage() {
                   number="1"
                   icon={MessageSquarePlus}
                   title="Contribute"
-                  description="When you get useful review feedback, add it yourself as a guideline or a checklist item."
+                  description="When you get useful review feedback, add it yourself as a review checklist item."
                 />
                 <SolutionStep
                   number="2"
                   icon={Layers}
                   title="Organize"
-                  description="Tag guidelines by language or area, and scope checklists to the file patterns and languages they apply to. Keyword and semantic search, plus duplicate detection, keep the base findable and clean."
+                  description="Scope checklists to the file patterns and languages they apply to. Keyword and semantic search, plus duplicate detection, keep the base findable and clean."
                 />
                 <SolutionStep
                   number="3"
                   icon={ShieldCheck}
                   title="Apply"
-                  description="Before a PR, your IDE pulls the guidelines and checklists relevant to your diff and checks your changes against them."
+                  description="Before a PR, your IDE pulls the review checklists relevant to your diff and checks your changes against them."
                 />
               </div>
             </CardContent>
@@ -241,17 +241,17 @@ export function AboutPage() {
                 />
                 <WorkflowStep
                   title="We Run @reviewdoo init"
-                  description="Before submitting the PR, we run @reviewdoo init in our AI IDE. Reviewdoo hands the IDE the full self-check workflow—how to pick what to review, and how to call Reviewdoo's MCP tools to fetch the guidelines and review checklists relevant to our changes."
+                  description="Before submitting the PR, we run @reviewdoo init in our AI IDE. Reviewdoo hands the IDE the full self-check workflow—how to pick what to review, and how to call Reviewdoo's MCP tools to fetch the review checklists relevant to our changes."
                   icon={Sparkles}
                 />
                 <WorkflowStep
                   title="Our IDE Runs the Self-Check"
-                  description="The AI IDE (Antigravity, Codex, Kiro, etc.) follows the init instructions: it asks what we want to check, fetches the guidelines (by tag) and checklists (by changed file) that match our diff, then checks our changes against them—flagging anything that doesn't follow a guideline or violates a checklist, with full codebase context."
+                  description="The AI IDE (Antigravity, Codex, Kiro, etc.) follows the init instructions: it asks what we want to check, fetches the review checklists (by changed file) that match our diff, then checks our changes against them—flagging anything that violates a checklist, with full codebase context."
                   icon={Brain}
                 />
                 <WorkflowStep
                   title="We Fix Issues Proactively"
-                  description="The AI IDE flags every guideline or checklist item our changes don't follow. We fix them immediately, before any human reviewer sees the code."
+                  description="The AI IDE flags every review checklist item our changes don't follow. We fix them immediately, before any human reviewer sees the code."
                   icon={CheckCircle2}
                 />
                 <WorkflowStep
@@ -261,7 +261,7 @@ export function AboutPage() {
                 />
                 <WorkflowStep
                   title="We Contribute Back"
-                  description="When we get review feedback worth remembering, we add it to the knowledge base ourselves—as a guideline or checklist item—so the whole team benefits next time."
+                  description="When we get review feedback worth remembering, we add it to the knowledge base ourselves—as a review checklist item—so the whole team benefits next time."
                   icon={MessageSquarePlus}
                   isLast
                 />
@@ -310,7 +310,7 @@ export function AboutPage() {
             <BenefitCard
               icon={Database}
               title="A Shared Reference"
-              description="Our guidelines and checklists live in one place instead of scattered PRs and memory. It grows as the team contributes."
+              description="Our review checklists live in one place instead of scattered PRs and memory. It grows as the team contributes."
             />
           </div>
         </section>
@@ -324,17 +324,17 @@ export function AboutPage() {
               <div className="space-y-6 py-4 px-2">
                 {/* Deterministic matching */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Matching Is Plain Pattern &amp; Tag Matching—Not AI</h3>
+                  <h3 className="font-semibold text-theme-text">Matching Is Plain Pattern &amp; Language Matching—Not AI</h3>
                   <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
                     <p>
                       When your IDE asks Reviewdoo what applies to a diff, the matching is <span className="text-theme-accent font-semibold">deterministic</span>—no embeddings, no AI, no similarity scoring:
                     </p>
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       <li>
-                        <span className="text-theme-text font-semibold">Guidelines</span> are matched by <span className="text-theme-accent font-semibold">tags</span>. The IDE maps your changed files to tag names (e.g. <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">css</code>, <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">javascript</code>) and Reviewdoo returns every guideline with those tags—because all guidelines are meant to be followed.
+                        <span className="text-theme-text font-semibold">Review checklists</span> are matched by <span className="text-theme-accent font-semibold">file pattern and language</span>. A checklist scoped to <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">*.ts</code> surfaces when a matching file changed, and one scoped to a language (e.g. <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">javascript</code>) surfaces when your diff touches that language.
                       </li>
                       <li>
-                        <span className="text-theme-text font-semibold">Checklists</span> are matched by <span className="text-theme-accent font-semibold">file pattern and language</span>. A checklist scoped to <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">*.ts</code> surfaces when a matching file changed.
+                        A checklist with <span className="text-theme-text font-semibold">no patterns or languages</span> is treated as <span className="text-theme-accent font-semibold">general</span> and applies to any diff—because it's meant to be followed everywhere.
                       </li>
                     </ul>
                     <p>
@@ -365,7 +365,7 @@ export function AboutPage() {
                   <h3 className="font-semibold text-theme-text">Where Semantic Search Fits</h3>
                   <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
                     <p>
-                      The knowledge base <span className="text-theme-accent font-semibold">does</span> use semantic search—but for <span className="text-theme-text font-semibold">curation</span>, not the per-diff check. In the management UI you can search guidelines and checklists by meaning (not just keywords), and when you add a new item Reviewdoo flags likely duplicates so the base stays clean.
+                      The knowledge base <span className="text-theme-accent font-semibold">does</span> use semantic search—but for <span className="text-theme-text font-semibold">curation</span>, not the per-diff check. In the management UI you can search review checklists by meaning (not just keywords), and when you add a new item Reviewdoo flags likely duplicates so the base stays clean.
                     </p>
                     <p>
                       Semantic search needs an embedding model, which each user configures under <span className="text-theme-text font-semibold">AI Config</span>. The IDE-facing matching above needs none of that.
@@ -388,7 +388,7 @@ export function AboutPage() {
                       <li>Different file types or project areas</li>
                     </ul>
                     <p>
-                      The IDE asks which scope to check, then the <span className="text-theme-accent font-semibold">core steps stay the same</span>—fetch the guidelines and checklists relevant to the diff, then check the changes against them. No prompt to copy and paste.
+                      The IDE asks which scope to check, then the <span className="text-theme-accent font-semibold">core steps stay the same</span>—fetch the review checklists relevant to the diff, then check the changes against them. No prompt to copy and paste.
                     </p>
                   </div>
                 </div>

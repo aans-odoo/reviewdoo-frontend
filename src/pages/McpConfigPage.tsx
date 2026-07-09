@@ -119,7 +119,7 @@ export function McpConfigPage() {
           MCP Config
         </h2>
         <p className="mt-1 text-sm text-theme-text-muted">
-          Register Reviewdoo as a remote MCP server in your AI IDE so it can fetch guidelines and review checklists while reviewing your code.
+          Register Reviewdoo as a remote MCP server in your AI IDE so it can fetch review checklists while reviewing your code.
         </p>
         <p className="mt-1 text-sm text-theme-text-muted">
           <span className="text-theme-accent/90">Paste</span> the config below into your IDE's <span className="text-theme-primary bg-theme-primary/10 px-2 py-0.5 rounded-sm">mcp.json</span> file and restart your IDE.
