@@ -430,13 +430,46 @@ export function AIModelConfigPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="ai-model-id">Model ID</Label>
-              <Input id="ai-model-id" placeholder="e.g. gemini-pro, gpt-4" value={modelId} onChange={(e) => setModelId(e.target.value)} required />
+              <Input
+                id="ai-model-id"
+                placeholder={
+                  provider === "gemini"
+                    ? dialogUsageType === "embedding"
+                      ? "e.g. gemini-embedding-2"
+                      : "e.g. gemini-2.5-flash"
+                    : "Enter model ID"
+                }
+                value={modelId}
+                onChange={(e) => setModelId(e.target.value)}
+                required
+                list={provider === "gemini" ? "model-suggestions" : undefined}
+              />
+              {provider === "gemini" && (
+                <datalist id="model-suggestions">
+                  {dialogUsageType === "embedding"
+                    ? <option value="gemini-embedding-2" />
+                    : <option value="gemini-2.5-flash" />}
+                </datalist>
+              )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="ai-api-key">
                 API Key {editTarget && <span className="text-theme-text-dim">(leave blank to keep current)</span>}
               </Label>
               <Input id="ai-api-key" type="password" placeholder={editTarget ? "••••••••" : "Enter API key"} value={apiKey} onChange={(e) => setApiKey(e.target.value)} required={!editTarget} />
+              <p className="text-xs text-theme-text-muted pl-1 opacity-80 hover:opacity-100 transition-all">
+                Get your{" "}
+                {provider === "gemini" ? (
+                  <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-theme-primary hover:underline">
+                    Gemini API key here
+                  </a>
+                ) : (
+                  <a href="https://openrouter.ai/workspaces/default/keys" target="_blank" rel="noopener noreferrer" className="text-theme-primary hover:underline">
+                    OpenRouter API key here
+                  </a>
+                )}
+                .
+              </p>
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
