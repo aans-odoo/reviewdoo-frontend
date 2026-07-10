@@ -25,6 +25,7 @@ interface ReviewChecklistDetail {
   id: string;
   description: string;
   severity: string;
+  scope?: string;
   category: string | null;
   languages: string[];
   filePatterns: string[];
@@ -161,6 +162,12 @@ export function ReviewChecklistDetailPage() {
                     </Badge>
                   </div>
                 ),
+                item.scope && (
+                  <div key="scope" className="flex items-center gap-2">
+                    <span>Scope:</span>
+                    <Badge variant="outline">{item.scope.replace(/_/g, " ")}</Badge>
+                  </div>
+                ),
                 item.category && (
                   <div key="category" className="flex items-center gap-2">
                     <span>Category:</span>
@@ -245,6 +252,7 @@ export function ReviewChecklistDetailPage() {
               id: item.id,
               description: item.description,
               severity: item.severity,
+              scope: item.scope,
               category: item.category,
               languages: item.languages,
               filePatterns: item.filePatterns,

@@ -20,7 +20,8 @@ interface MultiSelectProps {
    * can be selected immediately (even before the parent's option list updates).
    */
   onCreate?: (label: string) => Promise<MultiSelectOption | void>;
-  className?: string;
+  containerClasses?: string;
+  selectClasses?: string;
   disabled?: boolean;
 }
 
@@ -37,7 +38,8 @@ export function MultiSelect({
   placeholder = "Select...",
   emptyText = "No options found.",
   onCreate,
-  className,
+  containerClasses,
+  selectClasses,
   disabled = false,
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false);
@@ -124,7 +126,7 @@ export function MultiSelect({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div ref={containerRef} className={cn("relative", containerClasses)}>
       {/* Trigger */}
       <div
         role="button"
@@ -139,7 +141,8 @@ export function MultiSelect({
         }}
         className={cn(
           "flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-border bg-theme-bg-elevated px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary",
-          disabled && "cursor-not-allowed opacity-50"
+          disabled && "cursor-not-allowed opacity-50",
+          selectClasses
         )}
       >
         <div className="flex flex-1 flex-wrap items-center gap-1.5">

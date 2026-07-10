@@ -11,7 +11,8 @@ interface ChipInputProps {
   /** Lowercase each value before storing (handy for languages). */
   lowercase?: boolean;
   id?: string;
-  className?: string;
+  containerClasses?: string;
+  inputClasses?: string;
 }
 
 /**
@@ -26,7 +27,8 @@ export function ChipInput({
   placeholder = "Type and press Enter...",
   lowercase = false,
   id,
-  className,
+  containerClasses,
+  inputClasses
 }: ChipInputProps) {
   const [draft, setDraft] = useState("");
 
@@ -53,7 +55,7 @@ export function ChipInput({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-2", containerClasses)}>
       {values.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {values.map((value) => (
@@ -78,6 +80,7 @@ export function ChipInput({
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={() => addValue(draft)}
+        className={inputClasses}
       />
     </div>
   );

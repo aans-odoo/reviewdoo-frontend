@@ -32,6 +32,7 @@ interface ReviewChecklist {
   id: string;
   description: string;
   severity: string;
+  scope?: string;
   category: string | null;
   languages: string[];
   filePatterns: string[];
@@ -166,6 +167,7 @@ export function ReviewChecklistsPage() {
         id: data.id,
         description: data.description,
         severity: data.severity,
+        scope: data.scope,
         category: data.category,
         languages: data.languages ?? [],
         filePatterns: data.filePatterns ?? [],
