@@ -289,7 +289,7 @@ export function ReviewChecklistsPage() {
           </Tooltip>
         </TooltipProvider>
       ),
-      className: "w-2/5 min-w-[28rem] align-top",
+      className: "w-2/5 min-w-[18rem] align-top",
       render: (row) => (
         <TooltipProvider delayDuration={300}>
           <Tooltip>

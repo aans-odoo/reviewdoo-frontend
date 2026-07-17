@@ -100,7 +100,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[12px] border border-border bg-theme-bg-card overflow-hidden">
+      <div className="rounded-[12px] border border-border bg-theme-bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
