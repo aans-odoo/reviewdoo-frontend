@@ -20,9 +20,10 @@ import {
   BookOpen,
   ShieldCheck,
   Sparkles,
+  ArrowLeft,
   LucideIcon,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function IconBox({
   icon: Icon,
@@ -81,6 +82,7 @@ const STEPS = [
 
 export function HowToUsePage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Same derivation used by the in-dashboard MCP Config page, so the snippet
   // here matches what developers paste into their IDE.
@@ -190,14 +192,7 @@ export function HowToUsePage() {
                 About
               </Button>
             </a>
-            {isAuthenticated ? (
-              <a href="/">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Dashboard
-                </Button>
-              </a>
-            ) : (
+            {!isAuthenticated && (
               <a href="/login">
                 <Button variant="outline" size="sm" className="gap-2">
                   <LogIn className="h-4 w-4" />
@@ -209,16 +204,27 @@ export function HowToUsePage() {
         </div>
       </header>
 
+      {isAuthenticated && (
+        <div className="max-w-5xl mx-auto px-6 pt-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="-ml-2 gap-2 text-theme-text-muted hover:text-theme-text"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-20">
         {/* Hero */}
         <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-theme-bg-card via-theme-bg-elevated to-theme-bg-card p-8 md:p-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(192,85,165,0.15),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(155,230,85,0.1),transparent_50%)]" />
 
-          <div className="relative z-10 max-w-3xl">
-            <Badge className="mb-4 bg-theme-primary-muted text-theme-primary-light border-theme-primary-light/20">
-              For Developers
-            </Badge>
+          <div className="relative z-10 max-w-3xl pt-6">
             <h1 className="text-4xl md:text-5xl font-bold text-theme-text mb-4 bg-gradient-to-r from-theme-primary-light via-theme-text to-theme-accent bg-clip-text text-transparent">
               Set up once, then just run init
             </h1>

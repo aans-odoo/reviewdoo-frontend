@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,8 +28,10 @@ import {
   LucideIcon,
   ChevronDown,
   ChevronUp,
+  ArrowLeft,
+  BadgeInfo,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function IconBox({
   icon: Icon,
@@ -75,6 +76,7 @@ function IconBox({
 
 export function AboutPage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-theme-body">
@@ -84,23 +86,38 @@ export function AboutPage() {
           <Link to="/">
             <Logo />
           </Link>
-          {isAuthenticated ? (
-            <a href="/">
-              <Button variant="outline" size="sm" className="gap-2">
-                <LogIn className="h-4 w-4" />
-                Dashboard
+          <div className="flex items-center gap-2">
+            <a href="/how-to-use">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <BadgeInfo className="h-4 w-4" />
+                How to use
               </Button>
             </a>
-          ) : (
-            <a href="/login">
-              <Button variant="outline" size="sm" className="gap-2">
-                <LogIn className="h-4 w-4" />
-                Log In
-              </Button>
-            </a>
-          )}
+            {!isAuthenticated && (
+              <a href="/login">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Log In
+                </Button>
+              </a>
+            )}
+          </div>
         </div>
       </header>
+
+      {isAuthenticated && (
+        <div className="max-w-5xl mx-auto px-6 pt-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2 text-theme-text-muted hover:text-theme-text"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </div>
+      )}
 
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-20">
         {/* Hero Section */}
@@ -108,10 +125,7 @@ export function AboutPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(192,85,165,0.15),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(155,230,85,0.1),transparent_50%)]" />
 
-          <div className="relative z-10 max-w-3xl">
-            <Badge className="mb-4 bg-theme-primary-muted text-theme-primary-light border-theme-primary-light/20">
-              For the Website Team
-            </Badge>
+          <div className="relative z-10 max-w-3xl pt-6">
             <h1 className="text-4xl md:text-5xl font-bold text-theme-text mb-4 bg-gradient-to-r from-theme-primary-light via-theme-text to-theme-accent bg-clip-text text-transparent">
               Fix the common stuff before review.
             </h1>
@@ -455,7 +469,7 @@ export function AboutPage() {
                   href="/how-to-use"
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-theme-bg-elevated px-6 py-3 text-sm font-medium text-theme-text hover:bg-theme-bg-hover transition-colors"
                 >
-                  <BookOpen className="h-4 w-4" />
+                  <BadgeInfo className="h-4 w-4" />
                   How to set it up
                 </a>
               </div>
