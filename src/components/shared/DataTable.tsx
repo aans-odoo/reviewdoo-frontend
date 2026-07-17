@@ -6,10 +6,11 @@ import { Pagination } from "./Pagination";
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: React.ReactNode;
   sortable?: boolean;
   render?: (row: T) => React.ReactNode;
   className?: string;
+  headerClassName?: string;
 }
 
 interface DataTableProps<T> {
@@ -107,8 +108,8 @@ export function DataTable<T extends Record<string, unknown>>({
                 <th
                   key={col.key}
                   className={cn(
-                    "px-5 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.5px] text-theme-text-dim",
-                    col.className
+                    "px-5 py-3 text-left align-middle text-[12px] font-semibold uppercase tracking-[0.5px] text-theme-text-dim",
+                    col.headerClassName
                   )}
                 >
                   {col.sortable ? (

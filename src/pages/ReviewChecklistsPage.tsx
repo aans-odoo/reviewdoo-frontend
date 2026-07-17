@@ -19,7 +19,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload } from "lucide-react";
+import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick } from "lucide-react";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -60,6 +60,7 @@ export function ReviewChecklistsPage() {
   const { hasEmbeddingModel } = useEmbeddingModel();
   const { isAdmin } = useAuth();
   const [items, setItems] = useState<ReviewChecklist[]>([]);
+  const [descHeaderHovered, setDescHeaderHovered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -271,20 +272,36 @@ export function ReviewChecklistsPage() {
   const columns: Column<ReviewChecklist & Record<string, unknown>>[] = [
     {
       key: "description",
-      header: "Description",
+      header: (
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex cursor-default items-center gap-1.5"
+                onPointerEnter={() => setDescHeaderHovered(true)}
+                onPointerLeave={() => setDescHeaderHovered(false)}
+              >
+                Description
+                <MousePointerClick className="h-4 w-4 text-theme-text-muted/80" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">Click a description to view it in detail</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
       className: "max-w-xs align-top",
       render: (row) => (
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div
-                className="cursor-pointer transition-colors hover:opacity-80"
+                className={`cursor-pointer transition-colors hover:opacity-80${descHeaderHovered ? " animate-pulse" : ""}`}
                 onClick={() => navigate(`/review-checklists/${row.id}`)}
               >
                 <Markdown className="max-w-xs">{row.description}</Markdown>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="left">Open detailed view</TooltipContent>
+            <TooltipContent side="left">Click to view in detail</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ),
