@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { Logo } from "../ui/logo";
+import { TeamLogo } from "@/components/shared/TeamLogo";
 import { BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export function Header() {
   const { isAuthenticated } = useAuth();
+  const { settings } = useAppSettings();
+  const teamName = settings?.teamName || "Team";
 
   return (
     <header className="flex h-[60px] flex-shrink-0 items-center justify-between rounded-md border border-border bg-theme-bg-card px-5">
@@ -23,9 +27,13 @@ export function Header() {
         )}
         <Tooltip>
           <TooltipTrigger asChild>
-            <img src="https://download.odoocdn.com/icons/website/static/description/icon.svg" className="w-6 h-6" />
+            <TeamLogo
+              logoUrl={settings?.teamLogoUrl}
+              teamName={settings?.teamName}
+              className="w-8 cursor-default"
+            />
           </TooltipTrigger>
-          <TooltipContent side="right">Website</TooltipContent>
+          <TooltipContent side="right">{teamName}</TooltipContent>
         </Tooltip>
       </div>
     </header>

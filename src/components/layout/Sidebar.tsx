@@ -7,6 +7,7 @@ import {
   UserCog,
   Mail,
   Settings,
+  SlidersHorizontal,
   LogOut,
   Info,
   HelpCircle,
@@ -78,6 +79,7 @@ export function Sidebar() {
     { to: "/users", label: "User Management", icon: UserCog },
     { to: "/mcp-clients", label: "MCP Clients", icon: Radio },
     { to: "/smtp-config", label: "SMTP Config", icon: Mail },
+    { to: "/app-settings", label: "App Settings", icon: SlidersHorizontal },
   ];
 
   return (

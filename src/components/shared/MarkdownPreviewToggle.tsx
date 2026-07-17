@@ -118,24 +118,29 @@ interface HeaderProps {
   preview: boolean;
   /** Callback to toggle preview */
   onToggle: () => void;
+  /** Optional node rendered right after the label (e.g. a save status indicator) */
+  labelAccessory?: React.ReactNode;
 }
 
 /**
  * Label row with MarkdownHint and the preview toggle icon.
  * Designed to sit above the textarea / preview area.
  */
-export function MarkdownFieldHeader({ label, htmlFor, preview, onToggle }: HeaderProps) {
+export function MarkdownFieldHeader({ label, htmlFor, preview, onToggle, labelAccessory }: HeaderProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const isPointerOver = useRef(false);
 
   return (
     <div className="flex items-center justify-between">
-      <label
-        htmlFor={!preview ? htmlFor : undefined}
-        className="text-[13px] font-medium leading-none text-theme-text-muted"
-      >
-        {label}
-      </label>
+      <span className="inline-flex items-center gap-2.5">
+        <label
+          htmlFor={!preview ? htmlFor : undefined}
+          className="text-[13px] font-medium leading-none text-theme-text-muted"
+        >
+          {label}
+        </label>
+        {labelAccessory}
+      </span>
       <span className="inline-flex items-center gap-1.5">
         <MarkdownHint />
         <span className="w-px h-4 bg-theme-text-muted opacity-20" />
@@ -196,9 +201,11 @@ interface MarkdownFieldProps {
   children: React.ReactNode;
   /** Optional className */
   className?: string;
+  /** Optional node rendered right after the label (e.g. a save status indicator) */
+  labelAccessory?: React.ReactNode;
 }
 
-export function MarkdownField({ label, htmlFor, value, children, className }: MarkdownFieldProps) {
+export function MarkdownField({ label, htmlFor, value, children, className, labelAccessory }: MarkdownFieldProps) {
   const [preview, setPreview] = useState(false);
   const { height, attach } = usePersistedFieldHeight();
 
@@ -209,6 +216,7 @@ export function MarkdownField({ label, htmlFor, value, children, className }: Ma
         htmlFor={htmlFor}
         preview={preview}
         onToggle={() => setPreview((p) => !p)}
+        labelAccessory={labelAccessory}
       />
       {preview ? (
         <div
