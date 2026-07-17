@@ -133,17 +133,21 @@ input[list]::-webkit-calendar-picker-indicator {
   display: none !important;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-light);
+  background: rgb(var(--border) / 0.15);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-dim);
+  background: rgb(var(--border) / 0.12);
 }
 
 /* Markdown overrides */
