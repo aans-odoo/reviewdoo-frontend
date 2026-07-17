@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback, cloneElement, isValidElement } from "react";
+import type { ReactElement, CSSProperties } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "@/components/shared/Markdown";
@@ -9,6 +10,48 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/**
+ * Keeps a single height value in sync across the edit textarea and the preview
+ * container. The user's drag-to-resize height lives as an inline style on the
+ * mounted DOM node, which is lost when that node unmounts on mode switch. We
+ * observe whichever element is currently mounted and store its height so it can
+ * be reapplied to the other element, making the height persist across toggles.
+ */
+function usePersistedFieldHeight() {
+  const [height, setHeight] = useState<number>();
+  const observerRef = useRef<ResizeObserver | null>(null);
+
+  const attach = useCallback((el: HTMLElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setHeight(el.offsetHeight));
+    ro.observe(el);
+    observerRef.current = ro;
+  }, []);
+
+  useEffect(() => () => observerRef.current?.disconnect(), []);
+
+  return { height, attach };
+}
+
+/**
+ * Clones the provided textarea child to attach the resize observer ref and
+ * apply the persisted height, without the caller needing to wire up refs.
+ */
+function withPersistedHeight(
+  children: React.ReactNode,
+  attach: (el: HTMLElement | null) => void,
+  height: number | undefined
+): React.ReactNode {
+  if (!isValidElement(children)) return children;
+  const child = children as ReactElement<{ style?: CSSProperties; ref?: unknown }>;
+  return cloneElement(child, {
+    ref: attach,
+    style: { ...(child.props.style ?? {}), ...(height ? { height } : {}) },
+  });
+}
 
 interface MarkdownPreviewToggleProps {
   /** Current field value to render as markdown in preview mode */
@@ -40,13 +83,15 @@ export function MarkdownPreviewToggle({
   className,
 }: MarkdownPreviewToggleProps) {
   const [preview, setPreview] = useState(false);
+  const { height, attach } = usePersistedFieldHeight();
 
   return (
     <div className={cn("space-y-2", className)}>
       {preview ? (
         <div
+          ref={attach}
           className="flex flex-col min-h-[80px] w-full rounded-[10px] border border-border bg-theme-bg-elevated px-3.5 py-2.5 text-sm text-theme-text overflow-y-auto resize-vertical"
-          style={{ maxHeight: "300px" }}
+          style={height ? { height } : { maxHeight: "300px" }}
           role="region"
           aria-label="Markdown preview"
           title="Previewing"
@@ -58,7 +103,7 @@ export function MarkdownPreviewToggle({
           )}
         </div>
       ) : (
-        children
+        withPersistedHeight(children, attach, height)
       )}
     </div>
   );
@@ -155,6 +200,7 @@ interface MarkdownFieldProps {
 
 export function MarkdownField({ label, htmlFor, value, children, className }: MarkdownFieldProps) {
   const [preview, setPreview] = useState(false);
+  const { height, attach } = usePersistedFieldHeight();
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -166,8 +212,9 @@ export function MarkdownField({ label, htmlFor, value, children, className }: Ma
       />
       {preview ? (
         <div
+          ref={attach}
           className="flex flex-col min-h-[80px] w-full rounded-[10px] border border-border bg-theme-bg-elevated px-3.5 py-2.5 text-sm text-theme-text overflow-y-auto resize-vertical cursor-default"
-          style={{ maxHeight: "300px" }}
+          style={height ? { height } : { maxHeight: "300px" }}
           role="region"
           aria-label="Markdown preview"
           title="Previewing"
@@ -179,7 +226,7 @@ export function MarkdownField({ label, htmlFor, value, children, className }: Ma
           )}
         </div>
       ) : (
-        children
+        withPersistedHeight(children, attach, height)
       )}
     </div>
   );

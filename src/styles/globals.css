@@ -150,3 +150,12 @@ input[list]::-webkit-calendar-picker-indicator {
 del > code {
   font-family: "Roboto Mono", monospace !important;
 }
+
+del {
+  text-decoration-color: #ffffffa6;
+}
+
+code {
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+}

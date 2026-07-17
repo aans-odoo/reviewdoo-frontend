@@ -1,10 +1,38 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
 import { cn } from "@/lib/utils";
 
 interface MarkdownProps {
   children: string;
   className?: string;
+}
+
+/**
+ * Preserve author-intended vertical whitespace. Standard Markdown collapses
+ * runs of blank lines into a single paragraph break, so every empty line the
+ * user typed would disappear. We replace blank lines (outside fenced code
+ * blocks) with a non-breaking space so they survive parsing; combined with
+ * `remark-breaks` (single newline -> <br>) this makes the rendered output
+ * match what the user typed line-for-line.
+ */
+function preserveLineBreaks(src: string): string {
+  let inFence = false;
+  return src
+    .split("\n")
+    .map((line) => {
+      if (line.trim().startsWith("```")) {
+        inFence = !inFence;
+        return line;
+      }
+      if (!inFence && line.trim() === "") {
+        return "\u00A0";
+      }
+      return line;
+    })
+    .join("\n");
 }
 
 /**
@@ -40,12 +68,13 @@ export function Markdown({ children, className }: MarkdownProps) {
       )}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        rehypePlugins={[rehypeHighlight]}
         components={{
           a: ({ ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
         }}
       >
-        {children}
+        {preserveLineBreaks(children)}
       </ReactMarkdown>
     </div>
   );
