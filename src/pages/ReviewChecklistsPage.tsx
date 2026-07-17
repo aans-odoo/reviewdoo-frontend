@@ -19,7 +19,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick } from "lucide-react";
+import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick, BadgeInfo } from "lucide-react";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -289,7 +289,7 @@ export function ReviewChecklistsPage() {
           </Tooltip>
         </TooltipProvider>
       ),
-      className: "max-w-xs align-top",
+      className: "w-2/5 min-w-[28rem] align-top",
       render: (row) => (
         <TooltipProvider delayDuration={300}>
           <Tooltip>
@@ -298,7 +298,7 @@ export function ReviewChecklistsPage() {
                 className={`cursor-pointer transition-colors hover:opacity-80${descHeaderHovered ? " animate-pulse" : ""}`}
                 onClick={() => navigate(`/review-checklists/${row.id}`)}
               >
-                <Markdown className="max-w-xs">{row.description}</Markdown>
+                <Markdown className="max-w-none">{row.description}</Markdown>
               </div>
             </TooltipTrigger>
             <TooltipContent side="left">Click to view in detail</TooltipContent>
@@ -452,7 +452,21 @@ export function ReviewChecklistsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="semantic">Semantic</SelectItem>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SelectItem
+                        value="semantic"
+                        adornment={<BadgeInfo className="ml-2 mr-2 h-3.5 w-3.5 shrink-0 text-theme-text-muted" />}
+                      >
+                        Semantic
+                      </SelectItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-[220px]">
+                      Finds results by meaning, not exact words — so similar ideas match even with different phrasing
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </SelectContent>
             </Select>
             <div className="relative w-full">
