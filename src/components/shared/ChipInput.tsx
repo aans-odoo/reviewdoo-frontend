@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent } from "react";
+import { useEffect, useRef, useState, KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,25 @@ export function ChipInput({
   hint = ""
 }: ChipInputProps) {
   const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const removeButtonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  // Index of the chip's remove button to focus after the next render, set when
+  // a chip is removed so keyboard focus stays within the control.
+  const pendingFocusIndex = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (pendingFocusIndex.current === null) return;
+    const index = pendingFocusIndex.current;
+    pendingFocusIndex.current = null;
+    // Focus the chip that shifted into the removed slot, the new last chip, or
+    // fall back to the text input when no chips remain.
+    removeButtonsRef.current.length = values.length;
+    const target =
+      removeButtonsRef.current[index] ??
+      removeButtonsRef.current[values.length - 1] ??
+      inputRef.current;
+    target?.focus();
+  }, [values]);
 
   const addValue = (raw: string) => {
     const value = (lowercase ? raw.toLowerCase() : raw).trim();
@@ -44,7 +63,8 @@ export function ChipInput({
     setDraft("");
   };
 
-  const removeValue = (value: string) => {
+  const removeValue = (value: string, index?: number) => {
+    if (index !== undefined) pendingFocusIndex.current = index;
     onChange(values.filter((v) => v !== value));
   };
 
@@ -61,7 +81,7 @@ export function ChipInput({
     <div className={cn("space-y-2", containerClasses)}>
       {values.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {values.map((value) => (
+          {values.map((value, index) => (
             <Badge
               key={value}
               variant="outline"
@@ -71,7 +91,10 @@ export function ChipInput({
               <span className="min-w-0 truncate">{value}</span>
               <button
                 type="button"
-                onClick={() => removeValue(value)}
+                ref={(el) => {
+                  removeButtonsRef.current[index] = el;
+                }}
+                onClick={() => removeValue(value, index)}
                 className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-theme-bg-hover"
                 aria-label={`Remove ${value}`}
               >
@@ -83,6 +106,7 @@ export function ChipInput({
       )}
       <div className="relative">
         <Input
+          ref={inputRef}
           id={id}
           placeholder={placeholder}
           value={draft}
@@ -93,10 +117,10 @@ export function ChipInput({
         {draft.trim() && (
           <button
             type="button"
-            onMouseDown={(e) => {
-              // Keep focus in the input after adding.
-              e.preventDefault();
+            onClick={() => {
               addValue(draft);
+              // Keep focus in the input for continued entry.
+              inputRef.current?.focus();
             }}
             className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded border border-theme-border bg-theme-bg-card px-2 py-1 text-[10px] font-medium text-theme-text-muted hover:bg-theme-bg-hover"
             aria-label="Add pattern"
