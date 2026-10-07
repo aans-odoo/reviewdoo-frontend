@@ -9,11 +9,9 @@ import {
   GitPullRequest,
   Sparkles,
   Target,
-  Zap,
   CheckCircle2,
   XCircle,
   Code2,
-  Database,
   Clock,
   TrendingUp,
   Users,
@@ -21,7 +19,6 @@ import {
   Layers,
   MessageSquare,
   MessageSquarePlus,
-  BookOpen,
   ShieldCheck,
   Wrench,
   LogIn,
@@ -30,6 +27,7 @@ import {
   ChevronUp,
   ArrowLeft,
   BadgeInfo,
+  Zap,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -71,6 +69,12 @@ function IconBox({
     >
       <Icon className={iconSizes[size]} />
     </div>
+  );
+}
+
+function Code({ children }: { children: React.ReactNode }) {
+  return (
+    <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">{children}</code>
   );
 }
 
@@ -130,17 +134,17 @@ export function AboutPage() {
               Fix the common stuff before review.
             </h1>
             <p className="text-lg text-theme-text-muted leading-relaxed">
-              Review<span className="text-theme-primary">doo</span> is an internal knowledge base of the review checklists we've built from real PR feedback. You use this before submitting your PR for review, to ensure you're not missing any review checklist. It's a self-check against our own standards, <span className="text-theme-text font-medium">not an AI reviewer</span>, and not a replacement for human review.
+              Review<span className="text-theme-primary">doo</span> is our team's knowledge base of review checklists, built from real PR feedback. Before you open a PR, your AI IDE checks your changes against them, so the issues we've already flagged once don't come back. It's a self-check against our own standards, <span className="text-theme-text font-medium">not an AI reviewer</span> and not a replacement for human review.
             </p>
             <div className="mt-6 flex items-center gap-2 text-sm text-theme-text-muted">
-              <span className="text-theme-text font-medium">— Arib Ansari (aans)</span>
+              <span className="text-theme-text font-medium">Arib Ansari (aans)</span>
               <span className="text-theme-text-dim">•</span>
               <span>Website@Odoo</span>
             </div>
           </div>
         </div>
 
-        {/* The Challenge Section */}
+        {/* The Problem */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-theme-text">The Problem I Wanted to Solve</h2>
 
@@ -150,22 +154,22 @@ export function AboutPage() {
                 <ChallengeCard
                   icon={MessageSquare}
                   title="Feedback Gets Lost"
-                  description="When senior devs leave detailed comments on our PRs, that knowledge disappears into the PR history. We can't easily find it later."
+                  description="Good review comments end up buried in PR history. Nobody finds them again."
                 />
                 <ChallengeCard
                   icon={TrendingUp}
                   title="We Repeat Mistakes"
-                  description="Without a shared place to keep past feedback, we make the same errors across different PRs. The same issues get caught over and over."
+                  description="The same issues get flagged again and again, on different PRs, by different reviewers."
                 />
                 <ChallengeCard
                   icon={Clock}
                   title="Review Cycles Take Time"
-                  description="We submit PRs, wait for review, get feedback, fix issues, and repeat. Each cycle adds hours or days to our workflow."
+                  description="Submit, wait, fix, repeat. Every round trip adds hours or days."
                 />
                 <ChallengeCard
                   icon={Users}
                   title="Knowledge Isn't Shared"
-                  description="When one developer gets feedback, others don't benefit from it. We rely on memory and word-of-mouth instead of a shared reference."
+                  description="When one developer learns something in review, the rest of the team doesn't."
                 />
               </div>
             </CardContent>
@@ -177,284 +181,171 @@ export function AboutPage() {
           <h2 className="text-2xl font-semibold text-theme-text">What Reviewdoo Is (and Isn't)</h2>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border-theme-success/20 bg-theme-bg-card/50">
-              <CardContent className="pt-6">
-                <div className="mb-4 flex items-center gap-2">
-                  <IconBox icon={CheckCircle2} variant="success" size="sm" />
-                  <h3 className="font-semibold text-theme-text">What it is</h3>
-                </div>
-                <ul className="space-y-2.5 text-sm text-theme-text-muted">
-                  <PointItem good>A curated knowledge base of our review checklists.</PointItem>
-                  <PointItem good>Searchable by keyword or meaning, with duplicate detection to keep it clean.</PointItem>
-                  <PointItem good>Connected to your AI IDE over MCP so it can check a diff against the relevant items.</PointItem>
-                  <PointItem good>Curated by the team, by hand—you add what's worth remembering.</PointItem>
-                </ul>
-              </CardContent>
-            </Card>
+            <IsIsntCard good title="What it is">
+              <PointItem good title="A team knowledge base">
+                Review checklists written by the team, from real PR feedback.
+              </PointItem>
+              <PointItem good title="Plugged into your AI IDE">
+                Over MCP, it checks your diff against the checklists that apply.
+              </PointItem>
+              <PointItem good title="Easy to keep tidy">
+                References, search by meaning, and duplicate warnings.
+              </PointItem>
+            </IsIsntCard>
 
-            <Card className="border-theme-danger/20 bg-theme-bg-card/50">
-              <CardContent className="pt-6">
-                <div className="mb-4 flex items-center gap-2">
-                  <IconBox icon={XCircle} variant="danger" size="sm" />
-                  <h3 className="font-semibold text-theme-text">What it isn't</h3>
-                </div>
-                <ul className="space-y-2.5 text-sm text-theme-text-muted">
-                  <PointItem>An AI reviewer—it doesn't judge your code or approve PRs.</PointItem>
-                  <PointItem>A replacement for human review.</PointItem>
-                </ul>
-              </CardContent>
-            </Card>
+            <IsIsntCard title="What it isn't">
+              <PointItem title="An AI reviewer">
+                It doesn't judge your code or approve PRs.
+              </PointItem>
+              <PointItem title="A replacement for human review">
+                Reviewers still review. They just see fewer repeat issues.
+              </PointItem>
+            </IsIsntCard>
           </div>
         </section>
 
-        {/* How the knowledge base works */}
+        {/* How it works */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">How the Knowledge Base Works</h2>
+          <h2 className="text-2xl font-semibold text-theme-text">How It Works</h2>
 
           <Card className="border-theme-success/20 bg-theme-bg-card/50 py-3 px-4">
             <CardContent className="pt-6">
-              <p className="text-theme-text-muted mb-10">
-                Reviewdoo is built and maintained <span className="text-theme-accent font-semibold">by the team</span>—we contribute the feedback worth keeping, and the IDE puts it to work as a <span className="text-theme-accent font-semibold">self-check before a PR</span>.
-              </p>
-
               <div className="grid gap-4 md:grid-cols-3">
                 <SolutionStep
                   number="1"
                   icon={MessageSquarePlus}
                   title="Contribute"
-                  description="When you get useful review feedback, add it yourself as a review checklist item."
+                  description="Got review feedback worth remembering? Add it as a review checklist item."
                 />
                 <SolutionStep
                   number="2"
                   icon={Layers}
-                  title="Organize"
-                  description="Scope checklists to the file patterns and languages they apply to. Keyword and semantic search, plus duplicate detection, keep the base findable and clean."
+                  title="Scope"
+                  description="Say where it applies: code, comments, commit messages, or everywhere. Narrow it by language or file pattern."
                 />
                 <SolutionStep
                   number="3"
                   icon={ShieldCheck}
                   title="Apply"
-                  description="Before a PR, your IDE pulls the review checklists relevant to your diff and checks your changes against them."
+                  description="Before a PR, your IDE fetches the checklists that match your diff and checks your changes against them."
                 />
               </div>
             </CardContent>
           </Card>
         </section>
 
-        {/* Our Workflow Section */}
+        {/* Daily workflow */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">How We Use It in Our Daily Workflow</h2>
+          <h2 className="text-2xl font-semibold text-theme-text">A Day-to-Day Example</h2>
 
           <Card className="border-theme-primary/20 bg-theme-bg-card/50 py-3 px-4">
             <CardContent className="pt-6">
               <div className="space-y-6">
                 <WorkflowStep
-                  title="We Make Code Changes"
-                  description="We work on our feature branch as usual, making changes and committing code."
+                  title="Make your changes"
+                  description="Work on your branch as usual."
                   icon={Code2}
                 />
                 <WorkflowStep
-                  title="We Run @reviewdoo init"
-                  description="Before submitting the PR, we run @reviewdoo init in our AI IDE. Reviewdoo hands the IDE the full self-check workflow—how to pick what to review, and how to call Reviewdoo's MCP tools to fetch the review checklists relevant to our changes."
+                  title="Run @reviewdoo init"
+                  description="In your AI IDE (Antigravity, Codex, Kiro, etc.), before opening the PR. No prompt to copy and paste."
                   icon={Sparkles}
                 />
                 <WorkflowStep
-                  title="Our IDE Runs the Self-Check"
-                  description="The AI IDE (Antigravity, Codex, Kiro, etc.) follows the init instructions: it asks what we want to check, fetches the review checklists (by changed file) that match our diff, then checks our changes against them—flagging anything that violates a checklist, with full codebase context."
+                  title="The IDE runs the self-check"
+                  description="It asks what to check (latest commit, a range, uncommitted changes, or vs a base branch) and in which repo. Then it fetches the relavant checklists from Reviewdoo and vet your diff against those checklist and reports any violations."
                   icon={Brain}
                 />
                 <WorkflowStep
-                  title="We Fix Issues Proactively"
-                  description="The AI IDE flags every review checklist item our changes don't follow. We fix them immediately, before any human reviewer sees the code."
-                  icon={CheckCircle2}
-                />
-                <WorkflowStep
-                  title="We Submit a Cleaner PR"
-                  description="Our PR is already vetted against team standards and past feedback. Reviews are faster, and we avoid back-and-forth cycles."
+                  title="Fix and submit a cleaner PR"
+                  description="Each finding links to its checklist item. Fix them before a reviewer ever sees the code."
                   icon={GitPullRequest}
                 />
                 <WorkflowStep
-                  title="We Contribute Back"
-                  description="When we get review feedback worth remembering, we add it to the knowledge base ourselves—as a review checklist item—so the whole team benefits next time."
+                  title="Contribute back"
+                  description="Got a new general feedback from a reviewer? Add it, so the whole team catches it next time."
                   icon={MessageSquarePlus}
                   isLast
                 />
               </div>
 
-              {/* Flow Diagram */}
               <div className="mt-10 pt-8 border-t border-border">
-                <h3 className="text-lg font-semibold text-theme-text mb-6 text-center">Review Flow Diagram</h3>
-
+                <h3 className="text-lg font-semibold text-theme-text mb-6 text-center">Review Flow</h3>
                 <ReviewFlowDiagram />
               </div>
             </CardContent>
           </Card>
         </section>
 
-        {/* What We Gain Section */}
+        {/* What we gain */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold text-theme-text">What We Gain</h2>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <BenefitCard
               icon={Clock}
               title="Faster Merges"
-              description="We catch issues before review, reducing back-and-forth cycles. PRs get merged faster."
-            />
-            <BenefitCard
-              icon={BookOpen}
-              title="Learn From the Whole Team"
-              description="We benefit from checklists created from feedback given to any team member, not just our own PRs."
+              description="Fewer review rounds, because common issues are fixed before the PR is opened."
             />
             <BenefitCard
               icon={Target}
-              title="Fewer Mistakes"
-              description="We stop repeating the same errors. If someone captured feedback on it before, we can avoid it."
-            />
-            <BenefitCard
-              icon={Users}
-              title="Team Alignment"
-              description="We all check against the same shared reference. New team members get up to speed faster."
+              title="Fewer Repeated Mistakes"
+              description="Feedback given to anyone on the team protects everyone else from the same issue."
             />
             <BenefitCard
               icon={Zap}
               title="Less Review Burden"
-              description="Reviewers spend less time on repetitive feedback and more on architectural guidance."
+              description="Reviewers spend less time on repeat comments and more on design and architecture."
             />
             <BenefitCard
-              icon={Database}
-              title="A Shared Reference"
-              description="Our review checklists live in one place instead of scattered PRs and memory. It grows as the team contributes."
+              icon={Users}
+              title="One Shared Standard"
+              description="Everyone checks against the same list. New team members get up to speed faster."
             />
           </div>
         </section>
 
-        {/* Technical Details Section */}
+        {/* Technical details */}
         <section>
           <TechnicalAccordion
             icon={Wrench}
-            title="How Retrieval Works (Technical Details)"
+            title="Under the Hood"
             content={
-              <div className="space-y-6 py-4 px-2">
-                {/* Deterministic matching */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Matching Is Plain Pattern &amp; Language Matching—Not AI</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      When your IDE asks Reviewdoo what applies to a diff, the matching is <span className="text-theme-accent font-semibold">deterministic</span>—no embeddings, no AI, no similarity scoring:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>
-                        <span className="text-theme-text font-semibold">Review checklists</span> are matched by <span className="text-theme-accent font-semibold">file pattern and language</span>. A checklist scoped to <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">*.ts</code> surfaces when a matching file changed, and one scoped to a language (e.g. <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">javascript</code>) surfaces when your diff touches that language.
-                      </li>
-                      <li>
-                        A checklist with <span className="text-theme-text font-semibold">no patterns or languages</span> is treated as <span className="text-theme-accent font-semibold">general</span> and applies to any diff—because it's meant to be followed everywhere.
-                      </li>
-                    </ul>
-                    <p>
-                      This makes the per-diff check fast, free, and repeatable—the same diff always produces the same result.
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-5 py-4 px-2">
+                <TechItem title="Matching is rules, not AI">
+                  <p>
+                    When your IDE asks Reviewdoo for the relevant checklists, it picks them using plain rules. No AI or API key is involved, and the same diff always gets the same result.
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>
+                      <span className="text-theme-text font-semibold">Code and comment</span> checklists match by language (from the file extension, e.g. <Code>.ts</Code> is TypeScript). A file pattern like <Code>*_plugin.js</Code> narrows that to specific files.
+                    </li>
+                    <li>
+                      <span className="text-theme-text font-semibold">Commit message and general</span> checklists apply to every review.
+                    </li>
+                  </ul>
+                </TechItem>
 
-                <div className="border-t border-border" />
+                <TechItem title="Focused results">
+                  <p>
+                    Matches are sorted by severity, then by how specific the match is, then by how many references back them up. The IDE gets the top 50 by default, plus a note saying how many were left out.
+                  </p>
+                </TechItem>
 
-                {/* Ranking + cap */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Keeping the Checklist Response Focused</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      A broad change can match a lot of checklists. Rather than dumping all of them into the IDE's context, matches are <span className="text-theme-accent font-semibold">ranked by relevance</span>: diff-specific matches (by file pattern, then language) come before broad "general" checklists, and higher severity and better-referenced items rank first.
-                    </p>
-                    <p>
-                      The response is capped at <span className="text-theme-accent font-semibold">50 by default</span> (the IDE can override this) and it states how many lower-relevance items were left out—so nothing is dropped silently.
-                    </p>
-                  </div>
-                </div>
+                <TechItem title="Where AI is used">
+                  <p>
+                    Only for keeping the knowledge base tidy: searching checklists by meaning in the web app, and warning about likely duplicates when you add one. This is enabled when an admin adds a Gemini API key. The IDE check works without it.
+                  </p>
+                </TechItem>
 
-                <div className="border-t border-border" />
-
-                {/* Where semantic search fits */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Where Semantic Search Fits</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      The knowledge base <span className="text-theme-accent font-semibold">does</span> use semantic search—but for <span className="text-theme-text font-semibold">curation</span>, not the per-diff check. In the management UI you can search review checklists by meaning (not just keywords), and when you add a new item Reviewdoo flags likely duplicates so the base stays clean.
-                    </p>
-                    <p>
-                      Semantic search is turned on by adding a Gemini key in{" "}
-                      <Link to="/ai-config" className="text-theme-text font-semibold underline-offset-2 hover:underline">AI Keys</Link>{" "}
-                      (get one from{" "}
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-theme-accent underline-offset-2 hover:underline"
-                      >
-                        Google AI Studio
-                      </a>
-                      ). The IDE-facing matching above needs none of that.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* The init workflow */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">The init Workflow: One Command, Any Scope</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      Running <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">@reviewdoo init</code> returns a single workflow that adapts to what's being reviewed:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>A single commit or a range of commits</li>
-                      <li>Uncommitted changes or a diff against a base branch</li>
-                      <li>Different file types or project areas</li>
-                    </ul>
-                    <p>
-                      The IDE asks which scope to check, then the <span className="text-theme-accent font-semibold">core steps stay the same</span>—fetch the review checklists relevant to the diff, then check the changes against them. No prompt to copy and paste.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* Why AI IDEs */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">Why This Works Best in an AI IDE</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      Reviewdoo is fundamentally an <span className="text-theme-accent font-semibold">MCP server</span>—it exposes tools any MCP-compatible client can call. But <span className="text-theme-text font-semibold">AI IDEs are strongly recommended</span> (Antigravity, Codex, Kiro, etc.) for three reasons:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>
-                        <span className="text-theme-text font-semibold">Full codebase context:</span> they can explore beyond the diff and see how a change fits the bigger picture.
-                      </li>
-                      <li>
-                        <span className="text-theme-text font-semibold">Real-time feedback:</span> you get results while coding, not after submitting.
-                      </li>
-                      <li>
-                        <span className="text-theme-text font-semibold">Project awareness:</span> they understand your structure and patterns, so the checks land in context.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* MCP Setup */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-theme-text">MCP Setup: One-Time Configuration</h3>
-                  <div className="text-sm text-theme-text-muted leading-relaxed space-y-2 ml-6">
-                    <p>
-                      Each developer adds Reviewdoo to their IDE's <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">mcp.json</code> once. The <span className="text-theme-text font-semibold">MCP Config</span> page gives you the exact config to copy and paste, and lets you test the connection.
-                    </p>
-                    <p className="text-theme-info">
-                      💡 This is a one-time setup per developer.
-                    </p>
-                  </div>
-                </div>
+                <TechItem title="Couldn't this just be a skill or a markdown file?">
+                  <p>
+                    Yes, honestly. You could keep these checklists in a file and hand it to your AI as a skill, and it would work. The AI part was never the hard part. Keeping a growing list useful is.
+                  </p>
+                  <p>
+                    That's why Reviewdoo is an app: a UI to add and edit checklists, references back to the PRs they came from, categories and scopes, search by keyword or meaning, and a warning when you're about to add a duplicate. MCP is just how the IDE reads from it.
+                  </p>
+                </TechItem>
               </div>
             }
           />
@@ -493,15 +384,50 @@ export function AboutPage() {
 }
 
 // Helper Components
-function PointItem({ children, good = false }: { children: React.ReactNode; good?: boolean }) {
+function IsIsntCard({
+  title,
+  good = false,
+  children,
+}: {
+  title: string;
+  good?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <li className="flex items-start gap-2">
+    <Card
+      className={`h-full bg-theme-bg-card/50 ${good ? "border-theme-success/30" : "border-theme-danger/30"}`}
+    >
+      <CardContent className="p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <IconBox icon={good ? CheckCircle2 : XCircle} variant={good ? "success" : "danger"} size="md" />
+          <h3 className="text-lg font-semibold text-theme-text">{title}</h3>
+        </div>
+        <ul>{children}</ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PointItem({
+  title,
+  children,
+  good = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  good?: boolean;
+}) {
+  return (
+    <li className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
       {good ? (
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-theme-success" />
       ) : (
         <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-theme-danger" />
       )}
-      <span>{children}</span>
+      <div>
+        <p className="text-sm font-medium text-theme-text">{title}</p>
+        <p className="text-sm text-theme-text-muted">{children}</p>
+      </div>
     </li>
   );
 }
@@ -603,6 +529,15 @@ function BenefitCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function TechItem({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2 border-b border-border pb-5 last:border-b-0 last:pb-0">
+      <h3 className="font-semibold text-theme-text">{title}</h3>
+      <div className="text-sm text-theme-text-muted leading-relaxed space-y-2">{children}</div>
+    </div>
   );
 }
 

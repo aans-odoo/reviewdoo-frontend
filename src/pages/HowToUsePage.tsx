@@ -10,16 +10,13 @@ import {
   LogIn,
   Plug,
   Terminal,
-  ListChecks,
   Wrench,
   ArrowRight,
   Check,
   Clock,
   Network,
-  MessageSquareText,
   BookOpen,
   ShieldCheck,
-  Sparkles,
   ArrowLeft,
   LucideIcon,
 } from "lucide-react";
@@ -32,7 +29,7 @@ function IconBox({
   className = "",
 }: {
   icon: LucideIcon;
-  variant?: "danger" | "success" | "info" | "accent" | "primary" | "default";
+  variant?: "danger" | "success" | "info" | "accent" | "primary" | "ghost" | "default";
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
@@ -42,6 +39,7 @@ function IconBox({
     info: "bg-theme-info/20 text-theme-info",
     accent: "bg-theme-accent/20 text-theme-accent",
     primary: "bg-theme-primary/20 text-theme-primary-light border-theme-primary/30",
+    ghost: "border-transparent text-theme-text-dim",
     default: "bg-theme-bg-elevated text-theme-text",
   };
 
@@ -50,7 +48,7 @@ function IconBox({
 
   return (
     <div
-      className={`flex flex-shrink-0 items-center justify-center rounded-lg ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`flex flex-shrink-0 items-center justify-center rounded-lg opacity-50 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
     >
       <Icon className={iconSizes[size]} />
     </div>
@@ -69,21 +67,17 @@ const STEPS = [
     subtitle: "A single command",
   },
   {
-    icon: ListChecks,
-    title: "Pick what to check",
-    subtitle: "Interactive prompt",
-  },
-  {
     icon: Wrench,
     title: "Fix, then submit",
     subtitle: "Ship a clean PR",
   },
-  {
-    icon: Sparkles,
-    title: "Turn on semantic search",
-    subtitle: "Optional · one Gemini key",
-  },
 ] as const;
+
+/**
+ * Toggles the sticky step progress rail (and its "01 / 03" counter) above the
+ * step cards. Hidden for now; flip to true to bring it back.
+ */
+const SHOW_PROGRESS_RAIL = false;
 
 export function HowToUsePage() {
   const { isAuthenticated } = useAuth();
@@ -129,13 +123,13 @@ export function HowToUsePage() {
     switch (i) {
       case 0:
         return (
-          <StepContent text="Paste this into your IDE's mcp.json — the same config you'll find on the MCP Config page once you log in — then restart the IDE. You only do this once.">
+          <StepContent text="Paste this into your IDE's mcp.json and restart the IDE. You only do this once. The same config is on the MCP Config page after you log in, where you can also test the connection.">
             <McpConfigSnippet />
           </StepContent>
         );
       case 1:
         return (
-          <StepContent text="In your IDE's AI chat, type the command below. Reviewdoo hands the IDE the full self-check workflow — you don't need to remember any of the steps that follow.">
+          <StepContent text="Type this in your IDE's AI chat. Reviewdoo gives the IDE the whole self-check workflow, so there's nothing else to remember.">
             <div className="rounded-md border border-border bg-theme-bg-elevated px-4 py-4 font-mono text-sm">
               <span className="select-none text-theme-text-dim">{">"} </span>
               <span className="text-theme-accent">@reviewdoo</span>
@@ -146,56 +140,12 @@ export function HowToUsePage() {
         );
       case 2:
         return (
-          <StepContent text="The IDE asks what you want to review and shows an interactive selection. Pick your scope and it runs the right git command for you.">
-            <div className="grid gap-2 sm:grid-cols-2">
-              {[
-                "Latest commit",
-                "A specific commit",
-                "A range of commits",
-                "Uncommitted changes",
-                "Changes vs a base branch",
-              ].map((opt) => (
-                <div
-                  key={opt}
-                  className="flex items-center gap-2 rounded-md border border-border bg-theme-bg-elevated px-3 py-2 text-sm text-theme-text-muted"
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-theme-accent" />
-                  {opt}
-                </div>
-              ))}
-            </div>
-          </StepContent>
-        );
-      case 3:
-        return (
-          <StepContent text="The IDE pulls only the review checklist items relevant to your diff, checks your changes against them, and lists what to fix — grouped by severity. Clean it up, then open your PR with confidence.">
+          <StepContent text="The IDE fetches only the checklists that apply to your diff and reports clear violations on the lines you changed, grouped by severity. Each one comes with a suggested fix and a link to its checklist. Fix them, then open your PR.">
             <div className="flex flex-wrap gap-2">
               <SeverityPill label="Critical" className="bg-theme-danger/15 text-theme-danger" />
               <SeverityPill label="Major" className="bg-theme-accent/15 text-theme-accent" />
               <SeverityPill label="Minor" className="bg-theme-info/15 text-theme-info" />
               <SeverityPill label="Suggestion" className="bg-theme-text-muted/15 text-theme-text-muted" />
-            </div>
-          </StepContent>
-        );
-      case 4:
-        return (
-          <StepContent text="Search review checklists by meaning and catch likely duplicates in the management UI. To turn it on, open AI Keys and add a Gemini key. The IDE self-check above works without it.">
-            <div className="flex flex-wrap gap-3">
-              <Link
-                to="/ai-config"
-                className="inline-flex items-center gap-2 rounded-md border border-border bg-theme-bg-elevated px-4 py-2 text-sm font-medium text-theme-text hover:bg-theme-bg-hover transition-colors"
-              >
-                Open AI Keys
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-theme-accent hover:underline underline-offset-2"
-              >
-                Get a Gemini key from Google AI Studio
-              </a>
             </div>
           </StepContent>
         );
@@ -256,9 +206,9 @@ export function HowToUsePage() {
               Set up once, then just run init
             </h1>
             <p className="text-lg text-theme-text-muted leading-relaxed">
-              Connect Review<span className="text-theme-primary">doo</span> to your AI IDE one time. After that, a single command —{" "}
+              Connect Review<span className="text-theme-primary">doo</span> to your AI IDE once. After that, run{" "}
               <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-base">@reviewdoo init</code>{" "}
-              — walks you through checking your changes against the team's review checklists before you open a PR.
+              before each PR to check your changes against the team's review checklists.
             </p>
 
             {/* Quick facts */}
@@ -275,16 +225,21 @@ export function HowToUsePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-theme-text">Get started</h2>
-              <p className="mt-1 text-sm text-theme-text-muted">Four steps, plus an optional fifth. Scroll through them, or jump with the bar.</p>
+              {SHOW_PROGRESS_RAIL && (
+                <p className="mt-1 text-sm text-theme-text-muted">Scroll through the steps, or jump with the bar.</p>
+              )}
             </div>
-            <span className="hidden sm:block text-sm text-theme-text-dim font-mono">
-              {String(active + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
-            </span>
+            {SHOW_PROGRESS_RAIL && (
+              <span className="hidden sm:block text-sm text-theme-text-dim font-mono">
+                {String(active + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+              </span>
+            )}
           </div>
 
           {/* Sticky progress rail — highlights the step currently in view. */}
+          {SHOW_PROGRESS_RAIL && (
           <div className="sticky top-[68px] z-10 -mx-2 rounded-lg border border-border bg-theme-bg-card/90 px-3 py-3 backdrop-blur-sm">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {STEPS.map((step, i) => {
                 const isActive = i === active;
                 const isDone = i < active;
@@ -321,6 +276,7 @@ export function HowToUsePage() {
               })}
             </div>
           </div>
+          )}
 
           {/* Step cards — real content, stacked so there's no empty space. */}
           <div className="space-y-5">
@@ -340,7 +296,7 @@ export function HowToUsePage() {
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3">
-                      <IconBox icon={StepIcon} variant="primary" size="lg" className="border" />
+                      <IconBox icon={StepIcon} variant="ghost" size="lg" className={`border ${isActive ? "opacity-100" : ""}`} />
                       <div>
                         <div className="text-xs font-medium uppercase tracking-wider text-theme-text-dim">
                           Step {i + 1} · {step.subtitle}
@@ -364,33 +320,13 @@ export function HowToUsePage() {
             <CardContent className="pt-6">
               <p className="text-theme-text-muted mb-8 max-w-3xl">
                 After <code className="px-1.5 py-0.5 rounded bg-theme-bg-elevated text-theme-accent text-xs">init</code>, your IDE
-                talks to Reviewdoo over MCP to gather just the review checklists that apply to your changes, then checks
-                your diff against them locally — flagging anything that violates a checklist, with
-                full codebase context.
+                asks Reviewdoo over MCP for the checklists that apply to your changes. It then checks your diff against
+                them locally and flags anything that breaks a checklist.
               </p>
 
               <ReviewFlowDiagram />
             </CardContent>
           </Card>
-        </section>
-
-        {/* What you'll be using */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-text">What you'll be using</h2>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={Terminal}
-              title="init"
-              mono
-              description="The one command you run. It hands your IDE the whole self-check workflow so you don't have to remember any steps."
-            />
-            <InfoCard
-              icon={MessageSquareText}
-              title="Review checklists"
-              description="Concrete checks distilled from past PR feedback, mapped to the file types and languages you touched. Only the ones relevant to your diff show up, so the list stays short."
-            />
-          </div>
         </section>
 
         {/* CTA */}
@@ -452,31 +388,5 @@ function StepContent({ text, children }: { text: string; children: React.ReactNo
 function SeverityPill({ label, className }: { label: string; className: string }) {
   return (
     <span className={`rounded-full px-3 py-1 text-xs font-medium ${className}`}>{label}</span>
-  );
-}
-
-function InfoCard({
-  icon,
-  title,
-  description,
-  mono = false,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  mono?: boolean;
-}) {
-  return (
-    <Card className="group border-theme-accent/20 bg-theme-bg-card/50 transition-all hover:border-theme-accent/40 hover:bg-theme-bg-card">
-      <CardContent className="pt-6">
-        <div className="flex flex-col items-start gap-3">
-          <IconBox icon={icon} variant="accent" className="transition-transform group-hover:scale-105" />
-          <div>
-            <h3 className={`mb-1 font-semibold text-theme-text ${mono ? "font-mono text-sm" : ""}`}>{title}</h3>
-            <p className="text-sm text-theme-text-muted">{description}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
