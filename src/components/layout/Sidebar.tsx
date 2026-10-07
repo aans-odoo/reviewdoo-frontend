@@ -72,10 +72,10 @@ export function Sidebar() {
       icon: ClipboardCheck,
     },
     { to: "/mcp-config", label: "MCP Config", icon: Network },
-    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
   ];
 
   const adminItems = [
+    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
     { to: "/users", label: "User Management", icon: UserCog },
     { to: "/mcp-clients", label: "MCP Clients", icon: Radio },
     { to: "/smtp-config", label: "SMTP Config", icon: Mail },

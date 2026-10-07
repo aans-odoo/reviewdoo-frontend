@@ -131,10 +131,7 @@ export function KeyTable({
       key: "keyHint",
       header: "Key",
       render: (row) => (
-        <div className="flex items-center gap-2">
-          <MaskedKey hint={row.keyHint} size="sm" />
-          {row.carriedOver && <Badge variant="purple">Carried over</Badge>}
-        </div>
+<MaskedKey hint={row.keyHint} size="sm" />
       ),
     },
     ...(showOwner

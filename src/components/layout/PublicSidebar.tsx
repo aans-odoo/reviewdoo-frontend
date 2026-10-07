@@ -81,12 +81,8 @@ export function PublicSidebar() {
     { to: "/mcp-config", label: "MCP Config", icon: Network },
   ];
 
-  // Nav items only visible when logged in
-  const authNavItems = [
-    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
-  ];
-
   const adminItems = [
+    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
     { to: "/users", label: "User Management", icon: UserCog },
     { to: "/mcp-clients", label: "MCP Clients", icon: Radio },
     { to: "/smtp-config", label: "SMTP Config", icon: Mail },
@@ -114,13 +110,6 @@ export function PublicSidebar() {
         {/* Nav items */}
         <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
           {publicNavItems.map((item) => (
-            <div key={item.to}>
-              <SidebarLink to={item.to} label={item.label} icon={item.icon} />
-            </div>
-          ))}
-
-          {/* Auth-required items — only visible when logged in */}
-          {isAuthenticated && authNavItems.map((item) => (
             <div key={item.to}>
               <SidebarLink to={item.to} label={item.label} icon={item.icon} />
             </div>

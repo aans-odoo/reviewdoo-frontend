@@ -23,7 +23,6 @@ export interface PoolKeyView {
   id: string;
   keyHint: string;
   status: "active" | "invalid";
-  carriedOver: boolean;
   createdAt: string;
   lastUsedAt: string | null;
   lastErrorCategory: GeminiErrorCategory | null;
@@ -48,16 +47,9 @@ export interface IndexerStatus {
   } | null;
 }
 
-/** One-time notice about Gemini keys carried over into the pool. */
-export interface MigrationNotice {
-  pending: boolean;
-  keys: { id: string; keyHint: string }[];
-}
-
 /** Response of `GET /ai-keys/status`. */
 export interface KeyPoolStatus {
   hasActiveKey: boolean;
-  migrationNotice: MigrationNotice;
 }
 
 /** Response of `GET /ai-keys`. `allKeys` is present for Admins only. */

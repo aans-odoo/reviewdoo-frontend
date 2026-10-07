@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { AlertTriangle, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -47,11 +46,7 @@ export function KeyPoolSetupBanner() {
     >
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
       <p className="flex-1">
-        Semantic search and duplicate detection are off. Add a Gemini key in{" "}
-        <Link to="/ai-config" className="font-medium underline hover:opacity-80">
-          AI Keys
-        </Link>
-        .
+        Semantic search and duplicate detection are off. Contact an admin to add keys for embedding.
       </p>
       <button
         type="button"

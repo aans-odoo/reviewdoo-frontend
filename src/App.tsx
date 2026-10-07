@@ -52,10 +52,10 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route index element={<Navigate to="/review-checklists" replace />} />
             <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
-            <Route path="/ai-config" element={<AIKeysPage />} />
             <Route path="/mcp-config" element={<McpConfigPage />} />
 
             <Route element={<AdminRoute />}>
+              <Route path="/ai-config" element={<AIKeysPage />} />
               <Route path="/users" element={<UserManagementPage />} />
               <Route path="/mcp-clients" element={<McpClientsPage />} />
               <Route path="/smtp-config" element={<SmtpConfigPage />} />

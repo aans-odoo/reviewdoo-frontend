@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -508,14 +508,6 @@ export function ReviewChecklistsPage() {
             </div>
           </div>
 
-          {!hasActiveKey && (
-            <p className="mt-2 text-xs text-theme-text-muted">
-              Semantic search needs a Gemini key: add one in{" "}
-              <Link to="/ai-config" className="font-medium text-theme-accent underline-offset-2 hover:underline">
-                AI Keys
-              </Link>
-            </p>
-          )}
 
           <div className="mt-4 flex flex-wrap items-end gap-4">
             <div className="space-y-2">
