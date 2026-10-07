@@ -78,6 +78,11 @@ const STEPS = [
     title: "Fix, then submit",
     subtitle: "Ship a clean PR",
   },
+  {
+    icon: Sparkles,
+    title: "Turn on semantic search",
+    subtitle: "Optional · one Gemini key",
+  },
 ] as const;
 
 export function HowToUsePage() {
@@ -172,6 +177,28 @@ export function HowToUsePage() {
             </div>
           </StepContent>
         );
+      case 4:
+        return (
+          <StepContent text="Search review checklists by meaning and catch likely duplicates in the management UI. To turn it on, open AI Keys and add a Gemini key. The IDE self-check above works without it.">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/ai-config"
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-theme-bg-elevated px-4 py-2 text-sm font-medium text-theme-text hover:bg-theme-bg-hover transition-colors"
+              >
+                Open AI Keys
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-theme-accent hover:underline underline-offset-2"
+              >
+                Get a Gemini key from Google AI Studio
+              </a>
+            </div>
+          </StepContent>
+        );
       default:
         return null;
     }
@@ -248,7 +275,7 @@ export function HowToUsePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-theme-text">Get started</h2>
-              <p className="mt-1 text-sm text-theme-text-muted">Four steps. Scroll through them, or jump with the bar.</p>
+              <p className="mt-1 text-sm text-theme-text-muted">Four steps, plus an optional fifth. Scroll through them, or jump with the bar.</p>
             </div>
             <span className="hidden sm:block text-sm text-theme-text-dim font-mono">
               {String(active + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
@@ -257,7 +284,7 @@ export function HowToUsePage() {
 
           {/* Sticky progress rail — highlights the step currently in view. */}
           <div className="sticky top-[68px] z-10 -mx-2 rounded-lg border border-border bg-theme-bg-card/90 px-3 py-3 backdrop-blur-sm">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {STEPS.map((step, i) => {
                 const isActive = i === active;
                 const isDone = i < active;

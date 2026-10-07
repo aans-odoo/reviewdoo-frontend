@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   ClipboardCheck,
-  Brain,
+  KeyRound,
   Network,
   UserCog,
   Mail,
@@ -72,7 +72,7 @@ export function Sidebar() {
       icon: ClipboardCheck,
     },
     { to: "/mcp-config", label: "MCP Config", icon: Network },
-    { to: "/ai-config", label: "AI Config", icon: Brain },
+    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
   ];
 
   const adminItems = [

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ClipboardCheck,
-  Brain,
+  KeyRound,
   Network,
   UserCog,
   Mail,
@@ -83,7 +83,7 @@ export function PublicSidebar() {
 
   // Nav items only visible when logged in
   const authNavItems = [
-    { to: "/ai-config", label: "AI Config", icon: Brain },
+    { to: "/ai-config", label: "AI Keys", icon: KeyRound },
   ];
 
   const adminItems = [

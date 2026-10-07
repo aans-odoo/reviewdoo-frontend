@@ -8,7 +8,7 @@
  * routes (e.g. "/ai-config/anything") inherit the parent's message.
  */
 export const LOGIN_MESSAGES: Record<string, string> = {
-  "/ai-config": "Log in to set up your AI configuration.",
+  "/ai-config": "Log in to manage AI keys.",
   "/users": "Log in as an admin to manage users.",
   "/mcp-clients": "Log in as an admin to manage MCP clients.",
   "/smtp-config": "Log in as an admin to configure email (SMTP).",

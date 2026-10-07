@@ -382,7 +382,18 @@ export function AboutPage() {
                       The knowledge base <span className="text-theme-accent font-semibold">does</span> use semantic search—but for <span className="text-theme-text font-semibold">curation</span>, not the per-diff check. In the management UI you can search review checklists by meaning (not just keywords), and when you add a new item Reviewdoo flags likely duplicates so the base stays clean.
                     </p>
                     <p>
-                      Semantic search needs an embedding model, which each user configures under <span className="text-theme-text font-semibold">AI Config</span>. The IDE-facing matching above needs none of that.
+                      Semantic search is turned on by adding a Gemini key in{" "}
+                      <Link to="/ai-config" className="text-theme-text font-semibold underline-offset-2 hover:underline">AI Keys</Link>{" "}
+                      (get one from{" "}
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-theme-accent underline-offset-2 hover:underline"
+                      >
+                        Google AI Studio
+                      </a>
+                      ). The IDE-facing matching above needs none of that.
                     </p>
                   </div>
                 </div>

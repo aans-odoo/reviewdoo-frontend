@@ -17,7 +17,7 @@ const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage").then(
 const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage })));
 const ReviewChecklistsPage = lazy(() => import("@/pages/ReviewChecklistsPage").then((m) => ({ default: m.ReviewChecklistsPage })));
 const ReviewChecklistDetailPage = lazy(() => import("@/pages/ReviewChecklistDetailPage").then((m) => ({ default: m.ReviewChecklistDetailPage })));
-const AIModelConfigPage = lazy(() => import("@/pages/AIModelConfigPage").then((m) => ({ default: m.AIModelConfigPage })));
+const AIKeysPage = lazy(() => import("@/pages/AIKeysPage").then((m) => ({ default: m.AIKeysPage })));
 const McpConfigPage = lazy(() => import("@/pages/McpConfigPage").then((m) => ({ default: m.McpConfigPage })));
 const UserManagementPage = lazy(() => import("@/pages/UserManagementPage").then((m) => ({ default: m.UserManagementPage })));
 const McpClientsPage = lazy(() => import("@/pages/McpClientsPage").then((m) => ({ default: m.McpClientsPage })));
@@ -52,7 +52,7 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route index element={<Navigate to="/review-checklists" replace />} />
             <Route path="/review-checklists" element={<ReviewChecklistsPage />} />
-            <Route path="/ai-config" element={<AIModelConfigPage />} />
+            <Route path="/ai-config" element={<AIKeysPage />} />
             <Route path="/mcp-config" element={<McpConfigPage />} />
 
             <Route element={<AdminRoute />}>

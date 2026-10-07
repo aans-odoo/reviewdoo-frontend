@@ -5,7 +5,7 @@ import {
   Home, Users, BookOpen, ClipboardCheck, ScrollText, Brain,
   Sparkles, UserCog, MoreHorizontal, ArrowUpDown, Filter,
   Eye, Download, Upload, RefreshCw, Star, Heart, Zap,
-  Shield, Lock, Unlock, Globe, Moon, Sun,
+  Shield, Lock, Unlock, Globe, Moon, Sun, KeyRound,
 } from "lucide-react";
 
 // ─── V2 Design Tokens (inline for showcase isolation) ───────────────────────
@@ -412,7 +412,7 @@ export function DesignShowcasePage() {
               { icon: BookOpen, label: "Guidelines", active: false },
               { icon: Users, label: "Authors", active: false },
               { icon: ScrollText, label: "Ingestion Logs", active: false },
-              { icon: Brain, label: "AI Config", active: false },
+              { icon: KeyRound, label: "AI Keys", active: false },
               { icon: Sparkles, label: "Prompt Generator", active: false },
             ].map((item) => (
               <div key={item.label} style={{

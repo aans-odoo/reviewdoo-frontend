@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +16,8 @@ import { DataTable, Column } from "@/components/shared/DataTable";
 import { ReviewChecklistFormDialog, ChecklistInitial } from "@/components/checklists/ReviewChecklistFormDialog";
 import { CategorySelect } from "@/components/categories/CategorySelect";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
-import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
+import { KeyPoolSetupBanner } from "@/components/shared/KeyPoolSetupBanner";
+import { useKeyPoolStatus } from "@/hooks/useKeyPoolStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick, BadgeInfo } from "lucide-react";
 import api from "@/lib/api";
@@ -57,7 +57,7 @@ const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
 export function ReviewChecklistsPage() {
   const navigate = useNavigate();
-  const { hasEmbeddingModel } = useEmbeddingModel();
+  const { hasActiveKey } = useKeyPoolStatus();
   const { isAdmin } = useAuth();
   const [items, setItems] = useState<ReviewChecklist[]>([]);
   const [descHeaderHovered, setDescHeaderHovered] = useState(false);
@@ -95,6 +95,14 @@ export function ReviewChecklistsPage() {
 
   const semanticActive = appliedMode === "semantic" && appliedQuery.trim().length > 0;
 
+  // Semantic search needs an Active key in the team Key_Pool. Once the status
+  // says there is none, fall back to text mode (the query is kept as-is).
+  useEffect(() => {
+    if (hasActiveKey) return;
+    setSearchMode((m) => (m === "semantic" ? "text" : m));
+    setAppliedMode((m) => (m === "semantic" ? "text" : m));
+  }, [hasActiveKey]);
+
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
@@ -127,8 +135,9 @@ export function ReviewChecklistsPage() {
       const data = res.data.results ?? res.data.items ?? res.data;
       setItems(Array.isArray(data) ? data : []);
       setError("");
-    } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Semantic search failed"));
+    } catch {
+      // Keep the user's query so they can retry or switch to text search.
+      setError("Semantic search is temporarily unavailable");
     } finally {
       setLoading(false);
     }
@@ -441,7 +450,7 @@ export function ReviewChecklistsPage() {
         </div>
       </div>
 
-      {!hasEmbeddingModel && searchMode === "semantic" && <EmbeddingModelBanner message="An active embedding model is required for semantic search." />}
+      {!hasActiveKey && <KeyPoolSetupBanner />}
 
       <Card>
         <CardContent className="pt-6">
@@ -457,6 +466,7 @@ export function ReviewChecklistsPage() {
                     <TooltipTrigger asChild>
                       <SelectItem
                         value="semantic"
+                        disabled={!hasActiveKey}
                         adornment={<BadgeInfo className="ml-2 mr-2 h-3.5 w-3.5 shrink-0 text-theme-text-muted" />}
                       >
                         Semantic
@@ -483,14 +493,8 @@ export function ReviewChecklistsPage() {
                     className="rounded-sm"
                     variant="ghost"
                     onClick={handleSearch}
-                    disabled={loading || (searchMode === "semantic" && !hasEmbeddingModel)}
-                    title={
-                      searchMode === "semantic" && !hasEmbeddingModel
-                        ? "An active embedding model is required for semantic search"
-                        : searchMode === "semantic"
-                          ? "Semantic search"
-                          : "Text search"
-                    }
+                    disabled={loading}
+                    title={searchMode === "semantic" ? "Semantic search" : "Text search"}
                   >
                     {loading
                       ? <LoaderCircle className="h-4 w-4 text-theme-accent animate-spin" />
@@ -503,6 +507,15 @@ export function ReviewChecklistsPage() {
               </div>
             </div>
           </div>
+
+          {!hasActiveKey && (
+            <p className="mt-2 text-xs text-theme-text-muted">
+              Semantic search needs a Gemini key: add one in{" "}
+              <Link to="/ai-config" className="font-medium text-theme-accent underline-offset-2 hover:underline">
+                AI Keys
+              </Link>
+            </p>
+          )}
 
           <div className="mt-4 flex flex-wrap items-end gap-4">
             <div className="space-y-2">
@@ -596,7 +609,7 @@ export function ReviewChecklistsPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         mode="create"
-        hasEmbeddingModel={hasEmbeddingModel}
+        similarityCheckEnabled={hasActiveKey}
         onSaved={() => { setPage(1); fetchItems(); }}
       />
 
@@ -606,7 +619,7 @@ export function ReviewChecklistsPage() {
           onOpenChange={(open) => { setEditOpen(open); if (!open) setEditInitial(null); }}
           mode="edit"
           initial={editInitial}
-          hasEmbeddingModel={hasEmbeddingModel}
+          similarityCheckEnabled={hasActiveKey}
           onSaved={refresh}
         />
       )}

@@ -9,7 +9,7 @@ import { Alert } from "@/components/shared/Alert";
 import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
-import { useEmbeddingModel } from "@/hooks/useEmbeddingModel";
+import { useKeyPoolStatus } from "@/hooks/useKeyPoolStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
 import api from "@/lib/api";
@@ -40,7 +40,7 @@ export function ReviewChecklistDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { hasEmbeddingModel } = useEmbeddingModel(isAuthenticated);
+  const { hasActiveKey } = useKeyPoolStatus(isAuthenticated);
 
   const [item, setItem] = useState<ReviewChecklistDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,7 +117,6 @@ export function ReviewChecklistDetailPage() {
               <Button
                 variant="outline"
                 onClick={() => setEditOpen(true)}
-                title="Configure an embedding model first"
               >
                 <Pencil className="mr-2 h-4 w-4" /> Edit
               </Button>
@@ -247,7 +246,7 @@ export function ReviewChecklistDetailPage() {
             open={editOpen}
             onOpenChange={setEditOpen}
             mode="edit"
-            hasEmbeddingModel={hasEmbeddingModel}
+            similarityCheckEnabled={hasActiveKey}
             initial={{
               id: item.id,
               description: item.description,

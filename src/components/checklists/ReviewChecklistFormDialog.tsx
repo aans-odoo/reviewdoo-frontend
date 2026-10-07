@@ -23,7 +23,6 @@ import { ChipInput } from "@/components/shared/ChipInput";
 import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
 import { CategorySelect } from "@/components/categories/CategorySelect";
-import { EmbeddingModelBanner } from "@/components/shared/EmbeddingModelBanner";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { findSimilarChecklists, aboveThreshold } from "@/lib/similarity";
 import api from "@/lib/api";
@@ -116,7 +115,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   mode: "create" | "edit";
   initial?: ChecklistInitial;
-  hasEmbeddingModel: boolean;
+  /** True when the key pool has an active key; otherwise the duplicate check is skipped silently. */
+  similarityCheckEnabled: boolean;
   onSaved: () => void;
 }
 
@@ -125,7 +125,7 @@ export function ReviewChecklistFormDialog({
   onOpenChange,
   mode,
   initial,
-  hasEmbeddingModel,
+  similarityCheckEnabled,
   onSaved,
 }: Props) {
   const navigate = useNavigate();
@@ -143,6 +143,8 @@ export function ReviewChecklistFormDialog({
 
   const [similar, setSimilar] = useState<SimilarItem[]>([]);
   const [showSimilar, setShowSimilar] = useState(false);
+  // Small muted note shown when the duplicate check failed and we saved anyway.
+  const [similarityNote, setSimilarityNote] = useState("");
 
   // Reset fields whenever the dialog (re)opens or targets a different item.
   useEffect(() => {
@@ -157,6 +159,7 @@ export function ReviewChecklistFormDialog({
     setError("");
     setShowSimilar(false);
     setSimilar([]);
+    setSimilarityNote("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initial?.id]);
 
@@ -225,31 +228,35 @@ export function ReviewChecklistFormDialog({
     e.preventDefault();
     setSaving(true);
     setError("");
-    try {
-      // Skip similarity check when no embedding model is configured — the
-      // feature degrades gracefully to a direct save without dedup warnings.
-      if (hasEmbeddingModel) {
+    setSimilarityNote("");
+    // Without an active key the duplicate check is skipped silently (no
+    // dialog, no notice) and the item is saved directly.
+    if (similarityCheckEnabled) {
+      let dupes: Awaited<ReturnType<typeof findSimilarChecklists>> = [];
+      try {
         const matches = await findSimilarChecklists(description, mode === "edit" ? initial?.id : undefined);
-        const dupes = aboveThreshold(matches);
-        if (dupes.length > 0) {
-          setSimilar(
-            dupes.map((m) => ({
-              id: m.id,
-              text: m.description,
-              score: m.similarityScore,
-              href: `/review-checklists/${m.id}`,
-            }))
-          );
-          setShowSimilar(true);
-          setSaving(false);
-          return;
-        }
+        // Matches are sorted by descending score; keep those >= 0.70, at most 5.
+        dupes = aboveThreshold(matches).slice(0, 5);
+      } catch {
+        // The duplicate check is best effort: note it and save anyway,
+        // keeping every entered value.
+        setSimilarityNote("Duplicate check skipped.");
       }
-      await doSave();
-    } catch (err: unknown) {
-      setError(getApiErrorMessage(err, "Failed to save review checklist"));
-      setSaving(false);
+      if (dupes.length > 0) {
+        setSimilar(
+          dupes.map((m) => ({
+            id: m.id,
+            text: m.description,
+            score: m.similarityScore,
+            href: `/review-checklists/${m.id}`,
+          }))
+        );
+        setShowSimilar(true);
+        setSaving(false);
+        return;
+      }
     }
+    await doSave();
   };
 
   // Attach the entered references to an existing (similar) checklist instead of
@@ -294,13 +301,6 @@ export function ReviewChecklistFormDialog({
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="relative min-w-0 space-y-4 p-5 pt-8">
-            {!hasEmbeddingModel && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-card/40 via-card to-card/40 backdrop-blur-[1px]">
-                <div className="px-6 pb-14">
-                  <EmbeddingModelBanner message="An active embedding model is required for creating or editing a review checklist." />
-                </div>
-              </div>
-            )}
             {error && (
               <Alert variant="error">{error}</Alert>
             )}
@@ -412,10 +412,15 @@ export function ReviewChecklistFormDialog({
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving || !hasEmbeddingModel || !description.trim() || codeMissingLanguage}>
+              <Button type="submit" disabled={saving || !description.trim() || codeMissingLanguage}>
                 {saving ? "Saving…" : mode === "create" ? "Create" : "Save"}
               </Button>
             </DialogFooter>
+            {similarityNote && (
+              <p className="text-right text-xs text-theme-text-muted" role="status">
+                {similarityNote}
+              </p>
+            )}
           </form>
         </DialogContent>
       </Dialog>

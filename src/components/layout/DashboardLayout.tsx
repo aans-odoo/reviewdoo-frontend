@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { MigrationNoticeDialog } from "@/components/aiKeys/MigrationNoticeDialog";
 
 export function DashboardLayout() {
   return (
@@ -17,6 +18,9 @@ export function DashboardLayout() {
           </div>
         </main>
       </div>
+
+      {/* One-time notice for keys carried over into the team pool (Req 5.14–5.19) */}
+      <MigrationNoticeDialog />
     </div>
   );
 }
