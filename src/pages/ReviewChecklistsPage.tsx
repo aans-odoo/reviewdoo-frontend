@@ -526,7 +526,7 @@ export function ReviewChecklistsPage() {
 
 
           <div className="mt-4 flex flex-wrap items-end gap-4">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>Language</Label>
               <Input
                 placeholder="e.g. typescript"
@@ -534,7 +534,7 @@ export function ReviewChecklistsPage() {
                 onChange={(e) => { setLanguageFilter(e.target.value); resetWindow(); }}
                 className="w-40"
               />
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label>Category</Label>
               <CategorySelect
@@ -564,7 +564,7 @@ export function ReviewChecklistsPage() {
               <Button
                 variant="ghost"
                 onClick={clearFilters}
-                className="group ml-auto gap-1.5 overflow-hidden border bg-theme-bg-elevated hover:bg-destructive/5 hover:border-destructive/10"
+                className="group ml-auto gap-1.5 overflow-hidden border bg-theme-bg-elevated hover:bg-destructive/5 hover:border-destructive"
               >
                 Reset filter
                 <X className="h-4 w-0 -translate-x-1 text-destructive opacity-0 transition-all duration-200 ease-out group-hover:w-4 group-hover:translate-x-0 group-hover:opacity-100" />
