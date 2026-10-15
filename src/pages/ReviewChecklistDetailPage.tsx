@@ -11,8 +11,10 @@ import { Markdown } from "@/components/shared/Markdown";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { useKeyPoolStatus } from "@/hooks/useKeyPoolStatus";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Link as LinkIcon, Info, AlertTriangle } from "lucide-react";
 import api from "@/lib/api";
+import { describeApplicability } from "@/lib/checklistApplicability";
+import { cn } from "@/lib/utils";
 
 interface Reference {
   id: string;
@@ -134,7 +136,7 @@ export function ReviewChecklistDetailPage() {
       )}
 
       <Card className="overflow-hidden">
-        <CardContent className="px-0">
+        <CardContent className="px-0 pb-0">
           <div className="flex items-center justify-between px-6 py-3 bg-theme-body/30">
             <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted">Review Checklist</p>
             <ContributionInfo
@@ -202,6 +204,31 @@ export function ReviewChecklistDetailPage() {
                 )}
             </div>
           </div>
+
+          {(() => {
+              const applicability = describeApplicability(
+                item.scope ?? "code",
+                item.languages ?? [],
+                item.filePatterns ?? []
+              );
+              return (
+                <div
+                  className={cn(
+                    "mt-4 flex items-start gap-2 px-6 py-3 text-xs",
+                    applicability.tone === "warn"
+                      ? "bg-theme-cyan/5 text-theme-cyan/80"
+                      : "bg-theme-bg-elevated/80 text-theme-text-muted"
+                  )}
+                >
+                  {applicability.tone === "warn" ? (
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span>{applicability.text}</span>
+                </div>
+              );
+            })()}
         </CardContent>
       </Card>
 

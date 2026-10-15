@@ -20,11 +20,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
 import { ChipInput } from "@/components/shared/ChipInput";
-import { MultiSelect, MultiSelectOption } from "@/components/shared/MultiSelect";
+import { MultiSelect } from "@/components/shared/MultiSelect";
 import { ReferenceInput, ReferenceDraft } from "@/components/shared/ReferenceInput";
 import { CategorySelect } from "@/components/categories/CategorySelect";
 import { SimilarityWarningDialog, SimilarItem } from "@/components/shared/SimilarityWarningDialog";
 import { findSimilarChecklists, aboveThreshold } from "@/lib/similarity";
+import {
+  LANGUAGE_OPTIONS,
+  SCOPE_USES_FILES,
+  describeApplicability,
+} from "@/lib/checklistApplicability";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -42,62 +47,6 @@ const SCOPE_OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
   { value: "commit_message", label: "Commit", icon: GitCommit },
   { value: "general", label: "General", icon: Globe },
 ];
-
-// `code` and `comment` are matched by these; `commit_message` and `general`
-// ignore them (they always apply).
-const SCOPE_USES_FILES = new Set(["code", "comment"]);
-
-const LANGUAGE_OPTIONS: MultiSelectOption[] = [
-  { value: "typescript", label: "TypeScript" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "python", label: "Python" },
-  { value: "xml", label: "XML" },
-  { value: "css", label: "CSS" },
-];
-
-/**
- * Plain-English restatement of what a checklist will match, mirroring the
- * backend matcher. Shown live under the scope picker so contributors can
- * confirm their choices drive the right `get_review_checklists` results
- * without wading through static help text. `tone: "warn"` flags an accidental
- * catch-all (a file scope with nothing to narrow it).
- */
-function describeApplicability(
-  scope: string,
-  languages: string[],
-  filePatterns: string[]
-): { text: string; tone: "info" | "warn" } {
-  if (scope === "commit_message")
-    return { text: "Always checked against the commit message.", tone: "info" };
-  if (scope === "general")
-    return { text: "Always applies to every change.", tone: "info" };
-
-  const isComment = scope === "comment";
-  const langLabels = languages.map(
-    (l) => LANGUAGE_OPTIONS.find((o) => o.value === l)?.label ?? l
-  );
-
-  // `code` is matched by language, so a language is mandatory.
-  if (!isComment && langLabels.length === 0) {
-    return {
-      text: "Select at least one language — code checklists are matched to a diff by language.",
-      tone: "warn",
-    };
-  }
-
-  // A file pattern narrows the language rule to a subset of those files (AND),
-  // rather than widening the match.
-  const base = langLabels.length ? `${langLabels.join(", ")} files` : "any changed file";
-  const patPart = filePatterns.length ? ` matching ${filePatterns.join(", ")}` : "";
-  const target = `${base}${patPart}`;
-
-  return {
-    text: isComment
-      ? `Checked against comments in ${target}.`
-      : `Applies to ${target}.`,
-    tone: "info",
-  };
-}
 
 export interface ChecklistInitial {
   id: string;

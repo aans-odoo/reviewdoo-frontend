@@ -27,6 +27,7 @@ import { Loading } from "@/components/shared/Loading";
 import { Markdown } from "@/components/shared/Markdown";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { describeApplicability } from "@/lib/checklistApplicability";
 
 interface ReviewChecklist {
   id: string;
@@ -344,22 +345,25 @@ export function ReviewChecklistsPage() {
         ),
     },
     {
-      key: "languages",
-      header: "Languages",
-      render: (row) => (
-        <div className="flex flex-wrap gap-1">
-          {(row.languages ?? []).map((lang) => (
-            <Badge key={lang} variant="outline" className="text-xs">
-              {lang}
-            </Badge>
-          ))}
-        </div>
-      ),
-    },
-    {
-      key: "referenceCount",
-      header: "References",
-      render: (row) => <span className="text-theme-text-dim">{row._count?.references ?? row.referenceCount ?? 0}</span>,
+      key: "appliesTo",
+      header: "Applies to",
+      className: "w-1/4 min-w-[16rem] align-top",
+      render: (row) => {
+        const { text, tone } = describeApplicability(
+          row.scope ?? "code",
+          row.languages ?? [],
+          row.filePatterns ?? []
+        );
+        return (
+          <span
+            className={`text-xs ${
+              tone === "warn" ? "text-theme-cyan/80" : "text-theme-text-muted"
+            }`}
+          >
+            {text}
+          </span>
+        );
+      },
     },
     {
       key: "contributors",
