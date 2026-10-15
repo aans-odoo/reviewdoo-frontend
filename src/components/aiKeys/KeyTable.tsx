@@ -179,11 +179,11 @@ export function KeyTable({
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7">
               {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt="" />}
-              <AvatarFallback className="text-[10px]">
+              <AvatarFallback className="text-[10px] from-emerald-800 to-teal-600">
                 {user ? (
                   initials(user.name, user.email)
                 ) : (
-                  <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
+                  <UserRound className="h-3 w-3" aria-hidden="true" />
                 )}
               </AvatarFallback>
             </Avatar>
