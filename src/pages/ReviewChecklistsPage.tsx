@@ -347,7 +347,7 @@ export function ReviewChecklistsPage() {
     {
       key: "appliesTo",
       header: "Applies to",
-      className: "w-1/4 min-w-[16rem] align-top",
+      className: "w-1/4 min-w-[16rem] align-middle",
       render: (row) => {
         const { text, tone } = describeApplicability(
           row.scope ?? "code",
