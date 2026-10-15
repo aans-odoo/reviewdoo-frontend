@@ -12,6 +12,7 @@ import type {
   PoolKeyAdminView,
   PoolKeyView,
 } from "@/lib/aiKeys";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 /** Human-readable labels for the last recorded Gemini error category. */
 const ERROR_CATEGORY_LABELS: Record<GeminiErrorCategory, string> = {
@@ -131,32 +132,32 @@ export function KeyTable({
       key: "keyHint",
       header: "Key",
       render: (row) => (
-<MaskedKey hint={row.keyHint} size="sm" />
+        <MaskedKey hint={row.keyHint} size="sm" />
       ),
     },
     ...(showOwner
       ? [
-          {
-            key: "owner",
-            header: "Owner",
-            render: (row: KeyRow) => {
-              if (!hasOwner(row)) return <span className="text-theme-text-muted">—</span>;
-              const { name, email, avatarUrl } = row.owner;
-              return (
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7">
-                    {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
-                    <AvatarFallback className="text-[10px]">{initials(name, email)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-theme-text">{name || email}</span>
-                    {name && <span className="text-xs text-theme-text-muted">{email}</span>}
-                  </div>
+        {
+          key: "owner",
+          header: "Owner",
+          render: (row: KeyRow) => {
+            if (!hasOwner(row)) return <span className="text-theme-text-muted">—</span>;
+            const { name, email, avatarUrl } = row.owner;
+            return (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-7 w-7">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
+                  <AvatarFallback className="text-[10px]">{initials(name, email)}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-theme-text">{name || email}</span>
+                  {name && <span className="text-xs text-theme-text-muted">{email}</span>}
                 </div>
-              );
-            },
-          } satisfies Column<KeyRow>,
-        ]
+              </div>
+            );
+          },
+        } satisfies Column<KeyRow>,
+      ]
       : []),
     {
       key: "createdAt",
@@ -186,10 +187,19 @@ export function KeyTable({
                 )}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col">
-              <span className="text-theme-text">{user ? user.email : "Guest"}</span>
-              <span className="text-xs text-theme-text-muted">{formatDateTime(row.lastUsedAt)}</span>
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-col">
+                  <span className="text-theme-text">{user ? user.name : "Guest"}</span>
+                  <span className="text-xs text-theme-text-muted">{formatDateTime(row.lastUsedAt)}</span>
+                </div>
+              </TooltipTrigger>
+              {user &&
+                <TooltipContent side="right">
+                  {user.email}
+                </TooltipContent>
+              }
+            </Tooltip>
           </div>
         );
       },
