@@ -564,7 +564,7 @@ export function ReviewChecklistsPage() {
               <Button
                 variant="ghost"
                 onClick={clearFilters}
-                className="group ml-auto gap-1.5 overflow-hidden border bg-theme-bg-elevated hover:bg-destructive/5 hover:border-destructive"
+                className="group ml-auto gap-1.5 overflow-hidden border bg-theme-bg-elevated hover:bg-destructive/5 hover:border-destructive/10"
               >
                 Reset filter
                 <X className="h-4 w-0 -translate-x-1 text-destructive opacity-0 transition-all duration-200 ease-out group-hover:w-4 group-hover:translate-x-0 group-hover:opacity-100" />
