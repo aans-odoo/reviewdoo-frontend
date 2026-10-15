@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, RotateCw, Trash2, UserRound } from "lucide-react";
+import { Bot, Loader2, RotateCw, Trash2, UserRound } from "lucide-react";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -173,15 +173,20 @@ export function KeyTable({
         if (!row.lastUsedAt) {
           return <span className="whitespace-nowrap text-theme-text-muted">Never</span>;
         }
-        // `lastUsedBy` is null for a guest/unauthenticated caller or the Indexer.
+        // `lastUsedBy` is set only for a signed-in user; `lastUsedByKind`
+        // distinguishes the no-user cases ("Guest" vs "System").
         const user = row.lastUsedBy;
+        const isSystem = !user && row.lastUsedByKind === "system";
+        const label = user ? user.name : isSystem ? "System" : "Guest";
         return (
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7">
               {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt="" />}
-              <AvatarFallback className="text-[10px] from-emerald-800 to-teal-600">
+              <AvatarFallback className={`text-[10px] ${!isSystem ? 'from-emerald-800 to-teal-600' :'from-theme-bg-hover to-theme-body'}`}>
                 {user ? (
                   initials(user.name, user.email)
+                ) : isSystem ? (
+                  <Bot className="h-3.5 w-3.5 text-theme-accent" aria-hidden="true" />
                 ) : (
                   <UserRound className="h-3 w-3" aria-hidden="true" />
                 )}
@@ -190,7 +195,7 @@ export function KeyTable({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex flex-col">
-                  <span className="text-theme-text">{user ? user.name : "Guest"}</span>
+                  <span className="text-theme-text">{label}</span>
                   <span className="text-xs text-theme-text-muted">{formatDateTime(row.lastUsedAt)}</span>
                 </div>
               </TooltipTrigger>

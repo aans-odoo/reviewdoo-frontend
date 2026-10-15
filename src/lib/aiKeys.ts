@@ -26,10 +26,16 @@ export interface PoolKeyView {
   createdAt: string;
   lastUsedAt: string | null;
   /**
-   * The user who last used this key, or `null` when the last use was a
-   * guest/unauthenticated caller or the background Indexer (shown as "Guest").
+   * The user who last used this key. `null` when the last use was a guest or
+   * the system (see `lastUsedByKind`), or when the key has never been used.
    */
   lastUsedBy: { id: string; name: string; email: string; avatarUrl: string } | null;
+  /**
+   * What kind of actor last used the key: a signed-in `user`, a `guest`
+   * (unauthenticated caller), or the `system` (background Indexer). `null` when
+   * the key has never been used.
+   */
+  lastUsedByKind: "user" | "guest" | "system" | null;
   lastErrorCategory: GeminiErrorCategory | null;
   lastErrorAt: string | null;
   coolingDownUntil: string | null;
