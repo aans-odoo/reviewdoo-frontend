@@ -38,6 +38,14 @@ import { FileCode, MessageSquare, GitCommit, Globe, Info, AlertTriangle, type Lu
 
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
+function arraysEqual(a: unknown[], b: unknown[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) return false;
+  }
+  return true;
+}
+
 // Scope drives how `get_review_checklists` matches this item to a diff, so it
 // is the first thing a contributor picks. Order: file-based scopes first, then
 // the file-independent contexts.
@@ -94,6 +102,7 @@ export function ReviewChecklistFormDialog({
   const [showSimilar, setShowSimilar] = useState(false);
   // Small muted note shown when the duplicate check failed and we saved anyway.
   const [similarityNote, setSimilarityNote] = useState("");
+  const [pulse, setPulse] = useState(false);
 
   // Reset fields whenever the dialog (re)opens or targets a different item.
   useEffect(() => {
@@ -237,10 +246,39 @@ export function ReviewChecklistFormDialog({
   const applicability = describeApplicability(scope, languages, filePatterns);
   const codeMissingLanguage = scope === "code" && languages.length === 0;
 
+  const baseCategory = initial?.category ?? (mode === "create" ? "other" : "");
+  const baseDescription = initial?.description ?? "";
+  const baseSeverity = initial?.severity ?? "minor";
+  const baseScope = initial?.scope ?? "code";
+  const baseLanguages = initial?.languages ?? [];
+  const baseFilePatterns = initial?.filePatterns ?? [];
+  const baseReferences = initial?.references ?? [];
+
+  const dirty =
+    description !== baseDescription ||
+    severity !== baseSeverity ||
+    scope !== baseScope ||
+    category !== baseCategory ||
+    !arraysEqual(languages, baseLanguages) ||
+    !arraysEqual(filePatterns, baseFilePatterns) ||
+    !arraysEqual(references, baseReferences);
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[600px] max-w-[95vw] max-h-[95vh] overflow-y-auto gap-0">
+        <DialogContent
+          className={cn(
+            "w-[600px] max-w-[95vw] max-h-[95vh] overflow-y-auto gap-0",
+            pulse ? "translate-y-[-51%]" : ""
+          )}
+          onInteractOutside={(e) => {
+            if (dirty) {
+              e.preventDefault();
+              setPulse(true);
+              setTimeout(() => setPulse(false), 350);
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{mode === "create" ? "Create Review Checklist" : "Edit Review Checklist"}</DialogTitle>
             <DialogDescription>
