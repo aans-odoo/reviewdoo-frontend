@@ -3,6 +3,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "./Pagination";
+import { RangeNavigator, RangeValue } from "./RangeNavigator";
 
 export interface Column<T> {
   key: string;
@@ -26,6 +27,15 @@ interface DataTableProps<T> {
   keyExtractor?: (row: T) => string;
   emptyMessage?: string;
   serverSide?: boolean;
+  /**
+   * When set, the footer renders an editable range navigator (offset/limit)
+   * instead of page-number pagination. Requires serverSide data and
+   * `totalItems`. Mutually exclusive with onPageChange-based pagination.
+   */
+  rangeMode?: boolean;
+  offset?: number;
+  limit?: number;
+  onRangeChange?: (value: RangeValue) => void;
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -41,6 +51,10 @@ export function DataTable<T extends Record<string, unknown>>({
   keyExtractor,
   emptyMessage = "No data available",
   serverSide = false,
+  rangeMode = false,
+  offset = 0,
+  limit = pageSize,
+  onRangeChange,
 }: DataTableProps<T>) {
   const [localPage, setLocalPage] = useState(1);
   const [localSortKey, setLocalSortKey] = useState<string | null>(null);
@@ -153,12 +167,22 @@ export function DataTable<T extends Record<string, unknown>>({
           </tbody>
         </table>
       </div>
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
+      {rangeMode && onRangeChange && totalItems > 0 ? (
+        <RangeNavigator
+          offset={offset}
+          limit={limit}
+          total={totalItems}
+          shown={displayData.length}
+          onChange={onRangeChange}
         />
+      ) : (
+        totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )
       )}
     </div>
   );

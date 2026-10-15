@@ -64,9 +64,15 @@ export function ReviewChecklistsPage() {
   const [descHeaderHovered, setDescHeaderHovered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
+  // Range-based window into the list. Default shows records 1–10.
+  const DEFAULT_LIMIT = 10;
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
-  const pageSize = 10;
+  // Reset the window back to the first record (keeping the current size).
+  const resetWindow = useCallback(() => setOffset(0), []);
+  // Semantic mode paginates client-side; keep a fixed page size for it.
+  const semanticPageSize = 10;
 
   const [languageFilter, setLanguageFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -110,7 +116,7 @@ export function ReviewChecklistsPage() {
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
-      const params: Record<string, string | number> = { page, pageSize };
+      const params: Record<string, string | number> = { offset, limit };
       if (languageFilter) params.language = languageFilter;
       if (categoryFilter) params.category = categoryFilter;
       if (severityFilter) params.severity = severityFilter;
@@ -130,7 +136,7 @@ export function ReviewChecklistsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, languageFilter, categoryFilter, severityFilter, sortKey, sortDir, appliedMode, appliedQuery]);
+  }, [offset, limit, languageFilter, categoryFilter, severityFilter, sortKey, sortDir, appliedMode, appliedQuery]);
 
   const fetchSemantic = useCallback(async (query: string) => {
     if (!query.trim()) return;
@@ -159,7 +165,7 @@ export function ReviewChecklistsPage() {
   }, [fetchItems, semanticActive]);
 
   const handleSearch = async () => {
-    setPage(1);
+    resetWindow();
     setAppliedMode(searchMode);
     setAppliedQuery(searchQuery);
     if (searchMode === "semantic" && searchQuery.trim()) {
@@ -248,7 +254,7 @@ export function ReviewChecklistsPage() {
 
       const res = await api.post("/review-checklists/import", { reviewChecklists, skipDuplicates: true });
       setImportResult(res.data);
-      setPage(1);
+      resetWindow();
       refresh();
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Failed to import review checklists"));
@@ -266,7 +272,7 @@ export function ReviewChecklistsPage() {
     setSearchQuery("");
     setAppliedQuery("");
     setAppliedMode("text");
-    setPage(1);
+    resetWindow();
   };
 
   const hasActiveFilters =
@@ -526,7 +532,7 @@ export function ReviewChecklistsPage() {
               <Input
                 placeholder="e.g. typescript"
                 value={languageFilter}
-                onChange={(e) => { setLanguageFilter(e.target.value); setPage(1); }}
+                onChange={(e) => { setLanguageFilter(e.target.value); resetWindow(); }}
                 className="w-40"
               />
             </div>
@@ -534,7 +540,7 @@ export function ReviewChecklistsPage() {
               <Label>Category</Label>
               <CategorySelect
                 value={categoryFilter || "all"}
-                onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); setPage(1); }}
+                onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); resetWindow(); }}
                 includeAll
                 placeholder="All"
                 triggerClassName="w-40"
@@ -543,7 +549,7 @@ export function ReviewChecklistsPage() {
             </div>
             <div className="space-y-2">
               <Label>Severity</Label>
-              <Select value={severityFilter || "all"} onValueChange={(v) => { setSeverityFilter(v === "all" ? "" : v); setPage(1); }}>
+              <Select value={severityFilter || "all"} onValueChange={(v) => { setSeverityFilter(v === "all" ? "" : v); resetWindow(); }}>
                 <SelectTrigger className="w-36">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
@@ -599,19 +605,24 @@ export function ReviewChecklistsPage() {
             data={displayItems as (ReviewChecklist & Record<string, unknown>)[]}
             keyExtractor={(row) => row.id}
             serverSide={!semanticActive}
-            pageSize={pageSize}
+            pageSize={semanticPageSize}
             {...(semanticActive
               ? {}
               : {
-                  currentPage: page,
+                  rangeMode: true,
+                  offset,
+                  limit,
                   totalItems,
-                  onPageChange: setPage,
+                  onRangeChange: ({ offset: o, limit: l }) => {
+                    setOffset(o);
+                    setLimit(l);
+                  },
                   sortKey: sortKey ?? undefined,
                   sortDirection: sortDir,
                   onSort: (key, direction) => {
                     setSortKey(key);
                     setSortDir(direction);
-                    setPage(1);
+                    resetWindow();
                   },
                 })}
             emptyMessage="No review checklists found"
@@ -624,7 +635,7 @@ export function ReviewChecklistsPage() {
         onOpenChange={setCreateOpen}
         mode="create"
         similarityCheckEnabled={hasActiveKey}
-        onSaved={() => { setPage(1); fetchItems(); }}
+        onSaved={() => { resetWindow(); fetchItems(); }}
       />
 
       {editInitial && (
