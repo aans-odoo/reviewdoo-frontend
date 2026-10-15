@@ -19,7 +19,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { KeyPoolSetupBanner } from "@/components/shared/KeyPoolSetupBanner";
 import { useKeyPoolStatus } from "@/hooks/useKeyPoolStatus";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick, BadgeInfo } from "lucide-react";
+import { Plus, Search, Sparkles, LoaderCircle, Pencil, Trash2, Download, Upload, MousePointerClick, BadgeInfo, X } from "lucide-react";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -282,14 +282,14 @@ export function ReviewChecklistsPage() {
   // so they stay meaningful against the similarity-ranked results.
   const displayItems = semanticActive
     ? items.filter(
-        (it) =>
-          (!languageFilter ||
-            (it.languages ?? []).some((l) =>
-              l.toLowerCase().includes(languageFilter.toLowerCase())
-            )) &&
-          (!categoryFilter || it.category === categoryFilter) &&
-          (!severityFilter || it.severity === severityFilter)
-      )
+      (it) =>
+        (!languageFilter ||
+          (it.languages ?? []).some((l) =>
+            l.toLowerCase().includes(languageFilter.toLowerCase())
+          )) &&
+        (!categoryFilter || it.category === categoryFilter) &&
+        (!severityFilter || it.severity === severityFilter)
+    )
     : items;
 
   const columns: Column<ReviewChecklist & Record<string, unknown>>[] = [
@@ -362,9 +362,8 @@ export function ReviewChecklistsPage() {
         );
         return (
           <span
-            className={`text-xs ${
-              tone === "warn" ? "text-theme-cyan/80" : "text-theme-text-muted"
-            }`}
+            className={`text-xs ${tone === "warn" ? "text-theme-cyan/80" : "text-theme-text-muted"
+              }`}
           >
             {text}
           </span>
@@ -562,8 +561,13 @@ export function ReviewChecklistsPage() {
               </Select>
             </div>
             {hasActiveFilters && (
-              <Button variant="ghost" onClick={clearFilters}>
-                Clear
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="group ml-auto gap-1.5 overflow-hidden border bg-theme-bg-elevated hover:bg-destructive/5 hover:border-destructive/10"
+              >
+                Reset filter
+                <X className="h-4 w-0 -translate-x-1 text-destructive opacity-0 transition-all duration-200 ease-out group-hover:w-4 group-hover:translate-x-0 group-hover:opacity-100" />
               </Button>
             )}
           </div>
@@ -609,22 +613,22 @@ export function ReviewChecklistsPage() {
             {...(semanticActive
               ? {}
               : {
-                  rangeMode: true,
-                  offset,
-                  limit,
-                  totalItems,
-                  onRangeChange: ({ offset: o, limit: l }) => {
-                    setOffset(o);
-                    setLimit(l);
-                  },
-                  sortKey: sortKey ?? undefined,
-                  sortDirection: sortDir,
-                  onSort: (key, direction) => {
-                    setSortKey(key);
-                    setSortDir(direction);
-                    resetWindow();
-                  },
-                })}
+                rangeMode: true,
+                offset,
+                limit,
+                totalItems,
+                onRangeChange: ({ offset: o, limit: l }) => {
+                  setOffset(o);
+                  setLimit(l);
+                },
+                sortKey: sortKey ?? undefined,
+                sortDirection: sortDir,
+                onSort: (key, direction) => {
+                  setSortKey(key);
+                  setSortDir(direction);
+                  resetWindow();
+                },
+              })}
             emptyMessage="No review checklists found"
           />
         </>
