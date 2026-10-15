@@ -11,7 +11,7 @@ import { Markdown } from "@/components/shared/Markdown";
 import { ContributionInfo, Contributor } from "@/components/shared/ContributionInfo";
 import { useKeyPoolStatus } from "@/hooks/useKeyPoolStatus";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Pencil, Trash2, Link as LinkIcon, Info, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Link as LinkIcon, Info, AlertTriangle, BadgeInfo, BadgeHelp } from "lucide-react";
 import api from "@/lib/api";
 import { describeApplicability } from "@/lib/checklistApplicability";
 import { cn } from "@/lib/utils";
@@ -136,7 +136,7 @@ export function ReviewChecklistDetailPage() {
       )}
 
       <Card className="overflow-hidden">
-        <CardContent className="px-0 pb-0">
+        <CardContent className="px-0">
           <div className="flex items-center justify-between px-6 py-3 bg-theme-body/30">
             <p className="text-xs font-medium uppercase tracking-wider text-theme-text-muted">Review Checklist</p>
             <ContributionInfo
@@ -153,7 +153,7 @@ export function ReviewChecklistDetailPage() {
               {item.description}
             </Markdown>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-theme-border pt-6 pb-2 text-sm text-theme-text-muted">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-theme-border pt-6 pb-2 text-sm text-theme-text-muted border-dashed border-spacing-10">
               {[
                 item.severity && (
                   <div key="severity" className="flex items-center gap-2">
@@ -163,72 +163,35 @@ export function ReviewChecklistDetailPage() {
                     </Badge>
                   </div>
                 ),
-                item.scope && (
-                  <div key="scope" className="flex items-center gap-2">
-                    <span>Scope:</span>
-                    <Badge variant="outline">{item.scope.replace(/_/g, " ")}</Badge>
-                  </div>
-                ),
                 item.category && (
                   <div key="category" className="flex items-center gap-2">
                     <span>Category:</span>
                     <span className="capitalize text-theme-text-dim">{item.category}</span>
                   </div>
                 ),
-                item.languages.length > 0 && (
-                  <div key="languages" className="flex items-center gap-2">
-                    <span>Languages:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {item.languages.map((lang) => (
-                        <Badge key={lang} variant="outline">{lang}</Badge>
-                      ))}
+                (() => {
+                  const applicability = describeApplicability(
+                    item.scope ?? "code",
+                    item.languages ?? [],
+                    item.filePatterns ?? []
+                  );
+                  return (
+                    <div key="category" className="flex items-center gap-2">
+                      {/* <span>Applies to:</span> */}
+                      <BadgeHelp className="w-5 h-5 opacity-90"/>
+                      <span className="text-theme-text-dim">{applicability.text}</span>
                     </div>
-                  </div>
-                ),
-                item.filePatterns.length > 0 && (
-                  <div key="filePatterns" className="flex items-center gap-2">
-                    <span>File Patterns:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {item.filePatterns.map((pat) => (
-                        <Badge key={pat} variant="outline">{pat}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                ),
+                  );
+                })()
               ]
                 .filter(Boolean)
                 .flatMap((el, i, arr) =>
                   i < arr.length - 1
-                    ? [el, <span key={`sep-${i}`} className="w-px h-6 bg-border" />]
+                    ? [el, <span key={`sep-${i}`} className="w-px h-6 bg-theme-text-dim/10" />]
                     : [el]
                 )}
             </div>
           </div>
-
-          {(() => {
-              const applicability = describeApplicability(
-                item.scope ?? "code",
-                item.languages ?? [],
-                item.filePatterns ?? []
-              );
-              return (
-                <div
-                  className={cn(
-                    "mt-4 flex items-start gap-2 px-6 py-3 text-xs",
-                    applicability.tone === "warn"
-                      ? "bg-theme-cyan/5 text-theme-cyan/80"
-                      : "bg-theme-bg-elevated/80 text-theme-text-muted"
-                  )}
-                >
-                  {applicability.tone === "warn" ? (
-                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  ) : (
-                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  )}
-                  <span>{applicability.text}</span>
-                </div>
-              );
-            })()}
         </CardContent>
       </Card>
 
@@ -257,10 +220,10 @@ export function ReviewChecklistDetailPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-theme-text-muted">
+            <p className="text-sm text-theme-text-dim">
               No references yet.
               {isAuthenticated && (
-                <> Use <span className="font-medium">Edit</span> to add some.</>
+                <> Use <span className="font-medium text-theme-text-muted">Edit</span> to add some.</>
               )}
             </p>
           )}
