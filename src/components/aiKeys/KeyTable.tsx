@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, RotateCw, Trash2 } from "lucide-react";
+import { Loader2, RotateCw, Trash2, UserRound } from "lucide-react";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -168,9 +168,31 @@ export function KeyTable({
     {
       key: "lastUsedAt",
       header: "Last used",
-      render: (row) => (
-        <span className="whitespace-nowrap text-theme-text-muted">{formatDateTime(row.lastUsedAt)}</span>
-      ),
+      render: (row) => {
+        if (!row.lastUsedAt) {
+          return <span className="whitespace-nowrap text-theme-text-muted">Never</span>;
+        }
+        // `lastUsedBy` is null for a guest/unauthenticated caller or the Indexer.
+        const user = row.lastUsedBy;
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-7 w-7">
+              {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt="" />}
+              <AvatarFallback className="text-[10px]">
+                {user ? (
+                  initials(user.name, user.email)
+                ) : (
+                  <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-theme-text">{user ? user.email : "Guest"}</span>
+              <span className="text-xs text-theme-text-muted">{formatDateTime(row.lastUsedAt)}</span>
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: "status",
