@@ -15,6 +15,7 @@ import { ArrowLeft, Pencil, Trash2, Link as LinkIcon, Info, AlertTriangle, Badge
 import api from "@/lib/api";
 import { describeApplicability } from "@/lib/checklistApplicability";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Reference {
   id: string;
@@ -177,8 +178,12 @@ export function ReviewChecklistDetailPage() {
                   );
                   return (
                     <div key="category" className="flex items-center gap-2">
-                      {/* <span>Applies to:</span> */}
-                      <BadgeHelp className="w-5 h-5 opacity-90"/>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                            <BadgeHelp className="w-5 h-5 opacity-90" />
+                        </TooltipTrigger>
+                        <TooltipContent side="left">Where it applies?</TooltipContent>
+                      </Tooltip>
                       <span className="text-theme-text-dim">{applicability.text}</span>
                     </div>
                   );
@@ -199,9 +204,9 @@ export function ReviewChecklistDetailPage() {
         <CardContent className="pt-6">
           <p className="text-sm font-medium text-theme-text-muted mb-3">References ({item.references?.length ?? 0})</p>
           {item.references && item.references.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-0.5">
               {item.references.map((ref) => (
-                <li key={ref.id} className="flex items-center gap-2 rounded-sm border border-border px-3 py-2">
+                <li key={ref.id} className="flex items-center gap-2 bg-theme-bg-elevated/30 hover:bg-theme-bg-elevated/50 transition-all rounded-[4px] first-of-type:rounded-tl-md first-of-type:rounded-tr-md last-of-type:rounded-bl-md last-of-type:rounded-br-md px-3 py-3">
                   <LinkIcon className="h-3.5 w-3.5 shrink-0 text-theme-text-dim" />
                   <div className="min-w-0 flex-1">
                     <a
@@ -220,10 +225,11 @@ export function ReviewChecklistDetailPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-theme-text-dim">
+            <p className="flex items-center text-sm text-theme-text-dim px-5 py-3 bg-theme-bg-elevated/30 hover:bg-theme-bg-elevated/50 transition-all rounded-md">
+              <LinkIcon className="h-3.5 w-3.5 shrink-0 text-theme-text-dim mr-2" />
               No references yet.
               {isAuthenticated && (
-                <> Use <span className="font-medium text-theme-text-muted">Edit</span> to add some.</>
+                <> Use <span className="font-medium text-theme-text-muted">&nbsp;Edit&nbsp;</span> to add some.</>
               )}
             </p>
           )}
