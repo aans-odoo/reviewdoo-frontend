@@ -71,6 +71,9 @@ export function ReviewChecklistsPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
 
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"text" | "semantic">("text");
   const [appliedQuery, setAppliedQuery] = useState("");
@@ -110,6 +113,10 @@ export function ReviewChecklistsPage() {
       if (languageFilter) params.language = languageFilter;
       if (categoryFilter) params.category = categoryFilter;
       if (severityFilter) params.severity = severityFilter;
+      if (sortKey) {
+        params.sortBy = sortKey;
+        params.sortOrder = sortDir;
+      }
       if (appliedMode === "text" && appliedQuery.trim()) params.search = appliedQuery.trim();
 
       const res = await api.get("/review-checklists", { params });
@@ -122,7 +129,7 @@ export function ReviewChecklistsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, languageFilter, categoryFilter, severityFilter, appliedMode, appliedQuery]);
+  }, [page, pageSize, languageFilter, categoryFilter, severityFilter, sortKey, sortDir, appliedMode, appliedQuery]);
 
   const fetchSemantic = useCallback(async (query: string) => {
     if (!query.trim()) return;
@@ -591,7 +598,18 @@ export function ReviewChecklistsPage() {
             pageSize={pageSize}
             {...(semanticActive
               ? {}
-              : { currentPage: page, totalItems, onPageChange: setPage })}
+              : {
+                  currentPage: page,
+                  totalItems,
+                  onPageChange: setPage,
+                  sortKey: sortKey ?? undefined,
+                  sortDirection: sortDir,
+                  onSort: (key, direction) => {
+                    setSortKey(key);
+                    setSortDir(direction);
+                    setPage(1);
+                  },
+                })}
             emptyMessage="No review checklists found"
           />
         </>
