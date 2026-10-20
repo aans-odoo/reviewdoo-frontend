@@ -93,7 +93,7 @@ export function ReviewChecklistFormDialog({
 
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState("minor");
-  const [scope, setScope] = useState("code");
+  const [scope, setScope] = useState("general");
   const [category, setCategory] = useState("other");
   const [languages, setLanguages] = useState<string[]>([]);
   const [filePatterns, setFilePatterns] = useState<string[]>([]);
@@ -120,7 +120,7 @@ export function ReviewChecklistFormDialog({
     if (!open) return;
     setDescription(initial?.description ?? "");
     setSeverity(initial?.severity ?? "minor");
-    setScope(initial?.scope ?? "code");
+    setScope(initial?.scope ?? "general");
     setCategory(initial?.category ?? (mode === "create" ? "other" : ""));
     setLanguages(initial?.languages ?? []);
     setFilePatterns(initial?.filePatterns ?? []);
@@ -268,7 +268,7 @@ export function ReviewChecklistFormDialog({
   const baseCategory = initial?.category ?? (mode === "create" ? "other" : "");
   const baseDescription = initial?.description ?? "";
   const baseSeverity = initial?.severity ?? "minor";
-  const baseScope = initial?.scope ?? "code";
+  const baseScope = initial?.scope ?? "general";
   const baseLanguages = initial?.languages ?? [];
   const baseFilePatterns = initial?.filePatterns ?? [];
   const baseReferences = initial?.references ?? [];
