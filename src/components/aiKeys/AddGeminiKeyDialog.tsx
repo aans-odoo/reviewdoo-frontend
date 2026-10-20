@@ -33,6 +33,15 @@ interface AddGeminiKeyDialogProps {
 
 export const GEMINI_API_KEYS_URL = "https://aistudio.google.com/api-keys";
 
+/** How a pooled key is handled. Keep in sync with what the backend enforces. */
+export const KEY_HANDLING_BULLETS = [
+  "Encrypted with AES-256-GCM before it is stored.",
+  "Never shown again after saving — only the last 4 characters are displayed.",
+  "Never written to logs and never returned by the API.",
+  "Sent only to Google's Gemini API, in a request header.",
+  "You can remove it at any time; removing deletes it from the database.",
+] as const;
+
 /**
  * Dialog for contributing a Gemini API key to the shared team pool.
  *
@@ -117,7 +126,7 @@ export function AddGeminiKeyDialog({ open, onOpenChange, onAdded }: AddGeminiKey
           <div className="space-y-2 mt-5 mb-10">
             <div className="flex items-center justify-between px-1 gap-2">
               <Label htmlFor="gemini-api-key">Gemini API Key</Label>
-              <EncryptedBadge />
+              <EncryptedBadge label="Encrypted" title="How your key is handled" details={KEY_HANDLING_BULLETS} />
             </div>
             <div className="relative">
               <Input

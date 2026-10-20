@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Logo } from "@/components/ui/logo";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
+import { PasswordHandlingBadge } from "@/components/aiKeys/EncryptedBadge";
 
 type TokenState = "validating" | "valid" | "invalid" | "expired";
 
@@ -118,7 +119,10 @@ export function AccountSetupPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <PasswordHandlingBadge />
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -130,7 +134,10 @@ export function AccountSetupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <PasswordHandlingBadge />
+              </div>
               <Input
                 id="confirmPassword"
                 type="password"

@@ -1,50 +1,66 @@
 import { Lock } from "lucide-react";
+import type { VariantProps } from "class-variance-authority";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-/** How a pooled key is handled. Keep in sync with what the backend enforces. */
-export const KEY_HANDLING_BULLETS = [
-  "Encrypted with AES-256-GCM before it is stored.",
-  "Never shown again after saving — only the last 4 characters are displayed.",
-  "Never written to logs and never returned by the API.",
-  "Sent only to Google's Gemini API, in a request header.",
-  "You can remove it at any time; removing deletes it from the database.",
-] as const;
-
 interface EncryptedBadgeProps {
+  /** Tooltip heading, also used as the accessible name. */
+  title: string;
+  /** Optional bullet points shown under the title. */
+  details?: readonly string[];
+  /** When set, renders a green pill with this text; otherwise just the lock icon. */
+  label?: string;
+  /** Badge color; also colors the icon in icon-only mode. */
+  variant?: VariantProps<typeof badgeVariants>["variant"];
   className?: string;
 }
 
 /**
- * Small "Encrypted" badge. Hover or focus it to see how the key is handled.
+ * Lock badge that explains, on hover or focus, how a sensitive value is protected.
  * Rendered as a button so keyboard users can reach the tooltip.
  */
-export function EncryptedBadge({ className }: EncryptedBadgeProps) {
+export function EncryptedBadge({ title, details, label, variant = "green", className }: EncryptedBadgeProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label="Encrypted. How your key is handled"
+          aria-label={label ? `${label}. ${title}` : title}
           className={cn(
-            badgeVariants({ variant: "green" }),
-            "cursor-help gap-1 px-2.5 py-[5px] text-[10px] leading-[10px] font-medium focus-visible:ring-2 focus-visible:ring-theme-success/50",
+            badgeVariants({ variant }),
+            "cursor-help focus-visible:ring-1 focus-visible:ring-current",
+            label
+              ? "gap-1 px-2.5 py-[5px] text-[10px] leading-[10px] font-medium"
+              : "rounded border-0 bg-transparent p-0.5 hover:opacity-80",
             className
           )}
         >
-          <Lock className="h-2.5 w-2.5" aria-hidden="true" />
-          Encrypted
+          <Lock className={label ? "size-2.5" : "size-3"} aria-hidden="true" />
+          {label}
         </button>
       </TooltipTrigger>
       <TooltipContent side="bottom" align="start" className="max-w-xs px-3 py-2.5">
-        <p className="mb-1.5 text-[13px] font-medium text-theme-text">How your key is handled</p>
-        <ul className="list-disc space-y-1 pl-4 text-theme-text-muted">
-          {KEY_HANDLING_BULLETS.map((bullet) => (
-            <li key={bullet}>{bullet}</li>
-          ))}
-        </ul>
+        <p className={cn("text-[13px] font-medium text-theme-text", details?.length && "mb-1.5")}>{title}</p>
+        {details && details.length > 0 && (
+          <ul className="list-disc space-y-1 pl-4 text-theme-text-muted">
+            {details.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        )}
       </TooltipContent>
     </Tooltip>
   );
+}
+
+/** How a password is handled. Keep in sync with backend/src/utils/password.ts. */
+const PASSWORD_HANDLING_BULLETS = [
+  "Hashed with bcrypt before it is stored.",
+  "Only the hash is kept; the password itself is never stored.",
+] as const;
+
+/** Icon-only lock badge for password fields. */
+export function PasswordHandlingBadge() {
+  return <EncryptedBadge title="How your password is handled" details={PASSWORD_HANDLING_BULLETS} variant="secondary" />;
 }

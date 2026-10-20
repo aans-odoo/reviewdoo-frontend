@@ -8,6 +8,7 @@ import { Logo } from "@/components/ui/logo";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
+import { PasswordHandlingBadge } from "@/components/aiKeys/EncryptedBadge";
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -78,7 +79,10 @@ export function ResetPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">New Password</Label>
+                <PasswordHandlingBadge />
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -92,7 +96,10 @@ export function ResetPasswordPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <PasswordHandlingBadge />
+              </div>
               <Input
                 id="confirm-password"
                 type="password"
