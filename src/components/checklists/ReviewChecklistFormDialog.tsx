@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
 import { ChipInput } from "@/components/shared/ChipInput";
@@ -30,6 +31,7 @@ import {
   SCOPE_USES_FILES,
   describeApplicability,
 } from "@/lib/checklistApplicability";
+import { validateVersionRange } from "@/lib/checklistVersions";
 import api from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/errors";
 import { Alert } from "@/components/shared/Alert";
@@ -64,6 +66,8 @@ export interface ChecklistInitial {
   category: string | null;
   languages: string[];
   filePatterns: string[];
+  minVersion?: string | null;
+  maxVersion?: string | null;
   references: { id: string; url: string; description?: string }[];
 }
 
@@ -93,6 +97,13 @@ export function ReviewChecklistFormDialog({
   const [category, setCategory] = useState("other");
   const [languages, setLanguages] = useState<string[]>([]);
   const [filePatterns, setFilePatterns] = useState<string[]>([]);
+  const [versionMode, setVersionMode] = useState("all");
+  const [fromVersion, setFromVersion] = useState("");
+  const [toVersion, setToVersion] = useState("");
+  const minVersion = versionMode === "from" || versionMode === "between" ? fromVersion.trim() : null;
+  const maxVersion = versionMode === "to" || versionMode === "between" ? toVersion.trim() : null;
+  const versionError = validateVersionRange({ minVersion, maxVersion });
+  const versionInvalid = versionError !== null;
   const [references, setReferences] = useState<ReferenceDraft[]>([]);
 
   const [saving, setSaving] = useState(false);
@@ -114,6 +125,9 @@ export function ReviewChecklistFormDialog({
     setLanguages(initial?.languages ?? []);
     setFilePatterns(initial?.filePatterns ?? []);
     setReferences(initial?.references ?? []);
+    setVersionMode(initial?.minVersion != null ? (initial.maxVersion != null ? "between" : "from") : initial?.maxVersion != null ? "to" : "all");
+    setFromVersion(initial?.minVersion?.toString() ?? "");
+    setToVersion(initial?.maxVersion?.toString() ?? "");
     setError("");
     setShowSimilar(false);
     setSimilar([]);
@@ -137,6 +151,8 @@ export function ReviewChecklistFormDialog({
         category: category || null,
         languages: scopedLanguages,
         filePatterns: scopedFilePatterns,
+        minVersion,
+        maxVersion,
         references: references.length > 0
           ? references.map((r) => ({ url: r.url, description: r.description }))
           : undefined,
@@ -149,6 +165,8 @@ export function ReviewChecklistFormDialog({
         category: category || null,
         languages: scopedLanguages,
         filePatterns: scopedFilePatterns,
+        minVersion,
+        maxVersion,
       });
       // Diff references against the originals.
       const original = initial.references;
@@ -184,6 +202,7 @@ export function ReviewChecklistFormDialog({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (versionInvalid) return;
     setSaving(true);
     setError("");
     setSimilarityNote("");
@@ -243,7 +262,7 @@ export function ReviewChecklistFormDialog({
 
   const canAttach = mode === "create" && references.filter((r) => !r.id).length > 0;
 
-  const applicability = describeApplicability(scope, languages, filePatterns);
+  const applicability = describeApplicability(scope, languages, filePatterns, versionInvalid ? null : minVersion, versionInvalid ? null : maxVersion);
   const codeMissingLanguage = scope === "code" && languages.length === 0;
 
   const baseCategory = initial?.category ?? (mode === "create" ? "other" : "");
@@ -255,6 +274,8 @@ export function ReviewChecklistFormDialog({
   const baseReferences = initial?.references ?? [];
 
   const dirty =
+    minVersion !== (initial?.minVersion ?? null) ||
+    maxVersion !== (initial?.maxVersion ?? null) ||
     description !== baseDescription ||
     severity !== baseSeverity ||
     scope !== baseScope ||
@@ -275,12 +296,20 @@ export function ReviewChecklistFormDialog({
             if (dirty) {
               e.preventDefault();
               setPulse(true);
-              setTimeout(() => setPulse(false), 350);
+              const currentDialogEl = document.querySelector<HTMLElement>("[role='dialog'][data-state='open']");
+              const currentDialogCloseBtnEl = currentDialogEl?.querySelector<HTMLElement>("[data-label='Close Dialog']")
+              if (currentDialogEl && currentDialogCloseBtnEl) {
+                currentDialogCloseBtnEl.scrollIntoView({behavior: "smooth"})
+                requestAnimationFrame(() => {
+                  currentDialogCloseBtnEl.focus();
+                });
+              }
+              setTimeout(() => setPulse(false), 1000);
             }
           }}
         >
           <DialogHeader>
-            <DialogTitle>{mode === "create" ? "Create Review Checklist" : "Edit Review Checklist"}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between pr-8">{mode === "create" ? "Create Review Checklist" : "Edit Review Checklist"} <span className={`text-xs font-normal inline-flex self-end justify-end text-yellow-500 transition-opacity ${pulse ? "opacity-1" : "opacity-0"}`}>Unsaved changes</span></DialogTitle>
             <DialogDescription>
               {mode === "create"
                 ? "Add a new review checklist manually."
@@ -320,7 +349,7 @@ export function ReviewChecklistFormDialog({
 
             <div className="space-y-2">
               <Label>Where it applies *</Label>
-              <div className="rounded-lg py-5 px-6 border space-y-2">
+              <div className="rounded-lg py-5 px-6 border space-y-6">
                 <div className="space-y-2">
                   <div className="grid grid-cols-4 gap-2">
                     {SCOPE_OPTIONS.map((s) => {
@@ -348,7 +377,7 @@ export function ReviewChecklistFormDialog({
                 </div>
 
                 {SCOPE_USES_FILES.has(scope) && (
-                  <div className="grid grid-cols-5 gap-3 pt-3">
+                  <div className="grid grid-cols-5 gap-3">
                     <div className="flex flex-col justify-between gap-2 col-span-2">
                       <Label htmlFor="cf-languages">
                         Languages{scope === "code" && " *"}
@@ -376,30 +405,70 @@ export function ReviewChecklistFormDialog({
                   </div>
                 )}
 
-                <div
-                  className={cn(
-                    "flex items-start gap-2 rounded-md px-3 py-2 text-xs",
-                    applicability.tone === "warn"
-                      ? "bg-theme-cyan/5 text-theme-cyan/80"
-                      : "bg-theme-bg-elevated text-theme-text-muted"
+                <div className="space-y-3">
+                  <datalist id="odoo-version-examples">
+                    {["18.0", "19.0", "saas-19.1", "saas-19.2", "20.0", "master"].map(v => <option key={v} value={v} />)}
+                  </datalist>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="cf-version-mode">Version scope</Label>
+                    <Select value={versionMode} onValueChange={setVersionMode}>
+                      <SelectTrigger id="cf-version-mode"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All versions</SelectItem>
+                        <SelectItem value="from">From a version</SelectItem>
+                        <SelectItem value="to">Up to a version</SelectItem>
+                        <SelectItem value="between">Between versions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {versionMode !== "all" && (
+                    <>
+                      <div className="flex gap-3 pl-8 relative before:absolute before:w-5 before:h-12 before:rounded-bl-sm before:border-l-2 before:border-b-2 before:border-border-light before:left-1 focus-within:before:border-primary/20 before:transition-all">
+                        {(versionMode === "from" || versionMode === "between") && (
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="cf-version-from">From (inclusive)</Label>
+                            <Input id="cf-version-from" type="text" list="odoo-version-examples" required placeholder="e.g. 19.0" value={fromVersion} onChange={e => setFromVersion(e.target.value)} />
+                          </div>
+                        )}
+                        {(versionMode === "to" || versionMode === "between") && (
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="cf-version-to">Up to (inclusive)</Label>
+                            <Input id="cf-version-to" type="text" list="odoo-version-examples" required placeholder="e.g. saas-19.2" value={toVersion} onChange={e => setToVersion(e.target.value)} />
+                          </div>
+                        )}
+                      </div>
+                      {versionInvalid && <p className="text-xs text-theme-danger bg-theme-danger/10 py-2 px-3 rounded-sm" role="status">{versionError}</p>}
+                    </>
                   )}
-                >
-                  {applicability.tone === "warn" ? (
-                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  ) : (
-                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  )}
-                  <span>{applicability.text}</span>
                 </div>
+
+                {!versionInvalid &&
+                  <div
+                    className={cn(
+                      "flex items-start gap-2 rounded-md px-3 py-2 text-xs !mt-6",
+                      applicability.tone === "warn"
+                        ? "bg-theme-cyan/5 text-theme-cyan/80"
+                        : "bg-theme-success/10 text-theme-success"
+                    )}
+                  >
+                    {applicability.tone === "warn" ? (
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{applicability.text}</span>
+                  </div>
+                }
               </div>
             </div>
+
             <div className="space-y-2">
               <Label>References</Label>
               <ReferenceInput values={references} onChange={setReferences} />
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving || !description.trim() || codeMissingLanguage}>
+              <Button type="submit" disabled={saving || !description.trim() || codeMissingLanguage || versionInvalid}>
                 {saving ? "Saving…" : mode === "create" ? "Create" : "Save"}
               </Button>
             </DialogFooter>
@@ -410,7 +479,7 @@ export function ReviewChecklistFormDialog({
             )}
           </form>
         </DialogContent>
-      </Dialog>
+      </Dialog >
 
       <SimilarityWarningDialog
         open={showSimilar}

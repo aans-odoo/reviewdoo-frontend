@@ -37,6 +37,8 @@ interface ReviewChecklist {
   category: string | null;
   languages: string[];
   filePatterns: string[];
+  minVersion?: string | null;
+  maxVersion?: string | null;
   _count?: { references?: number };
   referenceCount?: number;
   createdAt?: string;
@@ -195,6 +197,8 @@ export function ReviewChecklistsPage() {
         category: data.category,
         languages: data.languages ?? [],
         filePatterns: data.filePatterns ?? [],
+        minVersion: data.minVersion,
+        maxVersion: data.maxVersion,
         references: data.references ?? [],
       });
       setEditOpen(true);
@@ -358,7 +362,7 @@ export function ReviewChecklistsPage() {
         const { text, tone } = describeApplicability(
           row.scope ?? "code",
           row.languages ?? [],
-          row.filePatterns ?? []
+          row.filePatterns ?? [], row.minVersion, row.maxVersion
         );
         return (
           <span

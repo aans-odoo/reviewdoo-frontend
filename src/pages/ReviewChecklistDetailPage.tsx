@@ -32,6 +32,8 @@ interface ReviewChecklistDetail {
   category: string | null;
   languages: string[];
   filePatterns: string[];
+  minVersion?: string | null;
+  maxVersion?: string | null;
   references: Reference[];
   createdAt: string;
   updatedAt: string;
@@ -174,7 +176,7 @@ export function ReviewChecklistDetailPage() {
                   const applicability = describeApplicability(
                     item.scope ?? "code",
                     item.languages ?? [],
-                    item.filePatterns ?? []
+                    item.filePatterns ?? [], item.minVersion, item.maxVersion
                   );
                   return (
                     <div key="category" className="flex items-center gap-2">
@@ -251,6 +253,8 @@ export function ReviewChecklistDetailPage() {
               category: item.category,
               languages: item.languages,
               filePatterns: item.filePatterns,
+              minVersion: item.minVersion,
+              maxVersion: item.maxVersion,
               references: item.references ?? [],
             }}
             onSaved={fetchItem}

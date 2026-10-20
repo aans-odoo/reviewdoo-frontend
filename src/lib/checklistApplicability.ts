@@ -43,7 +43,7 @@ export interface Applicability {
  * backend matcher. `tone: "warn"` flags an accidental catch-all (a file scope
  * with nothing to narrow it) — e.g. a `code` item with no language selected.
  */
-export function describeApplicability(
+function describeFileApplicability(
   scope: string,
   languages: string[],
   filePatterns: string[]
@@ -76,4 +76,20 @@ export function describeApplicability(
       : `Applies to ${target}.`,
     tone: "info",
   };
+}
+
+export function describeApplicability(
+  scope: string, languages: string[], filePatterns: string[],
+  minVersion?: string | null, maxVersion?: string | null
+): Applicability {
+  const result = describeFileApplicability(scope, languages, filePatterns);
+  if (minVersion == null && maxVersion == null) return result;
+  const versions = minVersion != null && maxVersion != null
+    ? minVersion === maxVersion ? `on version ${minVersion}` : `from version ${minVersion} to ${maxVersion}`
+    : minVersion != null ? `from version ${minVersion} onward` : `up to version ${maxVersion}`;
+  const base = result.text
+    .replace(/^Always checked/, "Checked")
+    .replace(/^Always applies/, "Applies")
+    .replace(/\.$/, "");
+  return { ...result, text: `${base} ${versions}.` };
 }
