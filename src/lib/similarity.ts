@@ -23,6 +23,9 @@ export async function findSimilarChecklists(
     query: description,
     limit: 5,
     excludeId,
+    // Tells the backend this is the editor's duplicate check, not a user
+    // search, so it isn't recorded in the activity log.
+    purpose: "duplicate_check",
   });
   const results: SimilarChecklist[] = res.data.results ?? [];
   return results.sort((a, b) => b.similarityScore - a.similarityScore);

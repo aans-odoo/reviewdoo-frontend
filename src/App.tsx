@@ -6,6 +6,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DetailViewLayout } from "@/components/layout/DetailViewLayout";
 import { Loading } from "@/components/shared/Loading";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PageViewTracker } from "@/components/activity/PageViewTracker";
 
 // Route-level code splitting: each page is loaded on demand so the initial
 // bundle stays small and heavy public pages (About, How to Use) don't ship
@@ -22,6 +23,7 @@ const McpConfigPage = lazy(() => import("@/pages/McpConfigPage").then((m) => ({ 
 const UserManagementPage = lazy(() => import("@/pages/UserManagementPage").then((m) => ({ default: m.UserManagementPage })));
 const McpClientsPage = lazy(() => import("@/pages/McpClientsPage").then((m) => ({ default: m.McpClientsPage })));
 const SmtpConfigPage = lazy(() => import("@/pages/SmtpConfigPage").then((m) => ({ default: m.SmtpConfigPage })));
+const ActivityPage = lazy(() => import("@/pages/ActivityPage").then((m) => ({ default: m.ActivityPage })));
 const AppSettingsPage = lazy(() => import("@/pages/AppSettingsPage").then((m) => ({ default: m.AppSettingsPage })));
 const DesignShowcasePage = lazy(() => import("@/pages/DesignShowcasePage").then((m) => ({ default: m.DesignShowcasePage })));
 const AboutPage = lazy(() => import("@/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
@@ -30,6 +32,7 @@ const HowToUsePage = lazy(() => import("@/pages/HowToUsePage").then((m) => ({ de
 export default function App() {
   return (
     <TooltipProvider delayDuration={150}>
+      <PageViewTracker />
       <Suspense fallback={<Loading className="min-h-screen" />}>
         <Routes>
         <Route path="/design/v2" element={<DesignShowcasePage />} />
@@ -60,6 +63,7 @@ export default function App() {
               <Route path="/mcp-clients" element={<McpClientsPage />} />
               <Route path="/smtp-config" element={<SmtpConfigPage />} />
               <Route path="/app-settings" element={<AppSettingsPage />} />
+              <Route path="/activity" element={<ActivityPage />} />
             </Route>
           </Route>
         </Route>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
+  Activity,
   ClipboardCheck,
   KeyRound,
   Network,
@@ -78,6 +79,7 @@ export function Sidebar() {
     { to: "/ai-config", label: "AI Keys", icon: KeyRound },
     { to: "/users", label: "User Management", icon: UserCog },
     { to: "/mcp-clients", label: "MCP Clients", icon: Radio },
+    { to: "/activity", label: "Activity", icon: Activity },
     { to: "/smtp-config", label: "SMTP Config", icon: Mail },
     { to: "/app-settings", label: "App Settings", icon: SlidersHorizontal },
   ];
