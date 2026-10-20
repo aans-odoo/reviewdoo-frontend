@@ -73,8 +73,6 @@ export function ReviewChecklistsPage() {
   const [totalItems, setTotalItems] = useState(0);
   // Reset the window back to the first record (keeping the current size).
   const resetWindow = useCallback(() => setOffset(0), []);
-  // Semantic mode paginates client-side; keep a fixed page size for it.
-  const semanticPageSize = 10;
 
   const [languageFilter, setLanguageFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -612,19 +610,21 @@ export function ReviewChecklistsPage() {
             columns={columns}
             data={displayItems as (ReviewChecklist & Record<string, unknown>)[]}
             keyExtractor={(row) => row.id}
+            // Semantic results are fetched up-front and windowed client-side;
+            // list mode windows server-side. Either way the same range
+            // navigator drives offset/limit.
             serverSide={!semanticActive}
-            pageSize={semanticPageSize}
+            rangeMode
+            offset={offset}
+            limit={limit}
+            totalItems={semanticActive ? displayItems.length : totalItems}
+            onRangeChange={({ offset: o, limit: l }) => {
+              setOffset(o);
+              setLimit(l);
+            }}
             {...(semanticActive
               ? {}
               : {
-                rangeMode: true,
-                offset,
-                limit,
-                totalItems,
-                onRangeChange: ({ offset: o, limit: l }) => {
-                  setOffset(o);
-                  setLimit(l);
-                },
                 sortKey: sortKey ?? undefined,
                 sortDirection: sortDir,
                 onSort: (key, direction) => {

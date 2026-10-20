@@ -93,7 +93,10 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const displayData = serverSide
     ? sortedData
-    : sortedData.slice((page - 1) * pageSize, page * pageSize);
+    : rangeMode
+      ? // Client-side range window: slice the (sorted) rows to [offset, offset+limit).
+        sortedData.slice(offset, offset + limit)
+      : sortedData.slice((page - 1) * pageSize, page * pageSize);
 
   const handlePageChange = (newPage: number) => {
     if (onPageChange) {
