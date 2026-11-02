@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -6,14 +7,23 @@ import { TeamLogo } from "@/components/shared/TeamLogo";
 import { BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export function Header() {
+export function Header({ headerRef, showLogo = true }: {
+  headerRef?: Ref<HTMLElement>;
+  showLogo?: boolean;
+}) {
   const { isAuthenticated } = useAuth();
   const { settings } = useAppSettings();
   const teamName = settings?.teamName || "Team";
 
   return (
-    <header className="flex h-[60px] flex-shrink-0 items-center justify-between rounded-md border border-border bg-theme-bg-card px-5">
-      <Link to="/">
+    <header ref={headerRef} className="flex h-[60px] flex-shrink-0 items-center justify-between rounded-md border border-border bg-theme-bg-card px-5">
+      <Link
+        to="/"
+        className="layout-logo layout-logo--header"
+        data-visible={showLogo}
+        aria-hidden={!showLogo}
+        tabIndex={showLogo ? undefined : -1}
+      >
         <Logo />
       </Link>
       <div className="flex items-center gap-3">

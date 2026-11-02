@@ -163,3 +163,65 @@ code {
   padding: 3px 8px !important;
   border-radius: 6px !important;
 }
+
+/* Exit first, then enter: complementary visibility comes from the layout.
+   A full exit-duration delay also prevents overlap on rapid scroll reversals. */
+.sidebar-shell,
+.layout-logo {
+  --logo-handoff-duration: 400ms;
+  --logo-handoff-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.layout-logo {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition:
+    opacity var(--logo-handoff-duration) var(--logo-handoff-ease),
+    transform var(--logo-handoff-duration) var(--logo-handoff-ease),
+    visibility 0s linear var(--logo-handoff-duration);
+}
+
+/* The header exits toward the sidebar below and enters from below.
+   The sidebar does the reverse, so both legs follow the scroll direction. */
+.layout-logo--header {
+  transform: translateY(12px);
+}
+
+.layout-logo[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition-delay: var(--logo-handoff-duration);
+}
+
+/* These heights form one collapse: 56px at rest, 80px + 24px when sticky.
+   Keep padding and the divider inside the clipped section to avoid jumps. */
+.sidebar-shell,
+.sidebar-logo-section,
+.sidebar-nav-spacer {
+  transition: height var(--logo-handoff-duration) var(--logo-handoff-ease);
+}
+
+.sidebar-logo-section { height: 0; }
+.sidebar-logo-section[data-expanded="true"] { height: 80px; }
+.sidebar-nav-spacer { height: 56px; }
+.sidebar-nav-spacer[data-expanded="true"] { height: 24px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .layout-logo,
+  .layout-logo[data-visible="true"] {
+    --logo-handoff-duration: 130ms;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-shell,
+  .sidebar-logo-section,
+  .sidebar-nav-spacer {
+    transition: none;
+  }
+}

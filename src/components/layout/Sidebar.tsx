@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function Sidebar() {
+export function Sidebar({ showLogo = false }: { showLogo?: boolean }) {
   const { isAdmin, user, logout, updateProfile } = useAuth();
   const { stickyElRef, isSticky } = useIsSticky<HTMLElement>();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -89,22 +89,22 @@ export function Sidebar() {
       <aside
         ref={stickyElRef}
         className={cn(
-          "flex w-[260px] sticky top-2 flex-shrink-0 flex-col rounded-md border border-border bg-theme-bg-card overflow-hidden transition-all",
+          "sidebar-shell flex w-[260px] sticky top-2 flex-shrink-0 flex-col rounded-md border border-border bg-theme-bg-card overflow-hidden",
           isSticky ? "h-[calc(100vh-1rem)]" : "h-[calc(100vh-60px-1.5rem)]"
         )}
       >
-        {/* Collapsible logo — visible when header scrolls away */}
-        <div
-          className={cn(
-            "px-5 overflow-hidden transition-all duration-500",
-            isSticky ? "h-20 pt-6 pb-4 border-b" : "h-0"
-          )}
-        >
-          <Logo />
+        {/* Animate the collapse around fixed padding so the logo never jumps. */}
+        <div className="sidebar-logo-section shrink-0 overflow-hidden" data-expanded={isSticky}>
+          <div className="h-20 px-5 pt-6 pb-4 border-b">
+            <div className="layout-logo" data-visible={showLogo} aria-hidden={!showLogo}>
+              <Logo />
+            </div>
+          </div>
         </div>
+        <div className="sidebar-nav-spacer shrink-0" data-expanded={isSticky} aria-hidden="true" />
 
         {/* Nav items */}
-        <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-3 ${isSticky ? "mt-6" : "mt-14"}`}>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
           {navItems.map((item) => (
             <div key={item.to}>
               <SidebarLink to={item.to} label={item.label} icon={item.icon} />
