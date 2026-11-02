@@ -1,3 +1,5 @@
+import type { Root, RootContent, Element, Text } from 'hast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
@@ -8,6 +10,75 @@ import { cn } from "@/lib/utils";
 interface MarkdownProps {
   children: string;
   className?: string;
+  tokenParts?: Array<{ text: string; token?: string }>;
+}
+
+/** Mark expansions after Markdown parsing, without inserting HTML into the source. */
+function tokenHighlights(parts: Array<{ text: string; token?: string }>) {
+  let offset = 0;
+  const ranges = parts.map(part => {
+    const range = { start: offset, end: offset + part.text.length, token: part.token };
+    offset = range.end;
+    return range;
+  }).filter(range => range.token);
+  return () => (tree: Root) => {
+    function visit(parent: { children: RootContent[] }, inheritedToken?: string) {
+      parent.children = parent.children.flatMap<RootContent>(node => {
+        if (node.type === 'element') {
+          const start = node.position?.start.offset;
+          const end = node.position?.end.offset;
+          const token = start !== undefined && end !== undefined
+            ? ranges.find(range => range.start <= start && range.end >= end)?.token
+            : inheritedToken;
+          visit(node, token);
+          return [node];
+        }
+        if (node.type !== 'text') return [node];
+        const start = node.position?.start.offset;
+        const end = node.position?.end.offset;
+        if (start === undefined || end === undefined) {
+          // Inline/fenced code can produce text without its own source position.
+          return inheritedToken ? [{ type: 'element', tagName: 'mark', properties: { title: inheritedToken }, children: [node] }] : [node];
+        }
+        const matches = ranges.filter(range => range.start < end && range.end > start);
+        if (!matches.length) return [node];
+        const result: Array<Text | Element> = [];
+        let cursor = 0;
+        for (const range of matches) {
+          // Escaped Markdown/entities can differ in source and displayed length.
+          const from = end - start === node.value.length ? Math.max(0, range.start - start) : 0;
+          const to = end - start === node.value.length ? Math.min(node.value.length, range.end - start) : node.value.length;
+          if (from < cursor) continue;
+          if (from > cursor) result.push({ type: 'text', value: node.value.slice(cursor, from) });
+          result.push({ type: 'element', tagName: 'mark', properties: { title: range.token }, children: [{ type: 'text', value: node.value.slice(from, to) }] });
+          cursor = to;
+        }
+        if (cursor < node.value.length) result.push({ type: 'text', value: node.value.slice(cursor) });
+        return result;
+      });
+    }
+    visit(tree);
+  };
+}
+
+/** Apply soft line breaks after highlighting, while source positions are intact. */
+function previewLineBreaks() {
+  return (tree: Root) => {
+    function visit(parent: { children: RootContent[] }) {
+      parent.children = parent.children.flatMap<RootContent>(node => {
+        if (node.type === 'element') {
+          if (node.tagName !== 'pre' && node.tagName !== 'code') visit(node);
+          return [node];
+        }
+        if (node.type !== 'text' || !node.value.trim()) return [node];
+        return node.value.split(/\r\n|\r|\n/).flatMap<RootContent>((value, index) => [
+          ...(index ? [{ type: 'element' as const, tagName: 'br', properties: {}, children: [] }] : []),
+          { type: 'text', value },
+        ]);
+      });
+    }
+    visit(tree);
+  };
 }
 
 /**
@@ -43,9 +114,9 @@ function preserveLineBreaks(src: string): string {
  * Only a safe subset of markdown is supported (no raw HTML), so content is
  * not passed through `dangerouslySetInnerHTML`.
  */
-export function Markdown({ children, className }: MarkdownProps) {
+export function Markdown({ children, className, tokenParts }: MarkdownProps) {
   return (
-    <div
+    <TooltipProvider delayDuration={200}><div
       className={cn(
         "text-sm text-theme-text [overflow-wrap:anywhere]",
         // Spacing between block elements
@@ -68,14 +139,22 @@ export function Markdown({ children, className }: MarkdownProps) {
       )}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks]}
-        rehypePlugins={[rehypeHighlight]}
+        remarkPlugins={tokenParts ? [remarkGfm] : [remarkGfm, remarkBreaks]}
+        rehypePlugins={tokenParts ? [rehypeHighlight, tokenHighlights(tokenParts), previewLineBreaks] : [rehypeHighlight]}
         components={{
+          mark: ({ children: content, title }) => (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <mark tabIndex={0} className="rounded-sm bg-theme-primary/10 text-theme-primary-light outline-none focus-visible:ring-1 focus-visible:ring-theme-primary" aria-label={`Inserted from ${title}`}>{content}</mark>
+              </TooltipTrigger>
+              <TooltipContent><code>{title}</code></TooltipContent>
+            </Tooltip>
+          ),
           a: ({ ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
         }}
       >
-        {preserveLineBreaks(children)}
+        {tokenParts ? children : preserveLineBreaks(children)}
       </ReactMarkdown>
-    </div>
+    </div></TooltipProvider>
   );
 }

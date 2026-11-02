@@ -1,3 +1,4 @@
+import { useReleaseCatalog } from '@/hooks/useReleaseCatalog';
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +43,7 @@ interface ReviewChecklistDetail {
 }
 
 export function ReviewChecklistDetailPage() {
+  const { catalog } = useReleaseCatalog();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -176,7 +178,7 @@ export function ReviewChecklistDetailPage() {
                   const applicability = describeApplicability(
                     item.scope ?? "code",
                     item.languages ?? [],
-                    item.filePatterns ?? [], item.minVersion, item.maxVersion
+                    item.filePatterns ?? [], item.minVersion, item.maxVersion, catalog?.nextRelease
                   );
                   return (
                     <div key="category" className="flex items-center gap-2">

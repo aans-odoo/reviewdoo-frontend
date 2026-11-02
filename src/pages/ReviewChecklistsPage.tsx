@@ -1,3 +1,4 @@
+import { useReleaseCatalog } from '@/hooks/useReleaseCatalog';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,6 +60,7 @@ interface PaginatedResponse {
 const SEVERITIES = ["critical", "major", "minor", "suggestion"];
 
 export function ReviewChecklistsPage() {
+  const { catalog } = useReleaseCatalog();
   const navigate = useNavigate();
   const { hasActiveKey } = useKeyPoolStatus();
   const { isAdmin } = useAuth();
@@ -360,7 +362,7 @@ export function ReviewChecklistsPage() {
         const { text, tone } = describeApplicability(
           row.scope ?? "code",
           row.languages ?? [],
-          row.filePatterns ?? [], row.minVersion, row.maxVersion
+          row.filePatterns ?? [], row.minVersion, row.maxVersion, catalog?.nextRelease
         );
         return (
           <span

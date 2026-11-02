@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { TeamLogo } from "@/components/shared/TeamLogo";
-import { MarkdownField } from "@/components/shared/MarkdownPreviewToggle";
+import { InitPromptEditor } from "@/components/shared/InitPromptEditor";
 import { Users, Terminal, Check, Loader2 } from "lucide-react";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { getApiErrorMessage } from "@/lib/errors";
@@ -34,8 +33,10 @@ export function AppSettingsPage() {
     initPrompt: "",
   });
 
+  const initialized = useRef(false);
   useEffect(() => {
-    if (settings) {
+    if (settings && !initialized.current) {
+      initialized.current = true;
       setTeamName(settings.teamName);
       setTeamLogoUrl(settings.teamLogoUrl);
       setInitPrompt(settings.initPrompt);
@@ -154,21 +155,7 @@ export function AppSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <MarkdownField
-            label="Prompt text"
-            htmlFor="init-prompt"
-            value={initPrompt}
-            labelAccessory={<>{["saving", "saved"].includes(saveState.initPrompt) && <span className="w-px h-4 bg-theme-text-muted/50"/>}<SaveIndicator state={saveState.initPrompt} /></>}
-          >
-            <Textarea
-              id="init-prompt"
-              className="min-h-[320px] font-mono text-xs"
-              value={initPrompt}
-              onChange={(e) => setInitPrompt(e.target.value)}
-              onBlur={(e) => handleBlur("initPrompt", e.target.value)}
-              placeholder="Enter the MCP init workflow instructions..."
-            />
-          </MarkdownField>
+          <InitPromptEditor labelAccessory={<SaveIndicator state={saveState.initPrompt} />} value={initPrompt} onChange={setInitPrompt} onSave={value => handleBlur("initPrompt", value)} />
         </CardContent>
       </Card>
     </div>

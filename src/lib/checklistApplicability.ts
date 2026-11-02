@@ -1,3 +1,4 @@
+import { releaseLabel } from '@/hooks/useReleaseCatalog';
 /**
  * Shared "where it applies" logic for review checklists.
  *
@@ -80,10 +81,12 @@ function describeFileApplicability(
 
 export function describeApplicability(
   scope: string, languages: string[], filePatterns: string[],
-  minVersion?: string | null, maxVersion?: string | null
+  minVersion?: string | null, maxVersion?: string | null, nextRelease?: string
 ): Applicability {
   const result = describeFileApplicability(scope, languages, filePatterns);
   if (minVersion == null && maxVersion == null) return result;
+  minVersion = minVersion == null ? minVersion : releaseLabel(minVersion, nextRelease);
+  maxVersion = maxVersion == null ? maxVersion : releaseLabel(maxVersion, nextRelease);
   const versions = minVersion != null && maxVersion != null
     ? minVersion === maxVersion ? `on version ${minVersion}` : `from version ${minVersion} to ${maxVersion}`
     : minVersion != null ? `from version ${minVersion} onward` : `up to version ${maxVersion}`;

@@ -1,3 +1,5 @@
+import { useReleaseCatalog } from '@/hooks/useReleaseCatalog';
+import { VersionSelect } from './VersionSelect';
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -100,10 +102,19 @@ export function ReviewChecklistFormDialog({
   const [versionMode, setVersionMode] = useState("all");
   const [fromVersion, setFromVersion] = useState("");
   const [toVersion, setToVersion] = useState("");
+  const { catalog, error: releaseError, retry: retryReleases } = useReleaseCatalog();
   const minVersion = versionMode === "from" || versionMode === "between" ? fromVersion.trim() : null;
   const maxVersion = versionMode === "to" || versionMode === "between" ? toVersion.trim() : null;
-  const versionError = validateVersionRange({ minVersion, maxVersion });
+  const versionError = validateVersionRange({ minVersion, maxVersion }, catalog?.minorReleaseCount, catalog);
   const versionInvalid = versionError !== null;
+  // Empty fields still block saving, but need no error before a value is entered.
+  // Validate entered bounds independently so an empty “From” cannot hide an
+  // invalid “Up to” value (or vice versa).
+  const visibleVersionError = validateVersionRange(
+    { minVersion: minVersion || null, maxVersion: maxVersion || null },
+    catalog?.minorReleaseCount,
+    catalog,
+  );
   const [references, setReferences] = useState<ReferenceDraft[]>([]);
 
   const [saving, setSaving] = useState(false);
@@ -262,7 +273,7 @@ export function ReviewChecklistFormDialog({
 
   const canAttach = mode === "create" && references.filter((r) => !r.id).length > 0;
 
-  const applicability = describeApplicability(scope, languages, filePatterns, versionInvalid ? null : minVersion, versionInvalid ? null : maxVersion);
+  const applicability = describeApplicability(scope, languages, filePatterns, versionInvalid ? null : minVersion, versionInvalid ? null : maxVersion, catalog?.nextRelease);
   const codeMissingLanguage = scope === "code" && languages.length === 0;
 
   const baseCategory = initial?.category ?? (mode === "create" ? "other" : "");
@@ -406,9 +417,7 @@ export function ReviewChecklistFormDialog({
                 )}
 
                 <div className="space-y-3">
-                  <datalist id="odoo-version-examples">
-                    {["18.0", "19.0", "saas-19.1", "saas-19.2", "20.0", "master"].map(v => <option key={v} value={v} />)}
-                  </datalist>
+                  {releaseError && <p role="status" className="text-sm text-theme-text-muted">{releaseError} <button type="button" onClick={retryReleases} className="underline">Retry</button></p>}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="cf-version-mode">Version scope</Label>
                     <Select value={versionMode} onValueChange={setVersionMode}>
@@ -427,17 +436,17 @@ export function ReviewChecklistFormDialog({
                         {(versionMode === "from" || versionMode === "between") && (
                           <div className="flex-1 space-y-1">
                             <Label htmlFor="cf-version-from">From (inclusive)</Label>
-                            <Input id="cf-version-from" type="text" list="odoo-version-examples" required placeholder="e.g. 19.0" value={fromVersion} onChange={e => setFromVersion(e.target.value)} />
+                            <VersionSelect id="cf-version-from" value={fromVersion} onChange={setFromVersion} catalog={catalog} />
                           </div>
                         )}
                         {(versionMode === "to" || versionMode === "between") && (
                           <div className="flex-1 space-y-1">
                             <Label htmlFor="cf-version-to">Up to (inclusive)</Label>
-                            <Input id="cf-version-to" type="text" list="odoo-version-examples" required placeholder="e.g. saas-19.2" value={toVersion} onChange={e => setToVersion(e.target.value)} />
+                            <VersionSelect id="cf-version-to" value={toVersion} onChange={setToVersion} catalog={catalog} />
                           </div>
                         )}
                       </div>
-                      {versionInvalid && <p className="text-xs text-theme-danger bg-theme-danger/10 py-2 px-3 rounded-sm" role="status">{versionError}</p>}
+                      {visibleVersionError && <p className="text-xs text-theme-danger bg-theme-danger/10 py-2 px-3 rounded-sm" role="status">{visibleVersionError}</p>}
                     </>
                   )}
                 </div>
