@@ -10,6 +10,8 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+export const selectTriggerClassName = "flex h-11 w-full items-center justify-between rounded-[10px] border border-border bg-theme-bg-elevated px-3.5 py-2 text-sm text-theme-text placeholder:text-theme-text-dim focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors";
+
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
@@ -17,7 +19,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 w-full items-center justify-between rounded-[10px] border border-border bg-theme-bg-elevated px-3.5 py-2 text-sm text-theme-text placeholder:text-theme-text-dim focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors",
+      selectTriggerClassName,
       className
     )}
     {...props}

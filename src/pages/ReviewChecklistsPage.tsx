@@ -1,3 +1,5 @@
+import { AppliesToFilter } from '@/components/checklists/AppliesToFilter';
+import { EMPTY_APPLIES_TO, appliesToFilterCount, matchesAppliesTo } from '@/lib/appliesToFilters';
 import { useReleaseCatalog } from '@/hooks/useReleaseCatalog';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -76,7 +78,7 @@ export function ReviewChecklistsPage() {
   // Reset the window back to the first record (keeping the current size).
   const resetWindow = useCallback(() => setOffset(0), []);
 
-  const [languageFilter, setLanguageFilter] = useState("");
+  const [appliesTo, setAppliesTo] = useState(EMPTY_APPLIES_TO);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
 
@@ -104,6 +106,10 @@ export function ReviewChecklistsPage() {
     total: number;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // List and semantic searches share the same result state. Only the newest
+  // request may update it, even if older responses arrive out of order.
+  const latestRequest = useRef(0);
+  useEffect(() => () => { latestRequest.current += 1; }, []);
 
   const semanticActive = appliedMode === "semantic" && appliedQuery.trim().length > 0;
 
@@ -116,10 +122,14 @@ export function ReviewChecklistsPage() {
   }, [hasActiveKey]);
 
   const fetchItems = useCallback(async () => {
+    const requestId = ++latestRequest.current;
     try {
       setLoading(true);
       const params: Record<string, string | number> = { offset, limit };
-      if (languageFilter) params.language = languageFilter;
+      if (appliesTo.scope) params.scope = appliesTo.scope;
+      if (appliesTo.languages.length) params.languages = JSON.stringify(appliesTo.languages);
+      if (appliesTo.filePatterns.length) params.filePatterns = JSON.stringify(appliesTo.filePatterns);
+      if (appliesTo.version) params.version = appliesTo.version;
       if (categoryFilter) params.category = categoryFilter;
       if (severityFilter) params.severity = severityFilter;
       if (sortKey) {
@@ -129,33 +139,36 @@ export function ReviewChecklistsPage() {
       if (appliedMode === "text" && appliedQuery.trim()) params.search = appliedQuery.trim();
 
       const res = await api.get("/review-checklists", { params });
+      if (requestId !== latestRequest.current) return;
       const data: PaginatedResponse = res.data;
       setItems(data.items ?? []);
       setTotalItems(data.total ?? 0);
       setError("");
     } catch {
-      setError("Failed to load review checklists");
+      if (requestId === latestRequest.current) setError("Failed to load review checklists");
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
-  }, [offset, limit, languageFilter, categoryFilter, severityFilter, sortKey, sortDir, appliedMode, appliedQuery]);
+  }, [offset, limit, appliesTo, categoryFilter, severityFilter, sortKey, sortDir, appliedMode, appliedQuery]);
 
   const fetchSemantic = useCallback(async (query: string) => {
     if (!query.trim()) return;
+    const requestId = ++latestRequest.current;
     try {
       setLoading(true);
       const res = await api.post("/review-checklists/semantic-search", {
         query,
         limit: 50,
       });
+      if (requestId !== latestRequest.current) return;
       const data = res.data.results ?? res.data.items ?? res.data;
       setItems(Array.isArray(data) ? data : []);
       setError("");
     } catch {
       // Keep the user's query so they can retry or switch to text search.
-      setError("Semantic search is temporarily unavailable");
+      if (requestId === latestRequest.current) setError("Semantic search is temporarily unavailable");
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
   }, []);
 
@@ -270,7 +283,7 @@ export function ReviewChecklistsPage() {
   };
 
   const clearFilters = () => {
-    setLanguageFilter("");
+    setAppliesTo(EMPTY_APPLIES_TO);
     setCategoryFilter("");
     setSeverityFilter("");
     setSearchQuery("");
@@ -280,17 +293,14 @@ export function ReviewChecklistsPage() {
   };
 
   const hasActiveFilters =
-    !!languageFilter || !!categoryFilter || !!severityFilter || appliedQuery.trim().length > 0;
+    appliesToFilterCount(appliesTo) > 0 || !!categoryFilter || !!severityFilter || appliedQuery.trim().length > 0;
 
   // While semantic search is active, apply the structured filters client-side
   // so they stay meaningful against the similarity-ranked results.
   const displayItems = semanticActive
     ? items.filter(
       (it) =>
-        (!languageFilter ||
-          (it.languages ?? []).some((l) =>
-            l.toLowerCase().includes(languageFilter.toLowerCase())
-          )) &&
+        matchesAppliesTo(it, appliesTo) &&
         (!categoryFilter || it.category === categoryFilter) &&
         (!severityFilter || it.severity === severityFilter)
     )
@@ -530,26 +540,6 @@ export function ReviewChecklistsPage() {
 
 
           <div className="mt-4 flex flex-wrap items-end gap-4">
-            {/* <div className="space-y-2">
-              <Label>Language</Label>
-              <Input
-                placeholder="e.g. typescript"
-                value={languageFilter}
-                onChange={(e) => { setLanguageFilter(e.target.value); resetWindow(); }}
-                className="w-40"
-              />
-            </div> */}
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <CategorySelect
-                value={categoryFilter || "all"}
-                onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); resetWindow(); }}
-                includeAll
-                placeholder="All"
-                triggerClassName="w-40"
-                onCategoriesChanged={refresh}
-              />
-            </div>
             <div className="space-y-2">
               <Label>Severity</Label>
               <Select value={severityFilter || "all"} onValueChange={(v) => { setSeverityFilter(v === "all" ? "" : v); resetWindow(); }}>
@@ -564,6 +554,18 @@ export function ReviewChecklistsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <CategorySelect
+                value={categoryFilter || "all"}
+                onValueChange={(v) => { setCategoryFilter(v === "all" ? "" : v); resetWindow(); }}
+                includeAll
+                placeholder="All"
+                triggerClassName="w-40"
+                onCategoriesChanged={refresh}
+              />
+            </div>
+            <AppliesToFilter value={appliesTo} onChange={value => { setAppliesTo(value); resetWindow(); }} />
             {hasActiveFilters && (
               <Button
                 variant="ghost"
