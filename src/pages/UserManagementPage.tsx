@@ -38,7 +38,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "member";
+  role: "admin" | "member" | "guest";
   isActive: boolean;
   avatarUrl: string;
   createdAt: string;
@@ -52,7 +52,7 @@ export function UserManagementPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
-  const [newRole, setNewRole] = useState<"admin" | "member">("member");
+  const [newRole, setNewRole] = useState<"admin" | "member" | "guest">("member");
   const [newAvatarUrl, setNewAvatarUrl] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -61,7 +61,7 @@ export function UserManagementPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editEmail, setEditEmail] = useState("");
   const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState<"admin" | "member">("member");
+  const [editRole, setEditRole] = useState<"admin" | "member" | "guest">("member");
   const [editAvatarUrl, setEditAvatarUrl] = useState("");
   const [editing, setEditing] = useState(false);
   const [editError, setEditError] = useState("");
@@ -133,7 +133,7 @@ export function UserManagementPage() {
     setEditError("");
     try {
       // Build updates object with changed fields
-      const updates: { email?: string; name?: string; role?: "admin" | "member"; avatarUrl?: string } = {};
+      const updates: { email?: string; name?: string; role?: "admin" | "member" | "guest"; avatarUrl?: string } = {};
 
       if (editEmail !== editingUser.email) {
         updates.email = editEmail;
@@ -349,10 +349,11 @@ export function UserManagementPage() {
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={newRole} onValueChange={(v) => setNewRole(v as "admin" | "member")}>
+              <Select value={newRole} onValueChange={(v) => setNewRole(v as "admin" | "member" | "guest")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="guest">Guest</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
@@ -415,10 +416,11 @@ export function UserManagementPage() {
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={editRole} onValueChange={(v) => setEditRole(v as "admin" | "member")}>
+              <Select value={editRole} onValueChange={(v) => setEditRole(v as "admin" | "member" | "guest")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="guest">Guest</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>

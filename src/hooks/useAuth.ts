@@ -5,7 +5,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: "admin" | "member";
+  role: "admin" | "member" | "guest";
   avatarUrl: string;
 }
 
@@ -15,6 +15,7 @@ interface AuthContextValue {
   isAdmin: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
   setSession: (token: string, user: User) => void;
   updateProfile: (updates: { name?: string; avatarUrl?: string }) => Promise<void>;
@@ -66,6 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
   }, []);
 
+  const loginAsGuest = useCallback(async () => {
+    const { data } = await api.post("/auth/guest");
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await api.post("/auth/logout");
@@ -96,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin: user?.role === "admin",
     isLoading,
     login,
+    loginAsGuest,
     logout,
     setSession,
     updateProfile,

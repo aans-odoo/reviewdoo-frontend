@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { ReviewFlowDiagram } from "@/components/ReviewFlowDiagram";
-import { McpConfigSnippet } from "@/components/shared/McpConfigSnippet";
+import { McpConnectionDetails } from "@/components/shared/McpConnectionDetails";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -83,10 +83,6 @@ export function HowToUsePage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Same derivation used by the in-dashboard MCP Config page, so the snippet
-  // here matches what developers paste into their IDE.
-  const mcpUrl = `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
-
   const [active, setActive] = useState(0);
 
   // Scroll-driven stepper: each step card is observed, and whichever card is
@@ -123,8 +119,8 @@ export function HowToUsePage() {
     switch (i) {
       case 0:
         return (
-          <StepContent text="Paste this into your IDE's mcp.json and restart the IDE. You only do this once. The same config is on the MCP Config page after you log in, where you can also test the connection.">
-            <McpConfigSnippet />
+          <StepContent text="Connect Reviewdoo once in your IDE’s as a custom MCP server. Use the connection details below:">
+            <McpConnectionDetails />
           </StepContent>
         );
       case 1:
@@ -290,7 +286,7 @@ export function HowToUsePage() {
                     markerRefs.current[i] = el;
                   }}
                   className={`scroll-mt-32 transition-colors ${isActive
-                      ? "border-theme-primary/40 bg-theme-bg-card"
+                      ? "border-theme-text-dim/20 bg-theme-bg-card"
                       : "border-border bg-theme-bg-card/50"
                     }`}
                 >

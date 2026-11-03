@@ -174,10 +174,10 @@ export function KeyTable({
           return <span className="whitespace-nowrap text-theme-text-muted">Never</span>;
         }
         // `lastUsedBy` is set only for a signed-in user; `lastUsedByKind`
-        // distinguishes the no-user cases ("Guest" vs "System").
+        // distinguishes the no-user cases ("Visitor" vs "System").
         const user = row.lastUsedBy;
         const isSystem = !user && row.lastUsedByKind === "system";
-        const label = user ? user.name : isSystem ? "System" : "Guest";
+        const label = user ? user.name : isSystem ? "System" : "Visitor";
         return (
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7">

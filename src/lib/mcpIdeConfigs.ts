@@ -18,9 +18,9 @@ export interface IdeConfig {
 export const IDE_CONFIGS: IdeConfig[] = [
   {
     id: "kiro",
-    label: "Kiro / Codex / Claude Desktop",
+    label: "Standard (url)",
     description:
-      "For IDEs that support Streamable HTTP MCP servers natively.",
+      "For clients that use mcpServers with a url field in JSON.",
     buildConfig: (mcpUrl) => ({
       mcpServers: {
         reviewdoo: {

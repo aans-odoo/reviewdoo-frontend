@@ -1,3 +1,4 @@
+import { getMcpUrl } from "@/lib/mcpConnection";
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ interface McpConfigSnippetProps {
 }
 
 export function McpConfigSnippet({ mcpUrl, ideId }: McpConfigSnippetProps) {
-  const resolvedUrl = mcpUrl ?? `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
+  const resolvedUrl = mcpUrl ?? getMcpUrl();
   const [selectedIde, setSelectedIde] = useState(ideId ?? DEFAULT_IDE_ID);
   const [copied, setCopied] = useState(false);
 
@@ -37,9 +38,9 @@ export function McpConfigSnippet({ mcpUrl, ideId }: McpConfigSnippetProps) {
 
   return (
     <div className="rounded-md border border-border bg-theme-bg-elevated">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-theme-text-muted">mcp.json</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-theme-text-muted">JSON</span>
           {!ideId && (
             <Select value={selectedIde} onValueChange={setSelectedIde}>
               <SelectTrigger className="h-7 w-auto min-w-[160px] rounded-md border-border bg-theme-bg-card text-xs">

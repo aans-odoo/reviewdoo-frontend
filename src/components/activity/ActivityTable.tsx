@@ -213,7 +213,7 @@ export function ActivityTable({
         const user = row.actor;
         const isSystem = row.actorKind === "system";
         // A `user` row whose account was deleted keeps actorKind but loses the link.
-        const label = user ? user.name || user.email : isSystem ? "System" : row.actorKind === "user" ? "Deleted user" : "Guest";
+        const label = user ? user.name || user.email : isSystem ? "System" : row.actorKind === "user" ? "Deleted user" : "Visitor";
         return (
           <div className="flex items-center gap-2">
             <Avatar className="h-7 w-7">

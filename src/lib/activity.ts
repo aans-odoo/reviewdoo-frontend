@@ -1,7 +1,7 @@
 import api from "@/lib/api";
 
 /** Mirrors `ActivityLogView` in backend/src/services/activityService.ts. */
-export type ActivityActorKind = "user" | "guest" | "system";
+export type ActivityActorKind = "user" | "visitor" | "system";
 
 export type ActivityCategory = "navigation" | "auth" | "search" | "checklist" | "mcp" | "system";
 

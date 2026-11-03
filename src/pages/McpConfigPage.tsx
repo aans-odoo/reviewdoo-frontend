@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Network, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { McpConnectionDetails } from "@/components/shared/McpConnectionDetails";
+import { getMcpUrl } from "@/lib/mcpConnection";
 import { McpConfigSnippet } from "@/components/shared/McpConfigSnippet";
 
 type ConnectionStatus =
@@ -42,7 +44,7 @@ function parseMcpResponseBody(body: string): JsonRpcResponse {
 
 export function McpConfigPage() {
   const { isAdmin } = useAuth();
-  const mcpUrl = `${import.meta.env.VITE_API_URL || window.location.origin}/mcp`;
+  const mcpUrl = getMcpUrl();
 
   const stdioSnippet = JSON.stringify(
     {
@@ -59,7 +61,6 @@ export function McpConfigPage() {
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [connection, setConnection] = useState<ConnectionStatus>({ kind: "idle" });
-  const [showOther, setShowOther] = useState(false);
 
   const handleCopy = async (key: string, value: string) => {
     try {
@@ -112,7 +113,7 @@ export function McpConfigPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div>
         <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-theme-text">
           <Network className="h-6 w-6" />
@@ -121,54 +122,40 @@ export function McpConfigPage() {
         <p className="mt-1 text-sm text-theme-text-muted">
           Register Reviewdoo as a remote MCP server in your AI IDE so it can fetch review checklists while reviewing your code.
         </p>
-        <p className="mt-1 text-sm text-theme-text-muted">
-          <span className="text-theme-accent/90">Paste</span> the config below into your IDE's <span className="text-theme-primary bg-theme-primary/10 px-2 py-0.5 rounded-sm">mcp.json</span> file and restart your IDE.
-        </p>
       </div>
 
-      <McpConfigSnippet />
+      <McpConnectionDetails mcpUrl={mcpUrl} />
 
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowOther((v) => !v)}
-          className="flex items-center gap-1.5 text-sm font-medium text-theme-text-muted hover:text-theme-text transition-colors"
-        >
-          <ChevronRight
-            className={`h-4 w-4 transition-transform ${showOther ? "rotate-90" : ""}`}
-          />
-          See other connection options
-        </button>
-
-        {showOther && (
-          <div className="mt-3">
-            <div className="rounded-md border border-border bg-theme-bg-elevated">
-              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
-                <span className="text-xs font-medium text-theme-text-muted">mcp.json — stdio fallback (via mcp-remote)</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-2"
-                  onClick={() => handleCopy("stdio", stdioSnippet)}
-                >
-                  {copiedKey === "stdio" ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" /> Copy
-                    </>
-                  )}
+      <details className="group rounded-lg border border-border bg-theme-bg-card">
+        <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg p-5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+          <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-theme-text-muted group-open:rotate-90" />
+          <span>
+            <span className="block font-medium text-theme-text">Configuration files & other options</span>
+            <span className="mt-1 block text-theme-text-muted">Optional setup for clients that use a config file or require stdio.</span>
+          </span>
+        </summary>
+        <div className="min-w-0 space-y-6 border-t border-border p-4 sm:p-5">
+          <section className="min-w-0 space-y-3">
+            <h3 className="text-sm font-medium text-theme-text">JSON configuration</h3>
+            <p className="text-sm leading-relaxed text-theme-text-muted">If your client uses a JSON configuration file, choose its format below and merge the entry into your existing configuration. Reload the client if needed.</p>
+            <McpConfigSnippet mcpUrl={mcpUrl} />
+          </section>
+          <section className="min-w-0 space-y-3">
+            <h3 className="text-sm font-medium text-theme-text">Stdio fallback</h3>
+            <p className="text-sm leading-relaxed text-theme-text-muted">For clients that only support local stdio servers, use mcp-remote to connect to this URL. This option requires Node.js and npx on your machine.</p>
+            <div className="min-w-0 rounded-md border border-border bg-theme-bg-elevated">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
+                <span className="text-xs font-medium text-theme-text-muted">JSON · mcp-remote</span>
+                <Button variant="ghost" size="sm" className="h-7 gap-2" onClick={() => handleCopy("stdio", stdioSnippet)}>
+                  {copiedKey === "stdio" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedKey === "stdio" ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <pre className="overflow-auto whitespace-pre p-4 text-sm text-theme-text-muted font-mono">
-                {stdioSnippet}
-              </pre>
+              <pre className="overflow-auto whitespace-pre p-4 font-mono text-sm text-theme-text-muted">{stdioSnippet}</pre>
             </div>
-          </div>
-        )}
-      </div>
+          </section>
+        </div>
+      </details>
 
       {isAdmin && (
       <Card>
@@ -176,10 +163,10 @@ export function McpConfigPage() {
           <CardTitle>Test connection</CardTitle>
           <CardDescription>
             Verify the MCP endpoint is reachable from your browser. This sends a <code>tools/list</code> request to{" "}
-            <code>{mcpUrl}</code>.
+            <code className="break-all">{mcpUrl}</code>.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3" aria-live="polite">
           <Button onClick={handleTestConnection} disabled={connection.kind === "testing"}>
             {connection.kind === "testing" ? "Testing..." : "Test connection"}
           </Button>

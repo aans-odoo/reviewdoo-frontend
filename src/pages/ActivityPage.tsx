@@ -181,7 +181,7 @@ export function ActivityPage() {
         <p className="max-w-2xl text-sm text-theme-text-muted">
           Who is using Reviewdoo and how: page views, searches, checklist changes, MCP tool calls
           and background jobs. Signed-in users are named; public visitors and MCP clients show as
-          Guest.
+          Visitor.
         </p>
       </div>
 
@@ -243,7 +243,7 @@ export function ActivityPage() {
                   <SelectContent>
                     <SelectItem value={ALL}>All actors</SelectItem>
                     <SelectItem value="user">Users</SelectItem>
-                    <SelectItem value="guest">Guests</SelectItem>
+                    <SelectItem value="visitor">Visitors</SelectItem>
                     <SelectItem value="system">System</SelectItem>
                   </SelectContent>
                 </Select>
